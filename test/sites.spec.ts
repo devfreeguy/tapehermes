@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { newWallet, resetState, startTestApp, fakeUpstream, type TestApp } from './helpers/app.js'
+import { delegate, newWallet, resetState, startTestApp, fakeUpstream, type TestApp } from './helpers/app.js'
 
 let t: TestApp
 beforeAll(async () => { t = await startTestApp() })
@@ -132,36 +132,32 @@ describe('takeover at registration', () => {
 })
 
 describe('delegation save re-checks the holder on chain', () => {
-  const delegation = () => ({ signature: '0x' + 'ab'.repeat(65), expiresAt: new Date(Date.now() + 86400_000).toISOString() })
-
-  it('stores the delegation when the wallet is still the holder', async () => {
+  const setup = async () => {
     const holder = newWallet(); t.chain.set(SITE, holder.address)
     const token = await t.api.signIn(holder)
     await t.api.call('POST', '/api/sites', { token, body: { name: SITE } })
-    const r = await t.api.call('PUT', `/api/sites/${SITE}/delegation`, { token, body: delegation() })
+    return { holder, token }
+  }
+
+  it('stores a delegation signed by the current holder', async () => {
+    const { holder, token } = await setup()
+    const r = await delegate(t, token, holder, SITE)
     expect(r.status).toBe(200)
     expect(r.body.delegation.stored).toBe(true)
   })
 
   it('refuses (403) and stores nothing when the chain says the wallet is no longer the holder', async () => {
-    const holder = newWallet(), buyer = newWallet(); t.chain.set(SITE, holder.address)
-    const token = await t.api.signIn(holder)
-    await t.api.call('POST', '/api/sites', { token, body: { name: SITE } })
-    t.chain.set(SITE, buyer.address)
-    const r = await t.api.call('PUT', `/api/sites/${SITE}/delegation`, { token, body: delegation() })
+    const { holder, token } = await setup()
+    t.chain.set(SITE, newWallet().address)
+    const r = await delegate(t, token, holder, SITE)
     expect(r.status).toBe(403)
     expect((await t.prisma.site.findUniqueOrThrow({ where: { name: SITE } })).delegationSig).toBeNull()
   })
 
-  it('answers 503 when the chain cannot be read, and refuses a past expiry', async () => {
-    const holder = newWallet(); t.chain.set(SITE, holder.address)
-    const token = await t.api.signIn(holder)
-    await t.api.call('POST', '/api/sites', { token, body: { name: SITE } })
+  it('answers 503 when the chain cannot be read', async () => {
+    const { holder, token } = await setup()
     t.chain.down = true
-    expect((await t.api.call('PUT', `/api/sites/${SITE}/delegation`, { token, body: delegation() })).status).toBe(503)
-    t.chain.down = false
-    const past = { signature: '0x' + 'ab'.repeat(65), expiresAt: new Date(Date.now() - 1000).toISOString() }
-    expect((await t.api.call('PUT', `/api/sites/${SITE}/delegation`, { token, body: past })).status).toBe(400)
+    expect((await delegate(t, token, holder, SITE)).status).toBe(503)
   })
 })
 

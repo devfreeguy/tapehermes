@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common'
 import { z } from 'zod'
 import { CurrentSession, SessionGuard } from '../auth/session.guard.js'
 import type { Session } from '../auth/session.store.js'
@@ -8,7 +8,8 @@ import { SitesService } from './sites.service.js'
 const registerDto = z.object({ name: z.string().min(1).max(100) })
 const statusDto = z.object({ status: z.enum(['ACTIVE', 'DISABLED']) })
 const payoutDto = z.object({ payoutAddress: z.string() })
-const delegationDto = z.object({ signature: z.string().regex(/^0x[0-9a-fA-F]+$/).max(2000), expiresAt: z.coerce.date() })
+const delegationDto = z.object({ signature: z.string().regex(/^0x(?:[0-9a-fA-F]{2}){65}$/), expires: z.number().int().positive() })
+const daysDto = z.object({ days: z.coerce.number().min(1).max(366).default(30) })
 
 @Controller('api/sites')
 @UseGuards(SessionGuard)
@@ -34,9 +35,15 @@ export class SitesApiController {
     return this.sites.setPayout(s, name, parseBody(payoutDto, body).payoutAddress)
   }
 
+  /** The exact typed data to sign, for ?days=1..366 (default 30). */
+  @Get(':name/delegation/message')
+  delegationMessage(@CurrentSession() s: Session, @Param('name') name: string, @Query() q: unknown) {
+    return this.sites.delegationMessage(s, name, parseBody(daysDto, q).days)
+  }
+
   @Put(':name/delegation')
   delegation(@CurrentSession() s: Session, @Param('name') name: string, @Body() body: unknown) {
     const b = parseBody(delegationDto, body)
-    return this.sites.saveDelegation(s, name, b.signature, b.expiresAt)
+    return this.sites.saveDelegation(s, name, b.signature, b.expires)
   }
 }

@@ -8,3 +8,6 @@ dist
 proofs/browser/dist/pay.js
 .fresh-wallet.json
 src/generated/
+
+# the helper bundle is a deliverable
+!helper/dist

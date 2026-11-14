@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "CallLog" ADD COLUMN     "priceUsd" DECIMAL(18,6) NOT NULL DEFAULT 0;

@@ -20,7 +20,7 @@ export class LogsController {
     const site = await this.sites.requireOwned(s, name)
     const rows = await this.prisma.callLog.findMany({
       where: { siteId: site.id, ...(before ? { at: { lt: before } } : {}) }, orderBy: { at: 'desc' }, take: limit,
-      select: { routeName: true, at: true, result: true, errorCode: true, paid: true, paymentTx: true, durationMs: true },
+      select: { routeName: true, at: true, result: true, errorCode: true, paid: true, paymentTx: true, priceUsd: true, durationMs: true },
     })
     return rows
   }

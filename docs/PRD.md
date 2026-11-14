@@ -1,7 +1,7 @@
-# TapeHermes PRD v0.4
+# TapeHermes PRD v0.5
 
-Date: 13 Nov 2026
-Status: Draft, Phase 0 run (results in section 11 and FINDINGS.md), Phase 1 starting
+Date: 14 Nov 2026
+Status: Draft, Phase 0 run (results in section 11 and FINDINGS.md), Phase 1 delivered, Phase 2 starting
 Submission: target 5 Dec 2026. Official deadline 7 Dec 2026 23:59 UTC (buffer 6 to 7 Dec)
 
 ## 1. Summary
@@ -154,10 +154,15 @@ Each must pass or the plan changes. Results as of 12 Nov 2026 (evidence and comm
 ## 14. Open decisions
 
 - Dashboard on a normal web host: decided.
-- Final name: TapeHermes pending domain and GitHub check.
+- Final name: decided. TapeHermes.
 - Which outside API the demo site uses.
 - Real delegation path: decided. We create our own site on chain 196 around 19 to 20 Nov to test holder-signed delegation, the signer-to-container check and a real manifest publish. Until then the backend is built against dev mode behind one clearly named switch.
-- Manifest pricing: proposed, not final. Routes are listed as free in priceBEM plus our own separately named field for the USD price. To be confirmed with the owner in Phase 2.
+- Manifest pricing: decided. Routes are listed as free ("0") in priceBEM. The USD price is published in one namespaced top-level member named "tapehermes", for example {"v":1,"currency":"USD","x402":{"network":"eip155:196"},"price":{"fxRate":"0.002"}}. TAP-11 section 3.1 tells clients to ignore members they do not know.
+- Payment gate: decided. We build our own gate (rate limit, then verify, then our handler, then settle) with a one-day limit. If it does not pass every test by then we fall back to the OKX middleware with the rate limiter mounted in front of it. Settle-count tests are kept either way.
+- Delegation: decided. EIP-712 typed data signed by the holder, 1 to 366 days, default 30. The optional manifest-content signature (TAP-11 section 5) is not used for now. Expiring status starts at 7 days left.
+- Call log keeps a priceUsd snapshot per call: decided.
+- Helper file for site builders: decided. window.ethereum only, no WalletConnect. On a TapeOut site it reads the manifest from the site own origin (/.well-known/tapeapi.json) and says which source it used; our own endpoint is the fallback for local development only. Optional expectedSigner is kept.
+- Real payment test: decided. The owner runs it locally first; the Oracle VM route is prepared only if the local run fails.
 - Renewal: decided. The owner signs and republishes every time. No setOperator.
 - Server region: decided. Oracle VM in Ashburn. RPC and OKX reachability are handled at deployment.
 - Settle mode: decided. Sync.
@@ -195,4 +200,9 @@ Each must pass or the plan changes. Results as of 12 Nov 2026 (evidence and comm
 - Decided: dashboard on a normal web host; settle mode sync; renewal by the owner every time (no setOperator); own site on chain 196 around 19 to 20 Nov with dev mode behind one named switch until then; server on Oracle VM in Ashburn.
 - Proposed, not final: manifest pricing (free in priceBEM plus our own USD price field), to be confirmed in Phase 2.
 - Section 12 success criteria confirmed.
+- Nothing else changed.
+
+## Changes in v0.5 (14 Nov 2026, approved by the owner)
+
+- Decided: final name TapeHermes; manifest pricing shape (namespaced "tapehermes" member with a USD currency member, routes free in priceBEM); own payment gate with a one-day limit and the middleware as fallback; delegation as typed data, 1 to 366 days, no content signature for now, expiring at 7 days; priceUsd snapshot in the call log; helper file with window.ethereum only and the site-origin manifest as its trust source; real payment test run locally first.
 - Nothing else changed.

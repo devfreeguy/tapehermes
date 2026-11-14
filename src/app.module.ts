@@ -13,6 +13,7 @@ import { RedisModule } from './redis/redis.module.js'
 import { RoutesModule } from './routes/routes.module.js'
 import { SecretsModule } from './secrets/secrets.module.js'
 import { SitesModule } from './sites/sites.module.js'
+import { ManifestModule } from './manifest/manifest.module.js'
 import { VaultModule } from './vault/vault.module.js'
 
 @Module({})
@@ -23,7 +24,7 @@ export class AppModule {
       module: AppModule,
       imports: [
         ConfigModule.forRoot(overrides), PrismaModule, RedisModule, VaultModule, RateLimitModule, ChainModule, ProvidersModule,
-        AuthModule, SitesModule, SecretsModule, RoutesModule, LogsModule, HealthModule, CallsModule,
+        AuthModule, SitesModule, SecretsModule, RoutesModule, LogsModule, ManifestModule, HealthModule, CallsModule,
       ],
     }
   }

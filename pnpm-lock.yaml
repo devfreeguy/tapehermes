@@ -72,6 +72,12 @@ importers:
       '@nestjs/cli':
         specifier: 12.0.12
         version: 12.0.12(@swc/core@1.16.22)(@types/node@24.19.2)
+      '@noble/curves':
+        specifier: 1.9.7
+        version: 1.9.7
+      '@noble/hashes':
+        specifier: 1.8.0
+        version: 1.8.0
       '@swc/core':
         specifier: ^1.16.22
         version: 1.16.22

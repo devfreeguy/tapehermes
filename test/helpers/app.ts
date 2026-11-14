@@ -27,7 +27,8 @@ export const newWallet = (): PrivateKeyAccount => privateKeyToAccount(generatePr
 
 export async function startTestApp(overrides: Partial<AppConfig> = {}) {
   // rpcUrls196 empty: the site provider then does no chain read per call (the chain itself is FakeChain here).
-  const started = await createApp({ rpcUrls196: [], ...overrides })
+  // okx: null so a test can never reach the real facilitator, whatever .env holds
+  const started = await createApp({ rpcUrls196: [], okx: null, publicBaseUrl: 'https://api.tapehermes.test', ...overrides })
   const chain = new FakeChain()
   const chainService = started.app.get(ChainService)
   chainService.readSite = ((name: string) => chain.readSite(name)) as never
@@ -84,4 +85,19 @@ export function fakeUpstream(answer: unknown = { base: 'USD', date: '2026-01-01'
     return new Response(JSON.stringify(answer), { status: 200, headers: { 'content-type': 'application/json' } })
   }) as unknown as typeof globalThis.fetch
   return { hits, fetch, resolve: async () => ['93.184.216.34'] }
+}
+
+/** What a wallet does with the delegation message: eth_signTypedData_v4 (viem takes the types without EIP712Domain). */
+export async function signDelegation(account: PrivateKeyAccount, m: { typedData: { domain: any; types: Record<string, unknown>; primaryType: string; message: Record<string, any> } }) {
+  const { EIP712Domain: _domain, ...types } = m.typedData.types as Record<string, any>
+  return account.signTypedData({
+    domain: m.typedData.domain, types, primaryType: m.typedData.primaryType,
+    message: { ...m.typedData.message, expires: BigInt(m.typedData.message.expires) },
+  } as never)
+}
+
+/** Ask for the delegation message, sign it with `signer` (the holder, normally) and submit it. Returns the PUT reply. */
+export async function delegate(t: TestApp, token: string, signer: PrivateKeyAccount, site: string, days = 30) {
+  const m = (await t.api.call('GET', `/api/sites/${site}/delegation/message?days=${days}`, { token })).body
+  return t.api.call('PUT', `/api/sites/${site}/delegation`, { token, body: { signature: await signDelegation(signer, m), expires: m.expires } })
 }

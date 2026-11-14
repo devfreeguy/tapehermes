@@ -89,6 +89,7 @@ model CallLog {
   errorCode  String?
   paid       Boolean    @default(false)
   paymentTx  String?
+  priceUsd   Decimal    @default(0) @db.Decimal(18, 6) // the route price at the time of the call (snapshot)
   durationMs Int
 
   @@index([siteId, at])

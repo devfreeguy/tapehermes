@@ -33,7 +33,4 @@ export async function sendFetchResponse(res: ExpressResponse, r: Response): Prom
 }
 
 export const jsonResponse = (status: number, body: unknown, headers: Record<string, string> = {}) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type,accept', ...headers },
-  })
+  new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } })

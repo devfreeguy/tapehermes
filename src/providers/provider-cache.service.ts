@@ -5,6 +5,7 @@ import { PrismaService } from '../database/prisma.service.js'
 import { SignerService } from '../signing/signer.service.js'
 import { VaultService } from '../vault/vault.service.js'
 import { hostedMethods, type AdapterConfig, type HostedOptions } from '../worker/hosted-methods.js'
+import { buildSiteManifest } from '../manifest/manifest-builder.js'
 import { createSiteProvider } from './create-site-provider.js'
 
 type SiteProvider = ReturnType<typeof createSiteProvider>
@@ -13,11 +14,13 @@ export interface RouteRule { name: string; priceUsd: number; rateLimitPerMin: nu
 export interface LiveSite {
   siteId: string
   name: string
+  /** Where payments settle (normalized). */
+  payoutAddress: string
   /** null when the site cannot answer (see refusing). */
   provider: SiteProvider | null
   routes: Map<string, RouteRule>
-  /** DELEGATION_NOT_ENFORCEABLE: dev mode is off and Phase 1 cannot enforce delegation yet. NO_ROUTES: nothing to serve yet. */
-  refusing: 'DELEGATION_NOT_ENFORCEABLE' | 'NO_ROUTES' | null
+  /** Dev mode off: DELEGATION_REQUIRED (none stored) or DELEGATION_EXPIRED. NO_ROUTES: nothing to serve yet. */
+  refusing: 'DELEGATION_REQUIRED' | 'DELEGATION_EXPIRED' | 'NO_ROUTES' | null
   expiresAt: number
 }
 
@@ -76,22 +79,33 @@ export class ProviderCache {
   private async build(name: string): Promise<LiveSite | null> {
     const site = await this.prisma.site.findUnique({ where: { name }, include: { routes: true, secrets: true } })
     if (!site || site.status !== 'ACTIVE') return null
-    const idle = (refusing: LiveSite['refusing']): LiveSite => ({ siteId: site.id, name: site.name, provider: null, routes: new Map(), refusing, expiresAt: Date.now() + this.config.providerCacheTtlMs })
+    const idle = (refusing: LiveSite['refusing']): LiveSite => ({ siteId: site.id, name: site.name, payoutAddress: site.payoutAddress, provider: null, routes: new Map(), refusing, expiresAt: Date.now() + this.config.providerCacheTtlMs })
     // Nothing is decrypted for a site that cannot answer anyway.
-    if (!isDevMode(this.config)) return idle('DELEGATION_NOT_ENFORCEABLE')
+    const dev = isDevMode(this.config)
+    const nowS = Math.floor(Date.now() / 1000)
+    const expires = site.delegationExpires ? Math.floor(site.delegationExpires.getTime() / 1000) : null
+    if (!dev) {
+      if (!site.delegationSig || expires === null) return idle('DELEGATION_REQUIRED')
+      if (expires <= nowS) return idle('DELEGATION_EXPIRED')
+    }
     if (!site.routes.some((r) => r.enabled)) return idle('NO_ROUTES')
     const secrets: Record<string, string> = {}
     for (const s of site.secrets) secrets[s.name] = this.vault.decrypt(s.valueEnc, { purpose: 'secret', siteId: site.id, name: s.name })
     const enabled = site.routes.filter((r) => r.enabled)
     const config: AdapterConfig = { methods: Object.fromEntries(enabled.map((r) => [r.name, r.config])) }
-    const { handlers, manifestMethods } = hostedMethods(config, secrets, this.hostedOptions)
+    const { handlers } = hostedMethods(config, secrets, this.hostedOptions)
+    // Dev mode: the same manifest we would publish, minus the delegation (stored but not enforced) and flagged dev.
+    const manifest = buildSiteManifest({
+      site, routes: site.routes.map((r) => ({ name: r.name, config: r.config, priceUsd: r.priceUsd.toString(), enabled: r.enabled })),
+      delegation: dev ? null : { expires: expires!, sig: site.delegationSig! },
+      network: this.config.x402Network, publicBaseUrl: this.config.publicBaseUrl, dev,
+    })
     const provider = createSiteProvider({
       name: site.name, circuits: site.circuits, tokenId: site.tokenId, container: site.container, chainId: site.chainId,
-      methods: handlers, manifestMethods, signerKey: this.signer.open(site.id, site.signerKeyEnc),
-      rpcUrls: this.config.rpcUrls196, endpoint: `${this.config.publicBaseUrl}/sites/${site.name}/tapeapi/v1`,
+      methods: handlers, manifest, dev, signerKey: this.signer.open(site.id, site.signerKeyEnc), rpcUrls: this.config.rpcUrls196,
     })
     return {
-      siteId: site.id, name: site.name, provider,
+      siteId: site.id, name: site.name, payoutAddress: site.payoutAddress, provider,
       routes: new Map(enabled.map((r) => [r.name, { name: r.name, priceUsd: Number(r.priceUsd), rateLimitPerMin: r.rateLimitPerMin }])),
       refusing: null,
       expiresAt: Date.now() + this.config.providerCacheTtlMs,

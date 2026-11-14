@@ -49,7 +49,7 @@ describe('free route, full pipeline', () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]).toMatchObject({ routeName: 'fxRate', result: 'OK', paid: false, paymentTx: null, errorCode: null })
     expect(rows[0].durationMs).toBeGreaterThanOrEqual(0)
-    expect(Object.keys(rows[0]).sort()).toEqual(['at', 'durationMs', 'errorCode', 'id', 'paid', 'paymentTx', 'result', 'routeName', 'siteId']) // no visitor fields
+    expect(Object.keys(rows[0]).sort()).toEqual(['at', 'durationMs', 'errorCode', 'id', 'paid', 'paymentTx', 'priceUsd', 'result', 'routeName', 'siteId']) // no visitor fields
   })
 
   it('serves the manifest of the site with its own signer and endpoint', async () => {
@@ -127,12 +127,12 @@ describe('rate limit', () => {
   })
 })
 
-describe('paid routes fail closed in Phase 1', () => {
+describe('paid routes fail closed without payment credentials', () => {
   it('refuses a route with a price (503), never calls the upstream, and logs REFUSED', async () => {
     await t.api.call('POST', `/api/sites/${SITE}/routes`, { token, body: { name: 'premium', config: fx, priceUsd: '0.01' } })
     const r = await callSite('premium')
     expect(r.status).toBe(503)
-    expect(((await r.json()) as any).error.code).toBe('PAYMENTS_NOT_AVAILABLE')
+    expect(((await r.json()) as any).error.code).toBe('PAYMENTS_NOT_CONFIGURED')
     expect(up.hits).toHaveLength(0)
     await flush()
     expect((await logs()).at(-1)).toMatchObject({ routeName: 'premium', result: 'REFUSED', paid: false, paymentTx: null })
@@ -175,7 +175,7 @@ describe('site state and the in-memory cache', () => {
     } finally { await small.stop() }
   })
 
-  it('refuses to answer when dev mode is off (delegation cannot be enforced yet)', async () => {
+  it('refuses to answer when dev mode is off and no delegation is stored', async () => {
     const strict = await startTestApp({ devSkipDelegation: false })
     try {
       const w = newWallet(); strict.chain.set(SITE, w.address)
@@ -183,7 +183,7 @@ describe('site state and the in-memory cache', () => {
       await strict.api.call('POST', '/api/sites', { token: tk, body: { name: SITE } })
       const r = await fetch(`${strict.base}/sites/${SITE}/tapeapi/v1/x`, { method: 'POST', body: '{}' })
       expect(r.status).toBe(503)
-      expect(((await r.json()) as any).error.code).toBe('DELEGATION_NOT_ENFORCEABLE')
+      expect(((await r.json()) as any).error.code).toBe('DELEGATION_REQUIRED')
     } finally { await strict.stop() }
   })
 })
@@ -193,7 +193,7 @@ describe('logs and health', () => {
     await callSite(); await flush()
     const mine = await t.api.call('GET', `/api/sites/${SITE}/logs`, { token })
     expect(mine.body).toHaveLength(1)
-    expect(Object.keys(mine.body[0]).sort()).toEqual(['at', 'durationMs', 'errorCode', 'paid', 'paymentTx', 'result', 'routeName'])
+    expect(Object.keys(mine.body[0]).sort()).toEqual(['at', 'durationMs', 'errorCode', 'paid', 'paymentTx', 'priceUsd', 'result', 'routeName'])
     const other = await t.api.signIn(newWallet())
     expect((await t.api.call('GET', `/api/sites/${SITE}/logs`, { token: other })).status).toBe(404)
   })
@@ -225,5 +225,13 @@ describe('a site with no routes yet', () => {
     const r = await fetch(`${t.base}/sites/${SITE}/.well-known/tapeapi.json`)
     expect(r.status).toBe(404)
     expect(((await r.json()) as any).error.message).toContain('no routes')
+  })
+})
+
+describe('startup safety: base URL', () => {
+  it('refuses an http PUBLIC_BASE_URL when the dev switch is off', async () => {
+    const { loadConfig } = await import('../src/config/app-config.js')
+    expect(() => loadConfig({ ...process.env, UNSAFE_DEV_SKIP_DELEGATION: '0', PUBLIC_BASE_URL: 'http://127.0.0.1:3000' })).toThrow(/https/)
+    expect(() => loadConfig({ ...process.env, UNSAFE_DEV_SKIP_DELEGATION: '0', PUBLIC_BASE_URL: 'https://api.example.org' })).not.toThrow()
   })
 })
