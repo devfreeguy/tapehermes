@@ -151,6 +151,24 @@ describe('replay protection (a payment buys one answer)', () => {
   })
 })
 
+describe('refused payments cannot flood the call log', () => {
+  it('many refused payments of the same kind in one window leave one log row; a different reason gets its own row', async () => {
+    fac.script.failVerify = true
+    for (let i = 0; i < 6; i++) expect((await attempt()).response.status).toBe(402)
+    await flush()
+    const invalid = (await logs()).filter((l) => l.errorCode === 'PAYMENT_INVALID')
+    expect(invalid).toHaveLength(1)
+    fac.script.failVerify = false
+    const { header } = await attempt() // one good payment
+    for (let i = 0; i < 4; i++) expect((await withHeader(header)).status).toBe(402)
+    await flush()
+    const rows = await logs()
+    expect(rows.filter((l) => l.errorCode === 'PAYMENT_ALREADY_USED')).toHaveLength(1) // 4 replays, 1 row
+    expect(rows.filter((l) => l.errorCode === 'PAYMENT_INVALID')).toHaveLength(1)
+    expect(fac.verifyCalls).toBe(7) // 6 invalid + 1 good: the replays never reached the facilitator
+  })
+})
+
 describe('paymentIdentity (the key and the lifetime)', () => {
   const header = (over: Record<string, unknown> = {}, accepted: Record<string, unknown> = {}) => Buffer.from(JSON.stringify({
     accepted: { network: 'eip155:1952', asset: '0xAAAA', ...accepted },

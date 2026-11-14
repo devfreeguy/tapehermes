@@ -68,8 +68,7 @@ export class CallsService {
     }
     if (blocked) {
       // One log row per window and route at most, so a flood cannot fill the table.
-      const first = await this.redis.client.set(this.redis.keys.cache(`rl-logged:${site.siteId}:${routeName}:${Math.floor(Date.now() / 60000)}`), '1', 'EX', 90, 'NX').catch(() => null)
-      if (first) log('RATE_LIMITED', 'RATE_LIMITED')
+      if (await this.firstInWindow('rl', site.siteId, routeName)) log('RATE_LIMITED', 'RATE_LIMITED')
       return jsonResponse(429, { ok: false, error: { code: 'RATE_LIMITED', message: `too many requests; retry in ${blocked.retryAfterSeconds}s`, data: { retryAfterS: blocked.retryAfterSeconds } } }, { 'retry-after': String(blocked.retryAfterSeconds) })
     }
 
@@ -78,7 +77,7 @@ export class CallsService {
       siteId: site.siteId, siteName: site.name, routeName, priceUsd: rule?.priceUsd ?? 0, payoutAddress: site.payoutAddress, request: request.clone(),
     })
     if (!decision.allow) {
-      if (!decision.silent) log('REFUSED', decision.errorCode)
+      if (!decision.silent && await this.firstInWindow('refused', site.siteId, `${routeName}:${decision.errorCode}`)) log('REFUSED', decision.errorCode)
       return decision.response
     }
 
@@ -101,6 +100,15 @@ export class CallsService {
     const headers = new Headers(response.headers)
     for (const [k, v] of Object.entries(settled.headers)) headers.set(k, v)
     return new Response(response.body, { status: response.status, headers })
+  }
+
+  /**
+   * True for the first event of a kind in the current minute, false after that (or when Redis cannot say). Used so that
+   * floods of rate-limited calls or refused payments cannot fill the call log: one row per window, route and code.
+   */
+  private async firstInWindow(kind: string, siteId: string, what: string): Promise<boolean> {
+    const key = this.redis.keys.cache(`${kind}-logged:${siteId}:${what}:${Math.floor(Date.now() / 60000)}`)
+    return (await this.redis.client.set(key, '1', 'EX', 90, 'NX').catch(() => null)) === 'OK'
   }
 
   private async errorCodeOf(response: Response): Promise<string | null> {
