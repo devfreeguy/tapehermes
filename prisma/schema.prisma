@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SiteStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum CallResult {
+  OK
+  ERROR
+  RATE_LIMITED
+  REFUSED
+}
+
+// All wallet and contract addresses are stored lowercase (0x + 40 hex), compared in that form only.
+model Owner {
+  id        String   @id @default(uuid())
+  wallet    String   @unique
+  createdAt DateTime @default(now())
+  sites     Site[]
+}
+
+model Site {
+  id                String     @id @default(uuid())
+  ownerId           String
+  owner             Owner      @relation(fields: [ownerId], references: [id])
+  name              String     @unique // e.g. 1.2.396.tape
+  chainId           Int
+  circuits          String
+  tokenId           String
+  container         String
+  holder            String // on-chain holder at the last check
+  payoutAddress     String // defaults to the holder at registration; Phase 2 settles here
+  signerAddress     String
+  signerKeyEnc      String
+  delegationSig     String?
+  delegationExpires DateTime?
+  status            SiteStatus @default(ACTIVE)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  secrets           Secret[]
+  routes            Route[]
+  logs              CallLog[]
+
+  @@index([ownerId])
+}
+
+model Secret {
+  id        String   @id @default(uuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  name      String
+  valueEnc  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, name])
+}
+
+model Route {
+  id              String   @id @default(uuid())
+  siteId          String
+  site            Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  name            String
+  config          Json
+  priceUsd        Decimal  @default(0) @db.Decimal(18, 6)
+  enabled         Boolean  @default(true)
+  rateLimitPerMin Int      @default(60)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([siteId, name])
+}
+
+model CallLog {
+  id         String     @id @default(uuid())
+  siteId     String
+  site       Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  routeName  String
+  at         DateTime   @default(now())
+  result     CallResult
+  errorCode  String?
+  paid       Boolean    @default(false)
+  paymentTx  String?
+  durationMs Int
+
+  @@index([siteId, at])
+}

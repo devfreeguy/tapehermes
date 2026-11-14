@@ -1,0 +1,29 @@
+# Local development services, bound to 127.0.0.1 only. Passwords here are dev-only throwaways.
+services:
+  postgres:
+    image: postgres:${PG_IMAGE_TAG:-17}
+    container_name: tapehermes-postgres
+    environment:
+      POSTGRES_USER: tapehermes
+      POSTGRES_PASSWORD: tapehermes_dev
+      POSTGRES_DB: tapehermes
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - tapehermes_pg:/var/lib/postgresql
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tapehermes"]
+      interval: 3s
+      retries: 20
+  redis:
+    image: redis:${REDIS_IMAGE_TAG:-8}
+    container_name: tapehermes-redis
+    ports:
+      - "127.0.0.1:6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+volumes:
+  tapehermes_pg:

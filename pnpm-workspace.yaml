@@ -1,0 +1,7 @@
+allowBuilds:
+  '@prisma/engines': false
+  esbuild: false
+  '@swc/core': false
+  prisma: false
+overrides:
+  '@tapeapi/sdk': file:./vendor/tapeapi-3.0.0/tapeapi-sdk-3.0.0.tgz
