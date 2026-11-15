@@ -25,5 +25,8 @@
     "proofs",
     "test",
     "vitest.config.ts"
+  ],
+  "exclude": [
+    "test/dashboard-contract.spec.ts"
   ]
 }

@@ -1,0 +1,63 @@
+/*
+ * Design tokens: the ONLY file in the dashboard that holds color values (oklch, never hex).
+ * Direction "Tape": dark first, near-black surface, one signal green for live and valid states.
+ * Everything else reads these variables through Tailwind (see globals.css) or className.
+ */
+:root {
+  /* light theme (secondary) */
+  --background: oklch(0.985 0.004 120);
+  --foreground: oklch(0.2 0.02 150);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 150);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 150);
+  --primary: oklch(0.52 0.16 150);
+  --primary-foreground: oklch(0.985 0.01 150);
+  --secondary: oklch(0.95 0.01 140);
+  --secondary-foreground: oklch(0.25 0.02 150);
+  --muted: oklch(0.95 0.008 140);
+  --muted-foreground: oklch(0.45 0.02 150);
+  --accent: oklch(0.93 0.03 150);
+  --accent-foreground: oklch(0.25 0.04 150);
+  --destructive: oklch(0.55 0.21 27);
+  --destructive-foreground: oklch(0.985 0.01 27);
+  --warning: oklch(0.72 0.15 80);
+  --warning-foreground: oklch(0.22 0.04 80);
+  --signal: oklch(0.52 0.16 150);
+  --signal-foreground: oklch(0.985 0.01 150);
+  --border: oklch(0.9 0.01 140);
+  --input: oklch(0.9 0.01 140);
+  --ring: oklch(0.52 0.16 150);
+  --tape-strip: oklch(0.88 0.02 140);
+  --radius: 0.5rem;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+.dark {
+  /* dark theme (default) */
+  --background: oklch(0.16 0.01 150);
+  --foreground: oklch(0.95 0.01 120);
+  --card: oklch(0.2 0.012 150);
+  --card-foreground: oklch(0.95 0.01 120);
+  --popover: oklch(0.2 0.012 150);
+  --popover-foreground: oklch(0.95 0.01 120);
+  --primary: oklch(0.8 0.19 150);
+  --primary-foreground: oklch(0.18 0.03 150);
+  --secondary: oklch(0.26 0.012 150);
+  --secondary-foreground: oklch(0.95 0.01 120);
+  --muted: oklch(0.26 0.012 150);
+  --muted-foreground: oklch(0.72 0.02 140);
+  --accent: oklch(0.28 0.05 150);
+  --accent-foreground: oklch(0.95 0.01 120);
+  --destructive: oklch(0.68 0.2 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --warning: oklch(0.82 0.15 85);
+  --warning-foreground: oklch(0.2 0.04 85);
+  --signal: oklch(0.8 0.19 150);
+  --signal-foreground: oklch(0.18 0.03 150);
+  --border: oklch(0.3 0.015 150);
+  --input: oklch(0.3 0.015 150);
+  --ring: oklch(0.8 0.19 150);
+  --tape-strip: oklch(0.3 0.015 150);
+}

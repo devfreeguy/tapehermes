@@ -30,7 +30,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "helper:build": "esbuild helper/tapehermes.js --bundle --minify --format=esm --target=es2022 --platform=browser --legal-comments=none --outfile=helper/dist/tapehermes.min.js --log-level=warning && esbuild helper/tapehermes.js --bundle --minify --format=iife --target=es2022 --platform=browser --legal-comments=none --outfile=helper/dist/tapehermes.iife.min.js --log-level=warning",
     "helper:size": "node helper/size.mjs",
-    "phase2:testnet": "pnpm helper:build && pnpm build && node dist/proofs/11-phase2-testnet.js"
+    "phase2:testnet": "pnpm helper:build && pnpm build && node dist/proofs/11-phase2-testnet.js",
+    "demo:build": "pnpm helper:build && node demo-site/build.mjs",
+    "demo:dev": "pnpm demo:build && pnpm build && node dist/proofs/12-demo-dev.js"
   },
   "dependencies": {
     "@nestjs/common": "12.4.2",

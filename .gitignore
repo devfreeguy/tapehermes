@@ -11,3 +11,9 @@ src/generated/
 
 # the helper bundle is a deliverable
 !helper/dist
+
+# Phase 3
+.next
+*.tsbuildinfo
+dashboard/next-env.d.ts
+dashboard/coverage
