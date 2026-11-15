@@ -14,6 +14,13 @@ export interface FakeSite { holder: string; tokenId?: string }
 export class FakeChain {
   sites = new Map<string, FakeSite>()
   down = false
+  /** container (lowercase) -> sha256 of the manifest the fake chain holds at /.well-known/tapeapi.json */
+  manifests = new Map<string, string>()
+  async manifestOnChain(container: string) {
+    if (this.down) throw new ChainUnavailableError('down')
+    const sha256 = this.manifests.get(container.toLowerCase())
+    return { published: !!sha256, size: sha256 ? 500 : 0, sha256: sha256 ?? '0x' + '0'.repeat(64), updatedAt: 1_800_000_000 }
+  }
   set(name: string, holder: string) { this.sites.set(name, { holder, tokenId: '1' }) }
   async readSite(name: string) {
     if (this.down) throw new ChainUnavailableError('down')
@@ -32,6 +39,7 @@ export async function startTestApp(overrides: Partial<AppConfig> = {}) {
   const chain = new FakeChain()
   const chainService = started.app.get(ChainService)
   chainService.readSite = ((name: string) => chain.readSite(name)) as never
+  chainService.manifestOnChain = ((c: string) => chain.manifestOnChain(c)) as never
   const cache = started.app.get(ProviderCache)
   const prisma = started.app.get(PrismaService)
   const redis = started.app.get(RedisService)
@@ -79,9 +87,9 @@ export function makeApi(base: string) {
 
 /** A fake upstream for the adapter: records what it was asked, answers JSON. */
 export function fakeUpstream(answer: unknown = { base: 'USD', date: '2026-01-01', rates: { EUR: 0.9 } }) {
-  const hits: { url: string; headers: Record<string, string> }[] = []
-  const fetch = (async (url: URL | string, init: { headers?: Record<string, string> } = {}) => {
-    hits.push({ url: String(url), headers: { ...(init.headers ?? {}) } })
+  const hits: { url: string; headers: Record<string, string>; method?: string; body?: string }[] = []
+  const fetch = (async (url: URL | string, init: { headers?: Record<string, string>; method?: string; body?: string } = {}) => {
+    hits.push({ url: String(url), headers: { ...(init.headers ?? {}) }, method: init.method, body: init.body })
     return new Response(JSON.stringify(answer), { status: 200, headers: { 'content-type': 'application/json' } })
   }) as unknown as typeof globalThis.fetch
   return { hits, fetch, resolve: async () => ['93.184.216.34'] }

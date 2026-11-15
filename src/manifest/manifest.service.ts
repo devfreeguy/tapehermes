@@ -1,8 +1,9 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common'
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, ServiceUnavailableException } from '@nestjs/common'
 import { createHash } from 'node:crypto'
 import { validateManifest } from '@tapeapi/sdk'
 import type { Session } from '../auth/session.store.js'
 import { ChainService } from '../chain/chain.service.js'
+import { ChainUnavailableError } from '../chain/read-site.js'
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js'
 import { PrismaService } from '../database/prisma.service.js'
 import { sameAddress } from '../shared/address.js'
@@ -44,6 +45,28 @@ export class ManifestService {
     return {
       manifest: a.manifest, size: a.size, sha256: `0x${createHash('sha256').update(a.json).digest('hex')}`,
       delegation: a.status, publishable: a.problems.length === 0, problems: a.problems,
+    }
+  }
+
+  /**
+   * Is what the chain holds the manifest we would publish now?
+   *   not-published: nothing at /.well-known/tapeapi.json
+   *   current:       the same bytes (same SHA-256)
+   *   out-of-date:   something else is there (a route, a price or the delegation changed since, or it was published by hand)
+   *   not-ready:     we cannot build a publishable manifest yet (see problems), so there is nothing to compare with
+   */
+  async status(session: Session, name: string) {
+    const a = await this.assemble(session, name)
+    let onChain
+    try { onChain = await this.chain.manifestOnChain(a.site.container) } catch (e) {
+      if (e instanceof ChainUnavailableError) throw new ServiceUnavailableException({ code: 'CHAIN_UNAVAILABLE', message: 'the chain could not be read; try again shortly' })
+      throw e
+    }
+    const expected = a.problems.length ? null : { sha256: `0x${createHash('sha256').update(a.json).digest('hex')}`, size: a.size }
+    const state = !onChain.published ? (expected ? 'not-published' : 'not-ready') : !expected ? 'not-ready' : onChain.sha256 === expected.sha256 ? 'current' : 'out-of-date'
+    return {
+      state, expected, problems: a.problems,
+      onChain: onChain.published ? { sha256: onChain.sha256, size: onChain.size, updatedAt: new Date(onChain.updatedAt * 1000) } : null,
     }
   }
 

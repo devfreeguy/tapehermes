@@ -39,6 +39,35 @@ export class SecretsService {
     return meta(row)
   }
 
+  /**
+   * Rename a secret. The ciphertext is bound to the secret name, so the value is re-encrypted under the new name, and every
+   * route header that used ${OLD} now uses ${NEW}, all in one transaction. The value is never returned.
+   */
+  async rename(session: Session, siteName: string, oldName: string, newName: string) {
+    if (!SECRET_NAME_RE.test(newName)) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'secret name must be A-Z, 0-9 and _, starting with a letter (max 64)' })
+    const site = await this.sites.requireOwned(session, siteName)
+    const row = await this.prisma.secret.findUnique({ where: { siteId_name: { siteId: site.id, name: oldName } } })
+    if (!row) throw new NotFoundException({ code: 'SECRET_NOT_FOUND', message: 'no such secret' })
+    if (newName === oldName) return meta(row)
+    if (await this.prisma.secret.findUnique({ where: { siteId_name: { siteId: site.id, name: newName } } })) {
+      throw new ConflictException({ code: 'SECRET_EXISTS', message: 'a secret with this name already exists' })
+    }
+    const valueEnc = this.vault.encrypt(this.vault.decrypt(row.valueEnc, { purpose: 'secret', siteId: site.id, name: oldName }), { purpose: 'secret', siteId: site.id, name: newName })
+    const routes = await this.prisma.route.findMany({ where: { siteId: site.id } })
+    const from = '${' + oldName + '}', to = '${' + newName + '}'
+    const updated = await this.prisma.$transaction(async (tx) => {
+      for (const r of routes) {
+        const cfg = r.config as { headers?: Record<string, string> } | null
+        if (!cfg?.headers || !Object.values(cfg.headers).some((v) => v.includes(from))) continue
+        const headers = Object.fromEntries(Object.entries(cfg.headers).map(([k, v]) => [k, v.split(from).join(to)]))
+        await tx.route.update({ where: { id: r.id }, data: { config: { ...cfg, headers } } })
+      }
+      return tx.secret.update({ where: { id: row.id }, data: { name: newName, valueEnc } })
+    })
+    this.cache.evict(site.name)
+    return meta(updated)
+  }
+
   async remove(session: Session, siteName: string, name: string) {
     const site = await this.sites.requireOwned(session, siteName)
     const routes = await this.prisma.route.findMany({ where: { siteId: site.id } })

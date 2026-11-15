@@ -11,6 +11,10 @@ export class ManifestController {
   @Get()
   preview(@CurrentSession() s: Session, @Param('site') site: string) { return this.manifests.preview(s, site) }
 
+  /** not-published, current or out-of-date, by comparing the on-chain file hash with what we would publish. */
+  @Get('status')
+  status(@CurrentSession() s: Session, @Param('site') site: string) { return this.manifests.status(s, site) }
+
   @Post('publish-tx') @HttpCode(200)
   publishTx(@CurrentSession() s: Session, @Param('site') site: string) { return this.manifests.publishTx(s, site) }
 }

@@ -9,7 +9,7 @@ import { attachFacilitator, MOCK_TX } from './helpers/x402.js'
 const SITE = '1.2.396.tape'
 const RPC = 'https://rpc.helper-test.invalid/'
 const fx = { url: 'https://data.upstream-api.com/v1/rate', params: { from: 'string' }, required: ['from'], query: { from: 'from' }, pick: { base: 'base', rates: 'rates' }, returns: { base: 'string', rates: 'object' } }
-let H: { createHermes: (o?: any) => { call: (m: string, p?: object) => Promise<any>; manifest: () => Promise<any> }; HermesError: new (...a: any[]) => Error & { code: string; details: any } }
+let H: { createHermes: (o?: any) => { call: (m: string, p?: object) => Promise<any>; manifest: () => Promise<any>; verify: (proof: any) => Promise<any> }; HermesError: new (...a: any[]) => Error & { code: string; details: any } }
 
 /** An EIP-1193 wallet backed by a viem account: signs typed data like MetaMask would. Starts on X Layer MAINNET. */
 function fakeWallet(account: PrivateKeyAccount, startChain = 196) {
@@ -151,6 +151,25 @@ describe('the helper against a development server (manifest read from our endpoi
       return new Response(JSON.stringify(body), { status: r.status, headers: r.headers })
     }) as never
     await expect(H.createHermes({ ethereum: fakeWallet(buyer), dev: dev(), fetch: tamper }).call('free', { from: 'USD' })).rejects.toMatchObject({ code: 'BAD_SIGNATURE' })
+  })
+
+  it('hands back the proof of an answer, and verify() accepts it unchanged and rejects any change', async () => {
+    const hermes = H.createHermes({ ethereum: fakeWallet(buyer), dev: dev() })
+    const r = await hermes.call('free', { from: 'USD' })
+    expect(Object.keys(r.proof).sort()).toEqual(['envelope', 'id', 'method', 'params'])
+    expect(r.proof.envelope.sig).toMatch(/^0x[0-9a-f]{130}$/)
+    const good = await hermes.verify(r.proof)
+    expect(good).toMatchObject({ ok: true })
+    expect(good.signer.toLowerCase()).toBe(good.expected.toLowerCase())
+    const clone = () => JSON.parse(JSON.stringify(r.proof))
+    const edited = clone(); edited.envelope.result.rates.EUR = 1000
+    expect((await hermes.verify(edited)).ok).toBe(false)
+    const otherParams = clone(); otherParams.params = { from: 'EUR' }
+    expect((await hermes.verify(otherParams)).ok).toBe(false)
+    const otherId = clone(); otherId.id = 'another'
+    expect((await hermes.verify(otherId)).ok).toBe(false)
+    const noSig = clone(); noSig.envelope.sig = '0x00'
+    expect((await hermes.verify(noSig)).ok).toBe(false) // an unreadable signature is a fail, not a crash
   })
 
   it('expectedSigner must match the manifest signer', async () => {

@@ -84,3 +84,16 @@ describe('wallet sign-in', () => {
     expect((await t.api.call('POST', '/api/auth/message', { body: { address: '0x123' } })).status).toBe(400)
   })
 })
+
+describe('sign-in when the dashboard runs on a port (local development)', () => {
+  it('accepts a domain that includes a port, as AUTH_DOMAIN=localhost:3001 sets it', async () => {
+    const p = await startTestApp({ authDomain: 'localhost:3001' })
+    try {
+      const w = newWallet()
+      const m = await p.api.call('POST', '/api/auth/message', { body: { address: w.address } })
+      expect(m.body.message).toContain('localhost:3001 wants you to sign in')
+      const v = await p.api.call('POST', '/api/auth/verify', { body: { message: m.body.message, signature: await w.signMessage({ message: m.body.message }) } })
+      expect(v.status).toBe(200)
+    } finally { await p.stop() }
+  })
+})

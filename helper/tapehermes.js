@@ -11,6 +11,14 @@ import { checksumAddress, delegationSigner, responseSigner, HUB_196 } from './li
 const MANIFEST_PATH = '/.well-known/tapeapi.json'
 const PAY_DECIMALS = 6 // USDT0 on X Layer
 
+/** Who signed this answer, and does it match the manifest signer, container and request id? The same test the helper runs on every call. */
+function checkAnswer(m, { envelope: env, method, params, id }) {
+  let signer = null
+  try { signer = responseSigner({ container: env.container, id: env.id, method, params, ok: env.ok, body: env.ok ? env.result : env.error, ts: env.ts }, env.sig) } catch { /* unreadable signature */ }
+  const ok = !!signer && lc(signer) === lc(m.signer) && lc(env.container) === lc(m.container) && env.id === id
+  return { ok, signer, expected: m.signer }
+}
+
 export class HermesError extends Error {
   constructor(code, message, details) { super(message); this.name = 'HermesError'; this.code = code; this.details = details }
 }
@@ -160,14 +168,18 @@ export function createHermes(o = {}) {
       const e = env.error || {}
       fail(e.code || `HTTP_${res.status}`, e.message || `the site answered ${res.status}`, { signed: false, status: res.status, retryable: res.status >= 500 || res.status === 429, paid: false })
     }
-    const signer = (() => { try { return responseSigner({ container: env.container, id: env.id, method, params, ok: env.ok, body: env.ok ? env.result : env.error, ts: env.ts }, env.sig) } catch { return null } })()
-    if (!signer || lc(signer) !== lc(m.signer) || lc(env.container) !== lc(m.container) || env.id !== id) {
-      fail('BAD_SIGNATURE', 'the answer is not signed by this site signer; it was NOT used', { transaction: settled && settled.transaction })
-    }
+    const check = checkAnswer(m, { envelope: env, method, params, id })
+    if (!check.ok) fail('BAD_SIGNATURE', 'the answer is not signed by this site signer; it was NOT used', { transaction: settled && settled.transaction })
     if (!env.ok) fail((env.error && env.error.code) || 'ERROR', (env.error && env.error.message) || 'the site returned an error', { signed: true })
-    return { result: env.result, id, method, signer: m.signer, verified: true, paid, price: price || '0', transaction: (settled && settled.transaction) || null, trust }
+    return { result: env.result, id, method, signer: m.signer, verified: true, paid, price: price || '0', transaction: (settled && settled.transaction) || null, trust, proof: { envelope: env, method, params, id } }
   }
 
-  return { call, manifest, version: 1 }
+  /** Check an answer again, for example one the page has since changed. Returns { ok, signer, expected } and never throws. */
+  async function verify(proof) {
+    const { manifest: m } = await manifest()
+    return checkAnswer(m, proof)
+  }
+
+  return { call, manifest, verify, version: 1 }
 }
 if (typeof window !== 'undefined') window.TapeHermes = { createHermes, HermesError }

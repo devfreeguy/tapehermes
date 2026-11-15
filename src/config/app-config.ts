@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { checkOrigin } from '../shared/api-cors.js'
 
 export const APP_CONFIG = Symbol('APP_CONFIG')
 
@@ -24,6 +25,7 @@ const schema = z.object({
   OKX_FACILITATOR_URL: z.string().url().optional(),
   EXPIRING_DAYS: z.coerce.number().int().min(1).max(60).default(7),
   PROVIDER_CACHE_MAX: z.coerce.number().int().min(1).max(10000).default(100),
+  CORS_ORIGINS: z.string().optional(),
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
 })
 
@@ -41,6 +43,8 @@ export interface AppConfig {
   rpcUrls196: string[]
   /** THE dev-mode switch. Read nowhere else; use isDevMode(config). */
   devSkipDelegation: boolean
+  /** Origins allowed to call the management API from a browser (the dashboard). Empty = none. */
+  corsOrigins: string[]
   /** Reverse-proxy hops to trust for the client IP (0 = none). */
   trustProxyHops: number
   /** x402 network for paid routes: eip155:1952 (testnet) or eip155:196 (mainnet). Settle mode is always sync. */
@@ -74,6 +78,7 @@ export function loadConfig(source: Record<string, string | undefined> = process.
     port: e.PORT, production, databaseUrl: e.DATABASE_URL, redisUrl: e.REDIS_URL, redisPrefix: e.REDIS_PREFIX,
     vaultMasterKey: key, rateLimitSalt: e.RATE_LIMIT_SALT, authDomain: e.AUTH_DOMAIN, sessionTtlSeconds: e.SESSION_TTL_SECONDS,
     publicBaseUrl: e.PUBLIC_BASE_URL.replace(/\/+$/, ''), rpcUrls196, devSkipDelegation: e.UNSAFE_DEV_SKIP_DELEGATION, trustProxyHops: e.TRUST_PROXY_HOPS,
+    corsOrigins: (e.CORS_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean).map((o) => checkOrigin(o, production)),
     x402Network: e.X402_NETWORK, expiringDays: e.EXPIRING_DAYS,
     okx: e.OKX_API_KEY && e.OKX_SECRET_KEY && e.OKX_PASSPHRASE ? { apiKey: e.OKX_API_KEY, secretKey: e.OKX_SECRET_KEY, passphrase: e.OKX_PASSPHRASE, baseUrl: e.OKX_FACILITATOR_URL } : null,
     providerCacheMax: e.PROVIDER_CACHE_MAX, providerCacheTtlMs: 5 * 60_000, siteCallsPerMin: 600,
