@@ -1,0 +1,75 @@
+{
+  "note": "The routes of the demo site, as the dashboard or API would create them. Secrets referenced here are saved separately (never in this file). A route with enabledBy is created OFF unless that environment variable is set when the demo starts.",
+  "secrets": ["NASA_API_KEY", "USDA_API_KEY", "OPENAI_API_KEY"],
+  "routes": [
+    {
+      "name": "asteroid",
+      "priceUsd": "0",
+      "rateLimitPerMin": 30,
+      "enabled": true,
+      "config": {
+        "url": "https://api.nasa.gov/neo/rest/v1/neo/{id}",
+        "params": { "id": "string" },
+        "required": ["id"],
+        "headers": { "x-api-key": "${NASA_API_KEY}" },
+        "pick": {
+          "name": "name",
+          "hazardous": "is_potentially_hazardous_asteroid",
+          "diameterMaxMeters": "estimated_diameter.meters.estimated_diameter_max",
+          "firstApproach": "close_approach_data.0.close_approach_date"
+        },
+        "returns": { "name": "string", "hazardous": "boolean", "diameterMaxMeters": "number", "firstApproach": "string" },
+        "limits": { "id": { "maxLength": 10 } },
+        "timeoutMs": 10000
+      }
+    },
+    {
+      "name": "food",
+      "priceUsd": "0.002",
+      "rateLimitPerMin": 20,
+      "enabled": true,
+      "config": {
+        "url": "https://api.nal.usda.gov/fdc/v1/foods/search",
+        "params": { "query": "string" },
+        "required": ["query"],
+        "query": { "query": "query", "pageSize": "pageSize" },
+        "headers": { "x-api-key": "${USDA_API_KEY}" },
+        "locked": { "pageSize": 1 },
+        "limits": { "query": { "maxLength": 60 } },
+        "pick": {
+          "description": "foods.0.description",
+          "dataType": "foods.0.dataType",
+          "brand": "foods.0.brandOwner",
+          "matches": "totalHits"
+        },
+        "returns": { "description": "string", "dataType": "string", "brand": "string", "matches": "number" },
+        "timeoutMs": 10000
+      }
+    },
+    {
+      "name": "ask",
+      "enabledBy": "DEMO_ENABLE_AI",
+      "priceUsd": "0.01",
+      "rateLimitPerMin": 6,
+      "enabled": true,
+      "config": {
+        "url": "https://api.openai.com/v1/responses",
+        "method": "POST",
+        "params": { "input": "string" },
+        "required": ["input"],
+        "body": { "model": "model", "instructions": "instructions", "input": "input", "max_output_tokens": "max_output_tokens", "store": "store" },
+        "headers": { "authorization": "Bearer ${OPENAI_API_KEY}" },
+        "locked": {
+          "model": "gpt-4.1-nano",
+          "instructions": "Answer in one short sentence, in plain words. No lists and no code.",
+          "max_output_tokens": 60,
+          "store": false
+        },
+        "limits": { "input": { "maxLength": 200 } },
+        "pick": { "text": "output.0.content.0.text", "status": "status" },
+        "returns": { "text": "string", "status": "string" },
+        "timeoutMs": 12000
+      }
+    }
+  ]
+}
