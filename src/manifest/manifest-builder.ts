@@ -1,5 +1,6 @@
 import { manifestMethods } from '../web2-adapter/adapter.mjs'
 import type { AdapterConfig } from '../worker/hosted-methods.js'
+import type { LockableMethod } from '../worker/locked-settings.js'
 
 export interface ManifestSite {
   name: string
@@ -25,6 +26,10 @@ export interface ManifestInput {
 export const MAX_MANIFEST_BYTES = 60_000
 
 const ZERO = '0x0000000000000000000000000000000000000000'
+/** The parameters a caller may send: locked ones are the owner's, so they are not advertised. */
+const callerFacing = (params: object, locked: object | undefined) =>
+  Object.fromEntries(Object.entries(params).filter(([k]) => !locked || !Object.prototype.hasOwnProperty.call(locked, k)))
+
 /** A price as a plain decimal string: "0", "0.002", never exponent notation. */
 const priceText = (v: string | number): string => {
   const s = typeof v === 'number' ? v.toFixed(6) : String(v)
@@ -51,7 +56,7 @@ export function buildSiteManifest(i: ManifestInput) {
     signer: i.site.signerAddress,
     delegation: i.delegation ? { expires: i.delegation.expires, sig: i.delegation.sig } : null,
     endpoints: { live: [`${i.publicBaseUrl}/sites/${i.site.name}/tapeapi/v1`], async: false },
-    methods: methods.map((m) => ({ ...m, priceBEM: '0' })),
+    methods: methods.map((m) => ({ ...m, params: callerFacing(m.params, (config.methods[m.name] as LockableMethod)?.locked), priceBEM: '0' })),
     payment: i.dev ? { escrow: ZERO, unit: 'BEM', decimals: 8 } : { unit: 'BEM', decimals: 8 },
     tapehermes: {
       v: 1,

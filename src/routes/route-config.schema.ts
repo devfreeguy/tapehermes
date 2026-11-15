@@ -21,6 +21,10 @@ export const routeConfigSchema = z.strictObject({
   pick: strMap(30, 256).optional(),
   returns: strMap(30, 64).optional(),
   timeoutMs: z.number().int().min(100).max(15000).optional(),
+  /** Owner-fixed values, always sent. A caller who sets one is refused (see worker/locked-settings.ts). */
+  locked: z.record(str(64), z.json()).refine((o) => Object.keys(o).length <= 20 && JSON.stringify(o).length <= 8000, 'too many or too large').optional(),
+  /** Limits on caller-supplied text, e.g. { input: { maxLength: 200 } }. */
+  limits: z.record(str(64), z.strictObject({ maxLength: z.number().int().min(1).max(4096).optional() })).optional(),
 })
 export type RouteConfig = z.infer<typeof routeConfigSchema>
 

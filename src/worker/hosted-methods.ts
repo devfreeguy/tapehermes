@@ -1,5 +1,6 @@
 import { lookup } from 'node:dns/promises'
 import { buildMethods, manifestMethods, envNames, HOSTED_POLICY } from '../web2-adapter/adapter.mjs'
+import { withLocked, type LockableMethod } from './locked-settings.js'
 import { createSafeFetch } from './safe-fetch.js'
 
 export interface AdapterConfig {
@@ -27,8 +28,10 @@ export function hostedMethods(config: AdapterConfig, secrets: Record<string, str
   // Every ${NAME} the config uses must be a key of env (unset value = header dropped); nothing else can expand.
   const names = envNames([config.upstream?.headers, ...Object.values(config.methods).map((m) => m.headers)])
   const env = Object.fromEntries(names.map((n: string) => [n, secrets[n]]))
+  const built = buildMethods(config, { policy: HOSTED_POLICY, env, resolve: opts.resolve ?? resolveAll, fetch: opts.fetch ?? defaultSafeFetch.fetch }) as Record<string, (p: unknown) => Promise<unknown>>
   return {
-    handlers: buildMethods(config, { policy: HOSTED_POLICY, env, resolve: opts.resolve ?? resolveAll, fetch: opts.fetch ?? defaultSafeFetch.fetch }),
+    // owner-locked values and limits are enforced here, before the adapter (see locked-settings.ts)
+    handlers: Object.fromEntries(Object.entries(built).map(([name, fn]) => [name, withLocked(fn, config.methods[name] as LockableMethod)])),
     manifestMethods: manifestMethods(config),
     secretNames: [...new Set<string>(names)],
   }

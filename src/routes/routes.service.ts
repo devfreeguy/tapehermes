@@ -6,6 +6,7 @@ import { PrismaService } from '../database/prisma.service.js'
 import { ProviderCache } from '../providers/provider-cache.service.js'
 import { SitesService } from '../sites/sites.service.js'
 import { hostedMethods } from '../worker/hosted-methods.js'
+import { lockedProblems } from '../worker/locked-settings.js'
 import { secretOutsideHeaders, type RouteConfig } from './route-config.schema.js'
 import type { Route } from '../generated/prisma/client.js'
 
@@ -33,6 +34,10 @@ export class RoutesService {
       for (const n of envNames([r.config.headers])) {
         if (!secretNames.has(n)) throw new BadRequestException({ code: 'UNKNOWN_SECRET', message: `route ${r.name}: header uses secret ${n}, which is not saved for this site` })
       }
+    }
+    for (const r of enabled) {
+      const problems = lockedProblems(r.config as never)
+      if (problems.length) throw new BadRequestException({ code: 'LOCKED_SETTING_INVALID', message: `route ${r.name}: ${problems[0]}`, problems })
     }
     try {
       hostedMethods({ methods: Object.fromEntries(enabled.map((r) => [r.name, r.config])) }, Object.fromEntries([...secretNames].map((n) => [n, 'x'])))
