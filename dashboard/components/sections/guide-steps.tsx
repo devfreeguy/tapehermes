@@ -10,10 +10,10 @@ import { guideStates, type GuideFacts } from '@/lib/guide/progress'
 import { RegisterSiteForm } from './register-site-form'
 import { SignInSection } from './sign-in-section'
 
-const WALLET_NOTICE: Partial<Record<GuideStep['id'], keyof typeof WALLET_STEPS>> = { signin: 'signIn', delegation: 'delegation', publish: 'publish' }
+const WALLET_NOTICE: Partial<Record<GuideStep['id'], keyof typeof WALLET_STEPS>> = { signin: 'signIn', activate: 'switchOn', delegation: 'delegation', publish: 'publish' }
 
 /**
- * The seven steps from sign-in to a live route. Each step says WHY first; steps that open the wallet show what will happen,
+ * The eight steps from sign-in to a live route. Each step says WHY first; steps that open the wallet show what will happen,
  * what it costs and what it cannot do BEFORE the button that opens it. The real work happens on the same pages as always.
  */
 export function GuideSteps({ facts, site, onSkipSecret }: { facts: GuideFacts; site: string | null; onSkipSecret: () => void }) {
@@ -22,6 +22,7 @@ export function GuideSteps({ facts, site, onSkipSecret }: { facts: GuideFacts; s
     switch (id) {
       case 'signin': return <SignInSection onDone={() => undefined} />
       case 'register': return <RegisterSiteForm />
+      case 'activate': return <Button asChild><Link href={base}>Go to switch on</Link></Button>
       case 'secret': return (<div className="flex gap-2"><Button asChild><Link href={`${base}/secrets`}>Add a secret</Link></Button><Button type="button" variant="ghost" onClick={onSkipSecret}>My service needs no key</Button></div>)
       case 'route': return <Button asChild><Link href={`${base}/routes/new`}>Create a route</Link></Button>
       case 'delegation': return <Button asChild><Link href={`${base}/delegation`}>Go to delegation</Link></Button>

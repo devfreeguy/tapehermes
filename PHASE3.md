@@ -2,7 +2,7 @@
 
 Status: built, not committed. PRD v0.5 is the source of truth (not edited in this phase: the decisions below are for you to approve into a v0.6).
 
-Tests: backend 230 (16 files), dashboard 145 (11 files), demo site 38 (2 files). The dashboard production build and its smoke test pass. Not run: a real browser (the Chrome extension was not connected), a real OKX payment, a real NASA or AI call, a real wallet.
+Tests: backend 242 (17 files), dashboard 154 (12 files), demo site 38 (2 files). The dashboard production build and its smoke test pass. Not run: a real browser (the Chrome extension was not connected), a real OKX payment, a real NASA or AI call, a real wallet.
 
 ## Two placeholders in your message were still empty
 - **Domains** (dashboard and API): both were `[FILL IN]`. I did not guess. Everything that depends on them is an environment value: `CORS_ORIGINS` (API), `AUTH_DOMAIN` and `PUBLIC_BASE_URL` (API), `NEXT_PUBLIC_API_URL` (dashboard). `AUTH_DOMAIN` must equal the dashboard host, because the wallet shows it in the sign-in message. Local defaults work today (`localhost`, port 3001 and 3000). I need the real names before deployment.
@@ -19,7 +19,7 @@ Tests: backend 230 (16 files), dashboard 145 (11 files), demo site 38 (2 files).
 | Call log filter by route, and a summary | `logs.controller.ts` | 3 |
 | Manifest on-chain status | `chain.service.ts`, `manifest.service.ts` | 4 |
 | Helper: `proof` in every result and `verify()` | `helper/tapehermes.js` | 1 (21 helper tests) |
-| Dashboard | `dashboard/` | 145, plus 7 contract tests and a smoke script |
+| Dashboard | `dashboard/` | 154, plus 8 contract tests and a smoke script |
 | Demo site and local runner | `demo-site/`, `proofs/lib/demo-server.ts`, `proofs/12-demo-dev.ts` | 17 + 36 |
 
 ## Locked route settings (half a day limit: it fit cleanly)
@@ -49,7 +49,7 @@ Direction "Tape": dark first, one signal green, monospace headings, no outside f
 **Routes**: a form of settings only (address, method, query, body, headers with `${SECRET}`, defaults, locked settings, limits, answer fields, price, rate limit, on/off). Simple mistakes are caught in plain words before sending. Server refusals (the hosted rules, secrets, locked settings) are translated into plain words by `copy/errors.ts` with the raw text kept inside a "Details" fold. 14 adapter refusal patterns are mapped, and 7 real refusals are checked against the live backend.
 **Manifest**: preview, state badge and a sentence for each state, reasons it cannot be published in words, and publish through the owner's wallet using the unsigned transactions from the API (wallet switched to X Layer, each transaction confirmed, state re-checked). "Out of date" is red and says why.
 **Call log**: summary (calls, paid calls, dollars earned) and rows; filters for period and route. No visitor data exists to show.
-**Guided path**: seven steps (sign in, add site, secret, route, delegation, publish, live). It follows the real state of the site, so it advances by itself, and the optional secret step can be skipped.
+**Guided path**: eight steps (sign in, add site, switch on, secret, route, delegation, publish, live). It follows the real state of the site, so it advances by itself, and the optional secret step can be skipped.
 
 **Contract test** (`test/dashboard-contract.spec.ts`, in the backend suite): the dashboard's own API client, zod schemas, error mapping and wallet converters run against the real backend. It signs in, registers, saves a secret, creates a locked AI-style route, **signs the delegation with a real wallet signature built from the dashboard's converted typed data and the backend accepts it**, reads the publish transactions, walks `not-published` to `current` to `out-of-date`, and checks the plain words for 7 real refusals.
 

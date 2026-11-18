@@ -16,6 +16,7 @@ vi.mock('@/hooks/use-sites', () => ({
 vi.mock('@/hooks/use-delegation-signing', () => ({ useDelegationSigning: () => S.signing }))
 vi.mock('@/hooks/use-publish-manifest', () => ({ usePublishManifest: () => S.publish }))
 vi.mock('@/hooks/use-manifest', () => ({ useManifestPreview: () => S.preview, useManifestStatus: () => S.status }))
+vi.mock('@/hooks/use-activation', () => ({ useActivation: () => S.activation, useRecheckActivation: () => S.recheck, useSwitchOn: () => S.switchOn }))
 vi.mock('@/hooks/use-secrets', () => ({ useSecrets: () => S.secrets, useSecretActions: () => S.secretActions }))
 vi.mock('@/hooks/use-routes', () => ({ useRoutes: () => S.routes, useRouteActions: () => S.routeActions }))
 vi.mock('@/hooks/use-logs', () => ({ useLogs: () => S.logs, useLogSummary: () => S.summary }))

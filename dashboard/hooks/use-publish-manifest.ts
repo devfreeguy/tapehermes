@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useConfig, useSendTransaction } from 'wagmi'
 import { waitForTransactionReceipt } from 'wagmi/actions'
-import { toSendParams } from '@/lib/wallet/tx'
+import { sendAll } from '@/lib/wallet/tx'
 import { usePublishTx, useRefreshManifest } from './use-manifest'
 import { useWallet } from './use-wallet'
 
@@ -22,13 +22,7 @@ export function usePublishManifest(site: string) {
     mutationFn: async (onProgress?: (done: number, total: number) => void) => {
       const built = await tx.mutateAsync()
       if (!wallet.onXLayer) await wallet.switchToXLayer()
-      const hashes: string[] = []
-      for (const t of built.txs) {
-        const hash = await send.mutateAsync(toSendParams(t))
-        await waitForTransactionReceipt(config, { hash })
-        hashes.push(hash)
-        onProgress?.(hashes.length, built.txs.length)
-      }
+      const hashes = await sendAll(built.txs, (p) => send.mutateAsync(p), (hash) => waitForTransactionReceipt(config, { hash }), onProgress)
       await refresh()
       return hashes
     },

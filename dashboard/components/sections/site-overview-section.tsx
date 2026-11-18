@@ -13,6 +13,7 @@ import { FormField } from '@/components/molecules/form-field'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { ActivationSection } from './activation-section'
 import { useSetPayout, useSetSiteStatus, useSite } from '@/hooks/use-sites'
 import { daysLeftLabel } from '@/lib/format/text'
 
@@ -29,6 +30,7 @@ export function SiteOverviewSection({ siteName }: { siteName: string }) {
   return (
     <section className="space-y-6">
       <PageTitle title={s.name} description="Site details" action={<StatusBadge tone={on ? 'good' : 'neutral'}>{on ? 'On' : 'Off'}</StatusBadge>} />
+      <ActivationSection siteName={siteName} />
       <Card>
         <CardHeader><CardTitle>Details</CardTitle></CardHeader>
         <CardContent>

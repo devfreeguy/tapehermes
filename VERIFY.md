@@ -18,8 +18,8 @@ Send back for 0: the output of `pnpm services:up` and `pnpm db:migrate` if eithe
 
 ## 1. Whole test suite on your machine (READY)
 
-1. `pnpm test` (expect 16 files, 230 tests passed)
-2. `pnpm --dir dashboard test` (expect 11 files, 145 passed) and `pnpm --dir dashboard exec tsc --noEmit` (no output)
+1. `pnpm test` (expect 17 files, 242 tests passed)
+2. `pnpm --dir dashboard test` (expect 12 files, 154 passed; the em-dash rule can fail on `dashboard/AGENTS.md`, a file `next dev` writes, see check 9) and `pnpm --dir dashboard exec tsc --noEmit` (no output)
 3. `pnpm --dir demo-site test` (expect 2 files, 38 passed)
 4. `pnpm --dir dashboard smoke` (builds the dashboard, serves it, checks the strict CSP nonce; expect it to end with a pass line)
 
@@ -108,6 +108,7 @@ Prerequisites:
 
 Steps:
 1. Sign in with the holder wallet (check 3).
+1b. A site that was just created reads "Not switched on". On the site page, press **Switch on my site** and confirm in the wallet. It costs the network fee only while the chain price is 0. The card should turn to "Switched on" with an end date (press Check again if the node is a few seconds behind). Publishing before this is refused with "Your site is not switched on yet".
 2. Register the site (name from `XLAYER_SITE`). The backend reads the holder from chain 196; if you are not the holder it refuses.
 3. Add one route (a free one is enough, for example `asteroid` from `demo-site/routes.json`) and its secret.
 4. Follow the guided path to **delegate**: sign the delegation (a typed-data signature in the wallet, valid 30 days). Check the typed data shown names the TapeAPI domain and your site.
@@ -144,6 +145,7 @@ Send back: screenshot of the page and checks list, the network panel entry for t
 ## 9. Things I could not test and you may notice
 
 - Real wallet popups for typed-data signing in `eth_signTypedData_v4` across wallets (each wallet formats it differently). Tell me which wallet you used.
+- `dashboard/AGENTS.md` is written by `next dev` and contains an em dash, so the dashboard rule "no em dashes" fails while that file exists. Delete it before running the dashboard tests, or tell me to exclude it.
 - Hydration, layout and the look on a real device.
 - Real gas price and fee on X Layer at the time you publish (values were read on chain earlier: deploy fee 1e7 wei, protocol fee 1e6 wei, gas about 0.02 gwei).
 - OKX facilitator behaviour under real outages (the 503 path is tested with a mock only).

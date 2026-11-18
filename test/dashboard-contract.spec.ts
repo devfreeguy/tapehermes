@@ -142,6 +142,21 @@ describe('dashboard code against the real backend', () => {
     }
   })
 
+  it('switches a site on the way the dashboard does: reads the state, gets the unsigned transaction, then sees it on', async () => {
+    t.chain.setInactive(SITE, owner.address)
+    t.chain.feeWei = 26_000_000_000_000_000n
+    await signIn(); await api.sites.register(SITE)
+    expect(await api.activation.status(SITE)).toMatchObject({ activated: false, paidUntil: null, isHolder: true, fee: { perMonth: '0.026', symbol: 'OKB' } })
+    const tx = await api.activation.tx(SITE, 2)
+    expect(tx).toMatchObject({ months: 2, total: '0.052', symbol: 'OKB', chainId: 196 })
+    const p = toSendParams(tx.txs[0])
+    expect(p.to.toLowerCase()).toBe('0x68809fd2fb343aa57d0aeb7f33defe477c9666f9') // the DomainBinding on X Layer
+    expect(p.value).toBe(52_000_000_000_000_000n)
+    t.chain.set(SITE, owner.address) // the owner confirmed in the wallet and it was mined
+    expect(await api.activation.status(SITE)).toMatchObject({ activated: true })
+    expect(explainError(await api.activation.tx(SITE, 1).catch((e) => e)).title).toBe('Your site is already switched on')
+  })
+
   it('maps wrong-holder and bad-delegation answers, and an expired session', async () => {
     await signIn(); await api.sites.register(SITE)
     const m = await api.sites.delegationMessage(SITE, 30)

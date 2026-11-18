@@ -81,6 +81,7 @@ export class ManifestService {
     if (!sameAddress(facts.holder, session.wallet)) {
       throw new ForbiddenException({ code: 'NOT_HOLDER', message: 'the signed-in wallet is no longer the holder of this site' })
     }
+    if (!facts.activated) throw new ConflictException({ code: 'NOT_ACTIVATED', message: 'the site is not switched on yet; switch it on first' })
     const expires = Math.floor(a.site.delegationExpires!.getTime() / 1000)
     let signedBy = ''
     try { signedBy = recoverDelegationSigner({ container: a.site.container, signerAddress: a.site.signerAddress, chainId: a.site.chainId }, expires, a.site.delegationSig!) } catch { /* mismatch below */ }

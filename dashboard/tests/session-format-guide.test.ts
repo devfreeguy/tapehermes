@@ -55,13 +55,15 @@ describe('text formats', () => {
   })
 })
 
-const facts = (o: Partial<GuideFacts> = {}): GuideFacts => ({ signedIn: false, hasSite: false, secretCount: 0, secretSkipped: false, routeCount: 0, delegation: null, manifest: null, ...o })
+const facts = (o: Partial<GuideFacts> = {}): GuideFacts => ({ signedIn: false, hasSite: false, activated: true, secretCount: 0, secretSkipped: false, routeCount: 0, delegation: null, manifest: null, ...o })
 const current = (f: GuideFacts) => guideStates(f).find((s) => s.state === 'current')?.step.id
 
 describe('guided path progress', () => {
   it('starts at sign-in and moves one step at a time', () => {
     expect(current(facts())).toBe('signin')
     expect(current(facts({ signedIn: true }))).toBe('register')
+    expect(current(facts({ signedIn: true, hasSite: true, activated: null }))).toBe('activate')
+    expect(current(facts({ signedIn: true, hasSite: true, activated: false }))).toBe('activate')
     expect(current(facts({ signedIn: true, hasSite: true }))).toBe('secret')
     expect(current(facts({ signedIn: true, hasSite: true, secretSkipped: true }))).toBe('route')
     expect(current(facts({ signedIn: true, hasSite: true, secretCount: 1, routeCount: 1 }))).toBe('delegation')
@@ -82,11 +84,11 @@ describe('guided path progress', () => {
   it('marks exactly one current step, and everything before it done', () => {
     const states = guideStates(facts({ signedIn: true, hasSite: true, secretSkipped: true }))
     expect(states.filter((s) => s.state === 'current')).toHaveLength(1)
-    expect(states.map((s) => s.state)).toEqual(['done', 'done', 'done', 'current', 'upcoming', 'upcoming', 'upcoming'])
+    expect(states.map((s) => s.state)).toEqual(['done', 'done', 'done', 'done', 'current', 'upcoming', 'upcoming', 'upcoming'])
   })
   it('every step that opens the wallet is marked as such, and no step copy has an em dash', async () => {
     const { GUIDE_STEPS } = await import('@/copy/guide')
-    expect(GUIDE_STEPS.filter((s) => s.wallet).map((s) => s.id)).toEqual(['signin', 'delegation', 'publish'])
+    expect(GUIDE_STEPS.filter((s) => s.wallet).map((s) => s.id)).toEqual(['signin', 'activate', 'delegation', 'publish'])
     for (const s of GUIDE_STEPS) expect(s.title + s.why).not.toContain('—')
   })
 })

@@ -9,7 +9,7 @@ import { SignInSection } from '@/components/sections/sign-in-section'
 import { SiteOverviewSection } from '@/components/sections/site-overview-section'
 import { SitesSection } from '@/components/sections/sites-section'
 import { ApiError } from '@/lib/api/errors'
-import { done, HOLDER, route, S, site } from './sections-state'
+import { activationFacts, done, HOLDER, route, S, site } from './sections-state'
 
 const session = { token: 't', wallet: HOLDER, expiresAt: Date.now() + 60_000 }
 
@@ -21,6 +21,7 @@ beforeEach(() => {
   S.register.mutate = vi.fn(); S.register.isPending = false; S.register.error = null
   S.signInMutation.mutate = vi.fn(); S.signInMutation.isPending = false; S.signInMutation.error = null
   S.setPayout.mutate = vi.fn(); S.setStatus.mutate = vi.fn()
+  S.activation = done(activationFacts())
 })
 
 describe('SignInSection', () => {
@@ -149,9 +150,22 @@ describe('GuidedPathSection', () => {
 
   it('starts a signed-out owner at sign-in, with every later step waiting and showing no action', () => {
     render(<GuidedPathSection />)
-    expect(states()).toEqual(['current', 'upcoming', 'upcoming', 'upcoming', 'upcoming', 'upcoming', 'upcoming'])
+    expect(states()).toEqual(['current', 'upcoming', 'upcoming', 'upcoming', 'upcoming', 'upcoming', 'upcoming', 'upcoming'])
     expect(screen.getByRole('button', { name: 'Connect wallet' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Go to delegation' })).toBeNull()
+  })
+
+  it('stops at "Switch on your site" while the site is off, with the wallet notice before the link', () => {
+    S.session.session = session
+    S.sites = done([site()])
+    S.secrets = done([]); S.routes = done([]); S.status = done({ state: 'not-ready', expected: null, problems: [], onChain: null })
+    S.activation = done(activationFacts({ activated: false, paidUntil: null }))
+    render(<GuidedPathSection />)
+    expect(states().slice(0, 4)).toEqual(['done', 'done', 'current', 'upcoming'])
+    const notice = screen.getByTestId('wallet-step-notice')
+    const link = screen.getByRole('link', { name: 'Go to switch on' })
+    expect(notice.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(notice).toHaveTextContent('Switch on your site')
   })
 
   it('moves to adding a site once signed in, and offers the registration form', () => {
@@ -167,16 +181,16 @@ describe('GuidedPathSection', () => {
     S.sites = done([site()])
     S.secrets = done([]); S.routes = done([]); S.status = done({ state: 'not-ready', expected: null, problems: [], onChain: null })
     const first = render(<GuidedPathSection />)
-    expect(states().slice(0, 3)).toEqual(['done', 'done', 'current'])
+    expect(states().slice(0, 4)).toEqual(['done', 'done', 'done', 'current'])
     await user.click(screen.getByRole('button', { name: 'My service needs no key' }))
-    expect(states()[3]).toBe('current')
+    expect(states()[4]).toBe('current')
     expect(screen.getByRole('link', { name: 'Create a route' })).toHaveAttribute('href', '/sites/1.2.396.tape/routes/new')
     first.unmount()
 
     S.routes = done([route()])
     S.sites = done([site()])
     render(<GuidedPathSection />)
-    expect(states().slice(0, 5)).toEqual(['done', 'done', 'done', 'done', 'current'])
+    expect(states().slice(0, 6)).toEqual(['done', 'done', 'done', 'done', 'done', 'current'])
     const notice = screen.getByTestId('wallet-step-notice')
     const link = screen.getByRole('link', { name: 'Go to delegation' })
     expect(notice.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -189,12 +203,12 @@ describe('GuidedPathSection', () => {
     S.secrets = done([]); S.routes = done([route()])
     S.status = done({ state: 'not-published', expected: null, problems: [], onChain: null })
     const first = render(<GuidedPathSection />)
-    expect(states()[5]).toBe('current')
+    expect(states()[6]).toBe('current')
     expect(screen.getByTestId('wallet-step-notice')).toHaveTextContent('network gas in OKB')
     first.unmount()
     S.status = done({ state: 'current', expected: null, problems: [], onChain: null })
     render(<GuidedPathSection />)
-    expect(states()[6]).toBe('current')
+    expect(states()[7]).toBe('current')
     expect(screen.getByRole('link', { name: 'Open the call log' })).toHaveAttribute('href', '/sites/1.2.396.tape/logs')
   })
 })

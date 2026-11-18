@@ -51,7 +51,7 @@ export async function startDemo(o: DemoOptions) {
     { port: apiPort },
   )
   // The only stub: who holds the site. The product reads chain 196; a local demo has no site on chain yet.
-  started.app.get(ChainService).readSite = (async (name: string) => ({ name, chainId: 196, circuits: '0x' + '11'.repeat(20), tokenId: '1', container: '0x' + '22'.repeat(20), holder: owner.address.toLowerCase() })) as never
+  started.app.get(ChainService).readSite = (async (name: string) => ({ name, chainId: 196, circuits: '0x' + '11'.repeat(20), tokenId: '1', container: '0x' + '22'.repeat(20), holder: owner.address.toLowerCase(), activated: true })) as never
   if (o.mock) {
     const f = watchFacilitator(mockFacilitator('eip155:1952') as object)
     ;(started.app.get(PAYMENT_GATE) as X402PaymentGate).useResourceServer(new x402ResourceServer(f as never).register('eip155:1952', new ExactEvmScheme()))

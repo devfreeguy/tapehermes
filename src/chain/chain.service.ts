@@ -4,6 +4,7 @@ import { MANIFEST_KEY } from '@tapeapi/sdk'
 import { chainReader } from './chain-reader.js'
 import { ChainUnavailableError } from './read-site.js'
 import { readSite, type SiteFacts } from './read-site.js'
+import { readActivationFacts, type ActivationFacts } from './activation.js'
 
 /** Reads a TapeOut site and its holder on chain 196 through the explicit RPC URLs from the environment. */
 @Injectable()
@@ -11,6 +12,9 @@ export class ChainService {
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
 
   readSite(name: string): Promise<SiteFacts> { return readSite(name, 196, this.config.rpcUrls196) }
+
+  /** The monthly fee and the end of the paid period for a container (read only). */
+  activationFacts(container: string): Promise<ActivationFacts> { return readActivationFacts(container, this.config.rpcUrls196) }
 
   /**
    * What the site store holds at /.well-known/tapeapi.json right now: the size and SHA-256 the owner declared when publishing.

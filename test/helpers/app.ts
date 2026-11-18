@@ -8,7 +8,7 @@ import { ProviderCache } from '../../src/providers/provider-cache.service.js'
 import { RedisService } from '../../src/redis/redis.service.js'
 import type { HostedOptions } from '../../src/worker/hosted-methods.js'
 
-export interface FakeSite { holder: string; tokenId?: string }
+export interface FakeSite { holder: string; tokenId?: string; activated?: boolean }
 
 /** A stand-in for chain 196: name to holder. `down` simulates an RPC outage. Addresses may be in any case. */
 export class FakeChain {
@@ -21,12 +21,21 @@ export class FakeChain {
     const sha256 = this.manifests.get(container.toLowerCase())
     return { published: !!sha256, size: sha256 ? 500 : 0, sha256: sha256 ?? '0x' + '0'.repeat(64), updatedAt: 1_800_000_000 }
   }
+  /** Fee per month in wei that the fake chain reports, and the end of the paid period (unix seconds). */
+  feeWei = 0n
+  paidUntil = 1_900_000_000
+  async activationFacts() {
+    if (this.down) throw new ChainUnavailableError('down')
+    return { feeWei: this.feeWei, paidUntil: this.paidUntil }
+  }
+  /** A real site that is not switched on yet (the chain says unpaid). */
+  setInactive(name: string, holder: string) { this.sites.set(name, { holder, tokenId: '1', activated: false }) }
   set(name: string, holder: string) { this.sites.set(name, { holder, tokenId: '1' }) }
   async readSite(name: string) {
     if (this.down) throw new ChainUnavailableError('down')
     const s = this.sites.get(name)
     if (!s) throw new SiteNotFoundError('no such site')
-    return { name, chainId: 196, circuits: '0x' + '11'.repeat(20), tokenId: s.tokenId ?? '1', container: '0x' + '22'.repeat(20), holder: s.holder.toLowerCase() }
+    return { name, chainId: 196, circuits: '0x' + '11'.repeat(20), tokenId: s.tokenId ?? '1', container: '0x' + '22'.repeat(20), holder: s.holder.toLowerCase(), activated: s.activated !== false }
   }
 }
 
@@ -39,6 +48,7 @@ export async function startTestApp(overrides: Partial<AppConfig> = {}) {
   const chain = new FakeChain()
   const chainService = started.app.get(ChainService)
   chainService.readSite = ((name: string) => chain.readSite(name)) as never
+  chainService.activationFacts = (() => chain.activationFacts()) as never
   chainService.manifestOnChain = ((c: string) => chain.manifestOnChain(c)) as never
   const cache = started.app.get(ProviderCache)
   const prisma = started.app.get(PrismaService)

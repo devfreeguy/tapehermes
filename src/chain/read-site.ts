@@ -16,9 +16,10 @@ export async function readSite(name: string, chainId = 196, rpcUrls?: string[]) 
     throw new ChainUnavailableError(`chain read failed: ${(e as Error).message.slice(0, 120)}`)
   }
   if (s.status === 'store-changed') throw new ChainUnavailableError('site store changed; not trusted')
-  if (s.status !== 'ok' || !s.circuits || !s.container || !s.holder) throw new SiteNotFoundError(`site status ${s.status}`)
+  if ((s.status !== 'ok' && s.status !== 'unpaid') || !s.circuits || !s.container || !s.holder) throw new SiteNotFoundError(`site status ${s.status}`)
   const holder = tryNormalizeAddress(s.holder), circuits = tryNormalizeAddress(s.circuits), container = tryNormalizeAddress(s.container)
   if (!holder || !circuits || !container) throw new ChainUnavailableError('chain returned a malformed address')
-  return { name, chainId, circuits, tokenId: String(s.tokenId), container, holder }
+  // `unpaid` is a real site that is not switched on yet: the holder can still manage it, and switch it on.
+  return { name, chainId, circuits, tokenId: String(s.tokenId), container, holder, activated: s.status === 'ok' }
 }
 export type SiteFacts = Awaited<ReturnType<typeof readSite>>

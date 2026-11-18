@@ -97,3 +97,16 @@ export const publishTx = z.object({
   txs: z.array(z.object({ to: hex, data: hex, value: z.string().optional() })), note: z.string(),
 })
 export type PublishTx = z.infer<typeof publishTx>
+
+export const activation = z.object({
+  activated: z.boolean(), paidUntil: iso.nullable(),
+  fee: z.object({ perMonthWei: z.string(), perMonth: z.string(), symbol: z.string() }),
+  maxMonths: z.number(), holder: z.string(), isHolder: z.boolean(),
+})
+export type Activation = z.infer<typeof activation>
+
+export const activationTx = z.object({
+  from: z.string(), chainId: z.number(), months: z.number(), totalWei: z.string(), total: z.string(), symbol: z.string(),
+  txs: z.array(z.object({ to: hex, data: hex, value: z.string().optional() })), note: z.string(),
+})
+export type ActivationTx = z.infer<typeof activationTx>

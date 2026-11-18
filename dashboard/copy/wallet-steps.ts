@@ -25,6 +25,12 @@ export const WALLET_STEPS = {
     cost: 'Free to sign. Nothing is sent to the chain in this step.',
     cannotDo: 'It cannot move funds. It stops working on the end date, and also if the site changes hands.',
   },
+  switchOn: {
+    title: 'Switch on your site',
+    whatHappens: 'Your wallet will open one transaction on X Layer that switches your site on for the number of months you chose. Until then, apps cannot find your site.',
+    cost: 'You pay the activation price for each month. The chain sets it and your wallet shows it before you confirm. You also pay a small network fee in OKB.',
+    cannotDo: 'It cannot move your tokens or change who holds the site. It stops working after the months you paid for, and then it has to be switched on again.',
+  },
   publish: {
     title: 'Publish the manifest',
     whatHappens: 'Your wallet will open one or more transactions on X Layer that write the manifest file into your site. Apps and visitors read it from there. You confirm each one in your wallet.',

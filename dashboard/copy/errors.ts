@@ -47,6 +47,8 @@ const BY_CODE: Record<string, { title: string; message: string }> = {
   DELEGATION_SIGNATURE_MISMATCH: { title: 'The signature is not from the holder', message: 'Sign the delegation with the wallet that holds this site, and do not change the length after the message was made.' },
   DELEGATION_SIGNATURE_INVALID: { title: 'The signature could not be read', message: 'Try signing again.' },
   DELEGATION_NOT_FROM_HOLDER: { title: 'The saved delegation is not from the current holder', message: 'The site changed hands or the delegation is wrong. Sign a new one.' },
+  NOT_ACTIVATED: { title: 'Your site is not switched on yet', message: 'Switch it on from the site page first, then publish.' },
+  ALREADY_ACTIVE: { title: 'Your site is already switched on', message: 'Nothing to do. Reload the page to see the end date.' },
   NOT_PUBLISHABLE: { title: 'The manifest cannot be published yet', message: 'Fix the points below, then try again.' },
   MANIFEST_INVALID: { title: 'The manifest is not valid', message: 'Check your routes and prices, then try again.' },
   NETWORK: { title: 'Cannot reach the server', message: 'Check your connection. If it keeps happening, the service may be down.' },

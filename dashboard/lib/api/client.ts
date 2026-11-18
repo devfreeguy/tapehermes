@@ -78,6 +78,10 @@ export function createApiClient(o: ApiClientOptions) {
       status: (name: string) => request('GET', `${site(name)}/manifest/status`, s.manifestStatus),
       publishTx: (name: string) => request('POST', `${site(name)}/manifest/publish-tx`, s.publishTx),
     },
+    activation: {
+      status: (name: string) => request('GET', `${site(name)}/activation`, s.activation),
+      tx: (name: string, months: number) => request('POST', `${site(name)}/activation/tx`, s.activationTx, { months }),
+    },
     logs: {
       list: (name: string, q: { route?: string; limit?: number; before?: string } = {}) => {
         const p = new URLSearchParams()

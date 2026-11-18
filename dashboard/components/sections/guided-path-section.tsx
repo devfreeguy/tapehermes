@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { PageTitle } from '@/components/atoms/page-title'
+import { useActivation } from '@/hooks/use-activation'
 import { useManifestStatus } from '@/hooks/use-manifest'
 import { useRoutes } from '@/hooks/use-routes'
 import { useSecrets } from '@/hooks/use-secrets'
@@ -15,10 +16,11 @@ function SiteGuide({ site, signedIn, delegation }: { site: string; signedIn: boo
   const secrets = useSecrets(site)
   const routes = useRoutes(site)
   const status = useManifestStatus(site)
+  const activation = useActivation(site)
   return (
     <GuideSteps
       site={site} onSkipSecret={() => setSkipped(true)}
-      facts={{ signedIn, hasSite: true, secretCount: secrets.data?.length ?? 0, secretSkipped: skipped, routeCount: routes.data?.length ?? 0, delegation, manifest: status.data?.state ?? null }}
+      facts={{ signedIn, hasSite: true, activated: activation.data?.activated ?? null, secretCount: secrets.data?.length ?? 0, secretSkipped: skipped, routeCount: routes.data?.length ?? 0, delegation, manifest: status.data?.state ?? null }}
     />
   )
 }
@@ -30,10 +32,10 @@ export function GuidedPathSection() {
   const first = sites.data?.[0]
   return (
     <section className="space-y-6">
-      <PageTitle title="Guided setup" description="Seven short steps from sign-in to a live route. Every step that opens your wallet explains itself first." />
+      <PageTitle title="Guided setup" description="Eight short steps from sign-in to a live route. Every step that opens your wallet explains itself first." />
       {first
         ? <SiteGuide site={first.name} signedIn={!!session} delegation={first.delegation.status} />
-        : <GuideSteps site={null} onSkipSecret={() => undefined} facts={{ signedIn: !!session, hasSite: false, secretCount: 0, secretSkipped: false, routeCount: 0, delegation: null, manifest: null }} />}
+        : <GuideSteps site={null} onSkipSecret={() => undefined} facts={{ signedIn: !!session, hasSite: false, activated: null, secretCount: 0, secretSkipped: false, routeCount: 0, delegation: null, manifest: null }} />}
     </section>
   )
 }

@@ -6,6 +6,8 @@ export interface GuideFacts {
   signedIn: boolean
   /** The site being set up, or null when the owner has none yet. */
   hasSite: boolean
+  /** Is the site switched on? null while that is not known yet. */
+  activated: boolean | null
   secretCount: number
   secretSkipped: boolean
   routeCount: number
@@ -17,11 +19,12 @@ export interface GuideFacts {
 export function stepsDone(f: GuideFacts): Record<GuideStep['id'], boolean> {
   const signin = f.signedIn
   const register = signin && f.hasSite
+  const activate = register && f.activated === true
   const secret = register && (f.secretCount > 0 || f.secretSkipped || f.routeCount > 0)
   const route = register && f.routeCount > 0
   const delegation = route && (f.delegation === 'valid' || f.delegation === 'expiring')
   const publish = delegation && f.manifest === 'current'
-  return { signin, register, secret, route, delegation, publish, live: publish }
+  return { signin, register, activate, secret, route, delegation, publish, live: publish }
 }
 
 /** Each step as done, current (the first one not done) or upcoming. When all are done the last step stays current, so its next-action link shows. */

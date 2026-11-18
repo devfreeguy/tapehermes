@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import type { Route, Site } from '@/lib/api/schemas'
+import type { Activation, Route, Site } from '@/lib/api/schemas'
 
 /** Hook results the section tests set before rendering. The vi.mock factories in sections-mocks.ts read them lazily. */
 const build = () => {
@@ -17,6 +17,9 @@ const build = () => {
     routes: { data: undefined as unknown, isPending: false, error: null as unknown },
     preview: { data: undefined as unknown, isPending: false, error: null as unknown },
     status: { data: undefined as unknown, isPending: false, error: null as unknown },
+    activation: { data: undefined as unknown, isPending: false, error: null as unknown },
+    recheck: vi.fn(),
+    switchOn: noop(),
     logs: { data: undefined as unknown, isPending: false, error: null as unknown },
     summary: { data: undefined as unknown, isPending: false, error: null as unknown },
     register: noop(), setPayout: noop(), setStatus: noop(), signing: noop(), publish: noop(), signInMutation: noop(),
@@ -38,3 +41,8 @@ export const route = (over: Partial<Route> = {}): Route => ({
 
 export const HOLDER = '0x' + 'aa'.repeat(20)
 export const done = <T,>(data: T) => ({ data, isPending: false, error: null as unknown })
+
+/** The activation answer of the API: switched on, until a date, with one month priced at 0. */
+export const activationFacts = (over: Partial<Activation> = {}): Activation => ({
+  activated: true, paidUntil: '2026-12-30T00:00:00.000Z', fee: { perMonthWei: '0', perMonth: '0', symbol: 'OKB' }, maxMonths: 12, holder: '0x' + 'aa'.repeat(20), isHolder: true, ...over,
+})
