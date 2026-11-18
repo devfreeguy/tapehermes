@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { AddressText } from '@/components/atoms/address-text'
 import { StatusBadge } from '@/components/atoms/status-badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { daysLeftLabel } from '@/lib/format/text'
 import type { Site } from '@/lib/api/schemas'
@@ -27,6 +28,7 @@ export function SiteCard({ site, activated = null }: { site: Site; activated?: b
           <span className="text-muted-foreground">Delegation</span><DelegationBadge state={site.delegation.status} />
           <span className="text-muted-foreground">{daysLeftLabel(site.delegation.status === 'none' ? null : site.delegation.daysLeft)}</span>
         </p>
+        {activated === false ? <Button asChild size="sm"><Link href={`/sites/${encodeURIComponent(site.name)}`}>Switch on my site</Link></Button> : null}
       </CardContent>
     </Card>
   )

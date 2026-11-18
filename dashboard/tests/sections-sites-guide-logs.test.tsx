@@ -86,6 +86,7 @@ describe('SitesSection', () => {
     render(<SitesSection />)
     expect(screen.getByText('Answering calls')).toBeInTheDocument()
     expect(screen.getByText('Not switched on')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Switch on my site' })).toHaveAttribute('href', '/sites/1.2.396.tape')
   })
   it('checks the site name shape, then registers it', async () => {
     const user = userEvent.setup()
