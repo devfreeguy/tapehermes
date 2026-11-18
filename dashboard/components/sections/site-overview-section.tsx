@@ -29,7 +29,7 @@ export function SiteOverviewSection({ siteName }: { siteName: string }) {
   const on = s.status === 'ACTIVE'
   return (
     <section className="space-y-6">
-      <PageTitle title={s.name} description="Site details" action={<StatusBadge tone={on ? 'good' : 'neutral'}>{on ? 'On' : 'Off'}</StatusBadge>} />
+      <PageTitle title={s.name} description="Site details" action={<StatusBadge tone={on ? 'good' : 'neutral'}>{on ? 'Answering calls' : 'Paused'}</StatusBadge>} />
       <ActivationSection siteName={siteName} />
       <Card>
         <CardHeader><CardTitle>Details</CardTitle></CardHeader>
@@ -58,10 +58,10 @@ export function SiteOverviewSection({ siteName }: { siteName: string }) {
         </CardContent>
       </Card>
       <Card>
-        <CardHeader><CardTitle>Turn the site {on ? 'off' : 'on'}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{on ? 'Pause calls' : 'Resume calls'}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">{on ? 'Turning it off answers every call with "not found" at once and clears its keys from memory. Your settings are kept.' : 'The site is off. Turn it on to answer calls again.'}</p>
-          <Button type="button" variant="outline" disabled={setStatus.isPending} onClick={() => setStatus.mutate(on ? 'DISABLED' : 'ACTIVE')}>{on ? 'Turn off' : 'Turn on'}</Button>
+          <p className="text-sm text-muted-foreground">{on ? 'Pausing answers every call with "not found" at once and clears its keys from memory. Your settings are kept. This is TapeHermes only, and does not change the switch-on state on X Layer.' : 'Calls are paused. Resume to answer calls again.'}</p>
+          <Button type="button" variant="outline" disabled={setStatus.isPending} onClick={() => setStatus.mutate(on ? 'DISABLED' : 'ACTIVE')}>{on ? 'Pause calls' : 'Resume calls'}</Button>
           <ErrorNotice error={setStatus.error} />
         </CardContent>
       </Card>

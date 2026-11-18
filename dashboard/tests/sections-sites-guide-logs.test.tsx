@@ -74,9 +74,18 @@ describe('SitesSection', () => {
     S.sites = done([site(), site({ name: '1.2.400.tape', status: 'DISABLED', delegation: { stored: true, status: 'expiring', expiresAt: '2026-11-20T00:00:00.000Z', daysLeft: 5 } })])
     render(<SitesSection />)
     expect(screen.getByRole('link', { name: '1.2.396.tape' })).toHaveAttribute('href', '/sites/1.2.396.tape')
-    expect(screen.getByText('Off')).toBeInTheDocument()
+    expect(screen.getByText('Paused')).toBeInTheDocument()
+    expect(screen.getAllByText('Answering calls')).toHaveLength(1)
+    expect(screen.getAllByText('Switched on')).toHaveLength(2) // the chain state of each card, read from the API
     expect(screen.getByText('Expiring soon')).toBeInTheDocument()
     expect(screen.getByText('5 days left')).toBeInTheDocument()
+  })
+  it('shows the chain state apart from the answering switch, so "On" never means two things', () => {
+    S.sites = done([site()])
+    S.activation = done(activationFacts({ activated: false, paidUntil: null }))
+    render(<SitesSection />)
+    expect(screen.getByText('Answering calls')).toBeInTheDocument()
+    expect(screen.getByText('Not switched on')).toBeInTheDocument()
   })
   it('checks the site name shape, then registers it', async () => {
     const user = userEvent.setup()
@@ -105,19 +114,19 @@ describe('SiteOverviewSection', () => {
     expect(screen.getByText('No delegation')).toBeInTheDocument()
     expect(screen.getByText('0x' + 'bb'.repeat(20))).toBeInTheDocument()
   })
-  it('changes the payout address and turns the site off', async () => {
+  it('changes the payout address and pauses the site', async () => {
     const user = userEvent.setup()
     render(<SiteOverviewSection siteName="1.2.396.tape" />)
     await user.type(screen.getByLabelText('Where payments go'), '0x' + 'dd'.repeat(20))
     await user.click(screen.getByRole('button', { name: 'Save payout address' }))
     expect(S.setPayout.mutate).toHaveBeenCalledWith('0x' + 'dd'.repeat(20), expect.anything())
-    await user.click(screen.getByRole('button', { name: 'Turn off' }))
+    await user.click(screen.getByRole('button', { name: 'Pause calls' }))
     expect(S.setStatus.mutate).toHaveBeenCalledWith('DISABLED')
   })
-  it('offers to turn a disabled site back on', () => {
+  it('offers to resume a paused site', () => {
     S.site = done(site({ status: 'DISABLED' }))
     render(<SiteOverviewSection siteName="1.2.396.tape" />)
-    expect(screen.getByRole('button', { name: 'Turn on' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Resume calls' })).toBeInTheDocument()
   })
 })
 
