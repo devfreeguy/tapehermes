@@ -17,9 +17,15 @@ export async function createApp(overrides: Partial<AppConfig> = {}, opts: { port
   app.use('/api', express.json({ limit: '64kb' }))
   const hops = opts.trustProxyHops ?? overrides.trustProxyHops ?? 0
   if (hops > 0) app.set('trust proxy', hops)
-  await app.listen(opts.port ?? 0, opts.host ?? '127.0.0.1')
-  const base = `http://127.0.0.1:${new URL(await app.getUrl()).port}`
+  const host = opts.host ?? '127.0.0.1'
+  await app.listen(opts.port ?? 0, host)
+  const base = `http://${host.includes(':') ? `[${host}]` : host}:${new URL(await app.getUrl()).port}`
   return { app, base, stop: () => app.close() }
+}
+
+/** The production start (used by main.ts): the port and the proxy hops come from the validated config. */
+export function startServer(config: AppConfig, host = '127.0.0.1') {
+  return createApp({}, { port: config.port, host, trustProxyHops: config.trustProxyHops })
 }
 
 /** Phase 0 proof harness (no database): starts a hand-made registry of providers. Used only by /proofs. */
