@@ -1,0 +1,34 @@
+# Production service for the TapeHermes backend. Postgres and Redis are shared containers on the external network "alpha".
+# Run by deploy/scripts/deploy.sh (IMAGE_OWNER, REPO_NAME and IMAGE_TAG are passed in) and by tapehermes.service (image.env).
+name: tapehermes
+
+services:
+  tapehermes-api:
+    image: ghcr.io/${IMAGE_OWNER}/${REPO_NAME}-api:${IMAGE_TAG}
+    container_name: tapehermes-api
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    # Pinned here so they cannot drift through .env.
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3006"
+    ports:
+      - "127.0.0.1:3006:3006"
+    networks:
+      - alpha
+    # Proven with this image: the app writes no files at runtime (sign-in, health and calls ran with this on).
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  alpha:
+    external: true

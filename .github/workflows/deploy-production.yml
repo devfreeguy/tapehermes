@@ -1,0 +1,177 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One production deploy at a time. A newer push waits for the running one instead of cancelling it half way.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24"
+  PNPM_VERSION: "11.15.1"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: tapehermes_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d tapehermes_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      # Throwaway values for the test run only. No real secret is used in CI.
+      DATABASE_URL: postgresql://ci:ci_password@localhost:5432/tapehermes_test
+      TEST_DATABASE_URL: postgresql://ci:ci_password@localhost:5432/tapehermes_test
+      REDIS_URL: redis://localhost:6379
+      REDIS_PREFIX: "tapehermes-test:"
+      VAULT_MASTER_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      RATE_LIMIT_SALT: ci-only-rate-limit-salt-0123456789
+      AUTH_DOMAIN: tapehermes.test
+      PUBLIC_BASE_URL: https://api.tapehermes.test
+      RPC_URLS_196: https://rpc.xlayer.tech
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Pin pnpm
+        run: |
+          corepack enable
+          corepack prepare "pnpm@${PNPM_VERSION}" --activate
+          pnpm --version
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  build-and-push:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      owner: ${{ steps.names.outputs.owner }}
+      repo: ${{ steps.names.outputs.repo }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image names (ghcr needs lowercase)
+        id: names
+        run: |
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+          echo "repo=${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]' >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: api
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          tags: ghcr.io/${{ steps.names.outputs.owner }}/${{ steps.names.outputs.repo }}-api:${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build and push migrator
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: migrator
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          tags: ghcr.io/${{ steps.names.outputs.owner }}/${{ steps.names.outputs.repo }}-migrator:${{ github.sha }}
+          cache-from: type=gha,scope=migrator
+          cache-to: type=gha,mode=max,scope=migrator
+      - name: Check that both images hold both architectures
+        run: |
+          set -euo pipefail
+          for image in api migrator; do
+            ref="ghcr.io/${{ steps.names.outputs.owner }}/${{ steps.names.outputs.repo }}-${image}:${{ github.sha }}"
+            out="$(docker buildx imagetools inspect "$ref")"
+            for arch in linux/amd64 linux/arm64; do
+              echo "$out" | grep -q "Platform: *${arch}" || { echo "::error::$ref has no $arch manifest"; exit 1; }
+            done
+            echo "$ref: amd64 and arm64 present"
+          done
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare SSH
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_KEY: ${{ secrets.SERVER_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SERVER_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+      - name: Sync compose file and scripts (never .env or any secret)
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          set -euo pipefail
+          SSH="ssh -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes"
+          $SSH "$SERVER_USER@$SERVER_HOST" 'mkdir -p /opt/apps/tapehermes/scripts'
+          scp -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes deploy/compose.yml "$SERVER_USER@$SERVER_HOST:/opt/apps/tapehermes/compose.yml"
+          scp -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes deploy/scripts/deploy.sh "$SERVER_USER@$SERVER_HOST:/opt/apps/tapehermes/scripts/deploy.sh"
+          $SSH "$SERVER_USER@$SERVER_HOST" 'chmod 755 /opt/apps/tapehermes/scripts/deploy.sh'
+      - name: Deploy
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          IMAGE_OWNER: ${{ needs.build-and-push.outputs.owner }}
+          REPO_NAME: ${{ needs.build-and-push.outputs.repo }}
+          IMAGE_TAG: ${{ github.sha }}
+          GHCR_USER: ${{ secrets.GHCR_USER }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          set -euo pipefail
+          # The values travel on stdin, so the registry token never appears in a command line or a process list.
+          {
+            printf 'export IMAGE_OWNER=%q\n' "$IMAGE_OWNER"
+            printf 'export REPO_NAME=%q\n' "$REPO_NAME"
+            printf 'export IMAGE_TAG=%q\n' "$IMAGE_TAG"
+            printf 'export GHCR_USER=%q\n' "$GHCR_USER"
+            printf 'export GHCR_TOKEN=%q\n' "$GHCR_TOKEN"
+          } | ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes "$SERVER_USER@$SERVER_HOST" \
+              '. /dev/stdin && exec bash /opt/apps/tapehermes/scripts/deploy.sh'
+      - name: Remove the SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
