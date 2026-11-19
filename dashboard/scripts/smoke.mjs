@@ -27,6 +27,21 @@ try {
     check(csp.includes(`connect-src 'self' ${API}`), `${path}: connect-src is this page and the API only`)
     check(res.headers.get('x-content-type-options') === 'nosniff' && res.headers.get('referrer-policy') === 'no-referrer' && !res.headers.get('x-powered-by'), `${path}: security headers set, no x-powered-by`)
   }
+  // Addresses the app does not have are a real 404, still with the CSP and a nonce on every script, and crawlers are kept out.
+  for (const path of ['/no-such-page', '/sites/not-a-site', '/sites/1.2.396.tape/no-such-tab']) {
+    const res = await fetch(`http://127.0.0.1:${PORT}${path}`)
+    const html = await res.text()
+    const csp = res.headers.get('content-security-policy') ?? ''
+    const nonce = /'nonce-([^']+)'/.exec(csp)?.[1]
+    const tags = [...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1])
+    check(res.status === 404, `${path}: 404`)
+    check(html.includes('Page not found'), `${path}: shows the not-found page`)
+    check(!!nonce && tags.every((t) => t.includes(`nonce="${nonce}"`)), `${path}: CSP nonce on every script (${tags.length})`)
+  }
+  const robots = await fetch(`http://127.0.0.1:${PORT}/robots.txt`)
+  check(robots.status === 200 && /Disallow: \//.test(await robots.text()), '/robots.txt disallows everything')
+  const home = await (await fetch(`http://127.0.0.1:${PORT}/`)).text()
+  check(/<meta name="robots" content="noindex, nofollow"/.test(home), 'pages carry noindex, nofollow')
   const a = (await fetch(`http://127.0.0.1:${PORT}/`)).headers.get('content-security-policy')
   const b = (await fetch(`http://127.0.0.1:${PORT}/`)).headers.get('content-security-policy')
   check(a !== b, 'a fresh nonce for every request')

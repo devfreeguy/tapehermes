@@ -8,6 +8,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: { default: 'TapeHermes', template: '%s | TapeHermes' },
   description: 'Run outside calls for your TapeOut site: keep secrets safe, set prices, get paid.',
+  robots: { index: false, follow: false },
 }
 
 /**
