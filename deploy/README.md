@@ -22,6 +22,7 @@ Do these once, on the server.
    `<deploy-user>` is the SSH user the pipeline uses. It must be able to run `docker`.
 3. Settings: copy `deploy/.env.example` to `/opt/apps/tapehermes/.env`, replace every `CHANGE_ME`, then `chmod 600 /opt/apps/tapehermes/.env`.
    - Rules: no quotes, no inline comments, no empty `VAR=` lines (delete optional lines instead), no dollar sign in any value.
+   - The server refuses to start while any setting still holds `CHANGE_ME` (any spelling) or text in angle brackets. The error lists the variable names only, never the values.
    - `VAULT_MASTER_KEY` is 32 random bytes in base64. It must never change after launch. Back it up somewhere safe and offline before the first deploy: it encrypts every stored secret and every site signing key, and if it is lost those cannot be recovered.
    - `RPC_URLS_196` must list nodes from at least 2 independent operators. Two URLs of the same operator count as one, and then every chain read fails while `/health` still answers 200 (it does not touch the chain). Keep the three listed in the example: OKX (two URLs) and dRPC (one).
    - Do not set `UNSAFE_DEV_SKIP_DELEGATION`. The app refuses to start in production with it.

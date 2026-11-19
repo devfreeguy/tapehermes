@@ -61,8 +61,14 @@ export interface AppConfig {
   siteCallsPerMin: number
 }
 
+/** A value copied from an example file and never filled in: CHANGE_ME in any spelling, or something in <angle brackets>. */
+const PLACEHOLDER = /change[-_ ]?me|<[^<>]*>/i
+
 /** Typed, validated settings. Error messages name the variable, never a value. */
 export function loadConfig(source: Record<string, string | undefined> = process.env, overrides: Partial<AppConfig> = {}): AppConfig {
+  // Checked first, over every setting the app reads, so a half-filled file fails with a clear message and never starts.
+  const placeholders = Object.keys(schema.shape).filter((name) => PLACEHOLDER.test(source[name] ?? ''))
+  if (placeholders.length) throw new Error(`placeholder values in: ${placeholders.join(', ')} (replace every CHANGE_ME with a real value)`)
   const parsed = schema.safeParse(source)
   if (!parsed.success) {
     const names = [...new Set(parsed.error.issues.map((i) => i.path.join('.')))].join(', ')
