@@ -23,6 +23,7 @@ Do these once, on the server.
 3. Settings: copy `deploy/.env.example` to `/opt/apps/tapehermes/.env`, replace every `CHANGE_ME`, then `chmod 600 /opt/apps/tapehermes/.env`.
    - Rules: no quotes, no inline comments, no empty `VAR=` lines (delete optional lines instead), no dollar sign in any value.
    - `VAULT_MASTER_KEY` is 32 random bytes in base64. It must never change after launch. Back it up somewhere safe and offline before the first deploy: it encrypts every stored secret and every site signing key, and if it is lost those cannot be recovered.
+   - `RPC_URLS_196` must list nodes from at least 2 independent operators. Two URLs of the same operator count as one, and then every chain read fails while `/health` still answers 200 (it does not touch the chain). Keep the three listed in the example: OKX (two URLs) and dRPC (one).
    - Do not set `UNSAFE_DEV_SKIP_DELEGATION`. The app refuses to start in production with it.
    - `AUTH_DOMAIN` and `CORS_ORIGINS` must match the dashboard address owners sign in from.
 4. Caddy: `api.tapehermes.xyz` reverse proxies to `127.0.0.1:3006`. One proxy hop is trusted (`TRUST_PROXY_HOPS=1`), so Caddy must be the only proxy in front.
