@@ -35,11 +35,11 @@ export function SecretFormDialog(props: Props) {
   const submittedName = mode === 'rename' ? name.trim() : name
   const badName = showName && name !== '' && !SECRET_NAME_RE.test(submittedName)
   const canSave = !busy && (!showName || (submittedName !== '' && !badName)) && (!showValue || value !== '')
-  const title = mode === 'add' ? 'Add a secret' : mode === 'rename' ? 'Rename secret' : 'Replace secret value'
+  const title = mode === 'add' ? 'Add an API key' : mode === 'rename' ? 'Rename API key' : 'Replace API key'
   const description = mode === 'add'
-    ? 'Store an API key for an outside service. You can reference it from a route header.'
+    ? 'Save the key your outside service gave you. Use its name in the action that needs it.'
     : mode === 'rename' ? `Choose a new name for ${originalName}.` : `Enter the replacement key for ${originalName}.`
-  const saveLabel = mode === 'add' ? 'Save secret' : mode === 'rename' ? 'Save new name' : 'Save new value'
+  const saveLabel = mode === 'add' ? 'Save API key' : mode === 'rename' ? 'Save new name' : 'Save new value'
 
   function changeOpen(next: boolean) {
     if (pending) return
@@ -61,7 +61,7 @@ export function SecretFormDialog(props: Props) {
         })
       }}>
         {showName && (
-          <FormField id={nameId} label={mode === 'rename' ? 'New name' : 'Name'} hint={'Use capitals, numbers and underscores. Reference WEATHER_KEY in a header as ${WEATHER_KEY}.'} error={badName ? 'Use capital letters, numbers and underscores, starting with a letter.' : null}>
+          <FormField id={nameId} label={mode === 'rename' ? 'New name' : 'Name'} hint={'Use capital letters, numbers, and underscores. For example, save AI_PROVIDER_KEY and reference it as ${AI_PROVIDER_KEY} in the action’s Authorization header.'} error={badName ? 'Use capital letters, numbers and underscores, starting with a letter.' : null}>
             <Input id={nameId} value={name} aria-invalid={badName || undefined} onChange={(event) => setName(event.target.value.toUpperCase())} className="h-13 rounded-xl px-4 font-mono" autoComplete="off" spellCheck={false} />
           </FormField>
         )}

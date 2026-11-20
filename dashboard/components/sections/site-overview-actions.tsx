@@ -18,7 +18,7 @@ export function PayoutAction({ siteName }: { siteName: string }) {
   return (
     <ActionDialog
       title="Edit payout address"
-      description="Visitors pay this address. It starts as the holder wallet. Change it to receive payments somewhere else."
+      description="This is the wallet that gets paid when someone uses a paid action. It starts as the wallet that owns your site."
       trigger={<Button type="button" variant="outline" className="pill-control">Edit payout address</Button>}
       open={open}
       onOpenChange={(next) => {
@@ -81,7 +81,7 @@ export function ActivationAction({ siteName }: { siteName: string }) {
   return (
     <ActionDialog
       title="X Layer activation"
-      description="Check the switch-on state and connect the site holder wallet when you’re ready to activate."
+      description="See whether apps can find your site. To turn it on, connect the wallet that owns it."
       trigger={<Button type="button" variant="outline" className="pill-control">Manage activation</Button>}
     >
       <ActivationSection siteName={siteName} />

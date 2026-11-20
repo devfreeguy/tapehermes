@@ -1,5 +1,6 @@
 'use client'
 
+import { SITE_TERMS } from '@/copy/site-terms'
 import { Braces, FileCheck2, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { Dialog } from 'radix-ui'
@@ -42,11 +43,11 @@ export function ManifestSection({ siteName: explicitSite }: { siteName?: string 
 
   return (
     <section className="space-y-7 lg:space-y-9">
-      <PageTitle variant="dashboard" title="Manifest" description="The public list of your routes, prices and delegation. Visitors and apps read it from your site on X Layer."
+      <PageTitle variant="dashboard" title={SITE_TERMS.manifest.label} description={SITE_TERMS.manifest.description}
         action={
-          <ActionDialog title="Review manifest publish" description="Review what the wallet will do before sending any transactions."
+          <ActionDialog title="Review before publishing" description="Review what the wallet will do before sending any transactions."
             open={open} onOpenChange={(next) => { if (!publish.isPending) setOpen(next) }}
-            trigger={<Button type="button" className="pill-control" disabled={!canPublish}><Upload aria-hidden="true" />Review publish</Button>}
+            trigger={<Button type="button" className="pill-control" disabled={!canPublish}><Upload aria-hidden="true" />Review before publishing</Button>}
           >
             <ConnectWallet wallet={wallet} className="pill-control" />
             {wallet.isConnected && !holderConnected && site.data && <Alert variant="destructive"><AlertDescription>Connect the holder wallet <AddressText value={site.data.holder} /> to publish.</AlertDescription></Alert>}
@@ -61,7 +62,7 @@ export function ManifestSection({ siteName: explicitSite }: { siteName?: string 
                 setProgress(null)
                 publish.mutate((done, total) => setProgress([done, total]))
               }}>
-                {publish.isPending && <Spinner />}{state === 'out-of-date' ? 'Publish update' : 'Publish manifest'}
+                {publish.isPending && <Spinner />}{state === 'out-of-date' ? 'Publish update' : 'Publish API list'}
               </Button>
             </div>
           </ActionDialog>
@@ -69,8 +70,8 @@ export function ManifestSection({ siteName: explicitSite }: { siteName?: string 
       />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <OverviewTile title="On-chain state" icon={FileCheck2} accentClassName="text-info" attention={appearance?.tone}>
-          {status.isPending && <Spinner label="Checking on-chain manifest" />}
+        <OverviewTile title="Live on X Layer" icon={FileCheck2} accentClassName="text-info" attention={appearance?.tone}>
+          {status.isPending && <Spinner label="Checking the published API list" />}
           {appearance && (
             <div className="space-y-2 rounded-xl bg-info/7 p-4">
               <p data-tone={appearance.tone} className="text-xl font-semibold tracking-tight group-data-[attention=bad]/tile:text-destructive group-data-[attention=warn]/tile:text-warning">{appearance.label}</p>
@@ -81,7 +82,7 @@ export function ManifestSection({ siteName: explicitSite }: { siteName?: string 
           {status.data?.onChain && (
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div><dt className="text-muted-foreground">Published on</dt><dd className="mt-1"><TimeText value={status.data.onChain.updatedAt} /></dd></div>
-              <div><dt className="text-muted-foreground">On-chain hash</dt><dd className="mt-1"><AddressText value={status.data.onChain.sha256} /></dd></div>
+              <div><dt className="text-muted-foreground">Published file ID</dt><dd className="mt-1"><AddressText value={status.data.onChain.sha256} /></dd></div>
             </dl>
           )}
           {!!preview.data?.problems.length && (
@@ -91,19 +92,19 @@ export function ManifestSection({ siteName: explicitSite }: { siteName?: string 
             </div>
           )}
         </OverviewTile>
-        <OverviewTile title="Manifest preview" icon={Braces} accentClassName="text-accent">
-          {preview.isPending && <Spinner label="Preparing manifest preview" />}
+        <OverviewTile title="Draft API list" icon={Braces} accentClassName="text-accent">
+          {preview.isPending && <Spinner label="Preparing the draft API list" />}
           <ErrorNotice error={preview.error} />
           {preview.data && (
             <>
               <dl className="space-y-4 rounded-xl bg-accent/7 p-4 text-sm">
                 <div><dt className="text-muted-foreground">Size</dt><dd className="mt-1">{preview.data.size} bytes</dd></div>
-                <div><dt className="text-muted-foreground">Preview hash</dt><dd className="mt-1"><AddressText value={status.data?.expected?.sha256 ?? preview.data.sha256} /></dd></div>
+                <div><dt className="text-muted-foreground">Draft file ID</dt><dd className="mt-1"><AddressText value={status.data?.expected?.sha256 ?? preview.data.sha256} /></dd></div>
               </dl>
-              <ActionDialog title="Manifest JSON" description="This is the draft TapeHermes would publish with your current settings."
-                trigger={<Button type="button" variant="outline" className="pill-control self-start"><Braces aria-hidden="true" />Show the manifest</Button>}
+              <ActionDialog title="API List JSON" description="This is the draft file apps will read after you publish."
+                trigger={<Button type="button" variant="outline" className="pill-control self-start"><Braces aria-hidden="true" />View JSON</Button>}
               >
-                <ScrollArea label="Manifest JSON source" orientation="both" className="rounded-xl border border-border bg-background" viewportClassName="max-h-[55dvh]">
+                <ScrollArea label="API List JSON source" orientation="both" className="rounded-xl border border-border bg-background" viewportClassName="max-h-[55dvh]">
                   <pre className="p-4 font-mono text-xs leading-relaxed">{JSON.stringify(preview.data.manifest, null, 2)}</pre>
                 </ScrollArea>
                 <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control w-full">Close</Button></Dialog.Close>

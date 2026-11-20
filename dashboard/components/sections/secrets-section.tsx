@@ -1,5 +1,6 @@
 'use client'
 
+import { SITE_TERMS } from '@/copy/site-terms'
 import { Plus } from 'lucide-react'
 import { Spinner } from '@/components/atoms/spinner'
 import { EmptyState } from '@/components/molecules/empty-state'
@@ -22,21 +23,21 @@ export function SecretsSection({ siteName: explicitSite }: { siteName?: string }
     <section aria-labelledby="secrets-title" className="space-y-7 lg:space-y-9">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 id="secrets-title" className="font-(family-name:--font-auth) text-3xl font-extrabold tracking-tight sm:text-4xl">Secrets</h1>
+          <h1 id="secrets-title" className="font-(family-name:--font-auth) text-3xl font-extrabold tracking-tight sm:text-4xl">{SITE_TERMS.secrets.label}</h1>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Store API keys for outside services. TapeHermes encrypts them and sends them only in the route headers you choose.
+            {SITE_TERMS.secrets.description}
           </p>
         </div>
         <SecretFormDialog
           mode="add" busy={busy} pending={save.isPending} error={save.error} reset={save.reset}
-          trigger={<Button type="button" className="pill-control" disabled={busy}><Plus aria-hidden="true" />Add secret</Button>}
+          trigger={<Button type="button" className="pill-control" disabled={busy}><Plus aria-hidden="true" />Add API key</Button>}
           onSave={(draft, onSuccess) => save.mutate(draft, { onSuccess })}
         />
       </header>
 
       <ErrorNotice error={remove.error ?? secrets.error} />
       {secrets.isPending && <Spinner label="Loading secrets" />}
-      {secrets.data?.length === 0 && <EmptyState title="No secrets yet" description="Add a secret when a route needs an API key for an outside service." />}
+      {secrets.data?.length === 0 && <EmptyState title="No keys yet" description="Add a key when an action needs one to use an outside service." />}
       {!!secrets.data?.length && (
         <ul aria-label="Saved secrets" className="grid gap-4 xl:grid-cols-2">
           {secrets.data.map((secret) => <SecretRow key={secret.name} secret={secret} busy={busy} actions={actions} />)}

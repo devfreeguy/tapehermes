@@ -52,12 +52,12 @@ export function RouteRow({ route, busy, onToggle, onDelete }: Props) {
           </label>
           <div className="flex items-center gap-1">
             <Button asChild variant="ghost" className="h-11 rounded-full bg-primary-action/12 px-3 text-primary-action hover:bg-primary-action/20 hover:text-primary-action has-[>svg]:px-3">
-              <Link href={`/sites/routes/${encodeURIComponent(route.name)}`}>Edit <ArrowUpRight aria-hidden="true" /></Link>
+              <Link href={`/sites/actions/${encodeURIComponent(route.name)}`}>Edit <ArrowUpRight aria-hidden="true" /></Link>
             </Button>
             <ConfirmButton
               destructive
               trigger={<Button type="button" variant="ghost" size="icon" disabled={busy} aria-label="Delete" className="size-11 rounded-full text-muted-foreground hover:text-destructive"><Trash2 aria-hidden="true" /></Button>}
-              title={`Delete ${route.name}?`} description="Visitors can no longer call it. Publish the manifest again afterwards." confirmLabel="Delete route"
+              title={`Delete ${route.name}?`} description="Visitors will no longer be able to use this action. Publish your API list again so apps see the change." confirmLabel="Delete action"
               onConfirm={() => onDelete(route.name)}
             />
           </div>

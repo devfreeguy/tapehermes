@@ -16,10 +16,10 @@ export default function HomePage() {
             <BrandWordmark />
             <div className="space-y-3">
               <h1 id="auth-title" className="font-(family-name:--font-auth) text-4xl leading-tight font-extrabold max-[360px]:text-3xl sm:text-5xl">
-                Keep your API keys <span className="font-(family-name:--font-auth-highlight) font-normal text-primary-action">off the chain.</span>
+                Keep your API keys <span className="font-(family-name:--font-auth-highlight) font-normal text-primary-action">private.</span>
               </h1>
               <p className="text-base leading-relaxed text-muted-foreground">
-                TapeHermes runs signed API calls for your TapeOut site on X Layer. Connect your wallet to manage secrets, routes, and pricing.
+                Offer paid actions on your TapeOut site, like AI document summaries, while keeping your provider keys private. Connect your wallet to get started.
               </p>
             </div>
             <AuthWalletSection secondaryAction={

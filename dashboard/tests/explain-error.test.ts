@@ -53,8 +53,8 @@ describe('save-time refusals in plain words', () => {
   })
 
   it('explains each reason a manifest cannot be published', () => {
-    expect(explainProblem('NO_ROUTES: the site has no enabled route')).toContain('Add at least one route')
-    expect(explainProblem('DELEGATION_REQUIRED: x')).toContain('has not signed a delegation')
+    expect(explainProblem('NO_ROUTES: the site has no enabled route')).toContain('Add at least one action and turn it on')
+    expect(explainProblem('DELEGATION_REQUIRED: x')).toContain('has not given signing permission')
     expect(explainProblem('DELEGATION_EXPIRED: x')).toContain('expired')
     expect(explainProblem('MANIFEST_TOO_LARGE: 70000 bytes')).toContain('too large')
     expect(explainProblem('OTHER: text')).toBe('OTHER: text')

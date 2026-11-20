@@ -1,5 +1,6 @@
 'use client'
 
+import { SITE_TERMS } from '@/copy/site-terms'
 import { Activity, CreditCard, Globe2, KeyRound, Network, ScrollText, ShieldCheck } from 'lucide-react'
 import { AddressText } from '@/components/atoms/address-text'
 import { CopyButton } from '@/components/atoms/copy-button'
@@ -57,7 +58,7 @@ function SiteOverview({ site }: { site: Site }) {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-        <OverviewTile title="Call activity" icon={Activity} href={base + '/logs'} accentClassName="text-primary-action" className="sm:col-span-2">
+        <OverviewTile title="Call activity" icon={Activity} href={base + '/call-log'} accentClassName="text-primary-action" className="sm:col-span-2">
           <div className="my-auto space-y-5 rounded-xl bg-primary-action/6 px-3 py-4 sm:px-5 sm:py-5">
             <p className="text-sm text-muted-foreground">Last {periodDays} days</p>
             {totals ? (
@@ -89,32 +90,32 @@ function SiteOverview({ site }: { site: Site }) {
           </div>
         </OverviewTile>
 
-        <OverviewTile title="Routes" icon={Network} href={base + '/routes'} accentClassName="text-info">
+        <OverviewTile title={SITE_TERMS.routes.label} icon={Network} href={base + '/actions'} accentClassName="text-info">
           <div className="space-y-2 rounded-xl bg-info/8 p-4">
             <p className="text-xl font-semibold tracking-tight tabular-nums">{enabledRoutes === undefined ? readout(routes.isPending) : enabledRoutes + ' enabled'}</p>
-            <p className="text-sm text-muted-foreground">{routes.data ? routes.data.length + ' configured in total' : 'View route status and pricing.'}</p>
+            <p className="text-sm text-muted-foreground">{routes.data ? routes.data.length + ' configured in total' : 'See which actions are on and what they cost.'}</p>
           </div>
         </OverviewTile>
 
-        <OverviewTile title="Secrets" icon={KeyRound} href={base + '/secrets'} accentClassName="text-accent">
+        <OverviewTile title={SITE_TERMS.secrets.label} icon={KeyRound} href={base + '/keys'} accentClassName="text-accent">
           <div className="space-y-2 rounded-xl bg-accent/8 p-4">
             <p className="text-xl font-semibold tracking-tight tabular-nums">{secrets.data ? secrets.data.length + ' stored' : readout(secrets.isPending)}</p>
-            <p className="text-sm text-muted-foreground">Manage keys used by your routes.</p>
+            <p className="text-sm text-muted-foreground">Private keys used by your actions.</p>
           </div>
         </OverviewTile>
 
-        <OverviewTile title="Delegation" icon={ShieldCheck} href={base + '/delegation'} accentClassName="text-primary-action" attention={delegationStatus.tone}>
+        <OverviewTile title={SITE_TERMS.delegation.label} icon={ShieldCheck} href={base + '/permission'} accentClassName="text-primary-action" attention={delegationStatus.tone}>
           <div className="space-y-2 border-s-2 border-primary-action/25 py-2 ps-4">
             <OverviewStatus>{delegationStatus.label}</OverviewStatus>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {delegation.expiresAt
                 ? <>Expires <TimeText value={delegation.expiresAt} /> · {daysLeftLabel(delegation.daysLeft)}</>
-                : 'Manage permission to sign responses for this site.'}
+                : 'Give TapeHermes permission to sign your site’s replies.'}
             </p>
           </div>
         </OverviewTile>
 
-        <OverviewTile title="Manifest" icon={ScrollText} href={base + '/manifest'} attention={manifestStatus?.tone}>
+        <OverviewTile title={SITE_TERMS.manifest.label} icon={ScrollText} href={base + '/api-list'} attention={manifestStatus?.tone}>
           {manifestStatus ? (
             <>
               <OverviewStatus>{manifestStatus.label}</OverviewStatus>

@@ -15,7 +15,7 @@ export function NewSiteSection({ firstSite = false }: { firstSite?: boolean }) {
           {firstSite ? 'Add your first site' : 'Add a site'}
         </h1>
         <p className="max-w-sm text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Add a TapeOut site you own on X Layer to manage its API routes, secrets, and pricing in TapeHermes.
+          Add a TapeOut site you own. Then you can choose what it does, save the keys it needs, and set prices.
         </p>
         <Button asChild variant="outline" className="pill-control">
           <Link href="/guide">Open the setup guide</Link>

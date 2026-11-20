@@ -12,14 +12,14 @@ import type { FieldGroupProps } from './route-basic-fields'
 export function RouteRequestFields({ form, set, errors }: FieldGroupProps) {
   return (
     <div className="space-y-5">
-      <FormField id="route-inputs" label="What visitors may send" hint="Names separated by commas, for example from, to. Visitors send these as parameters.">
+      <FormField id="route-inputs" label="Inputs visitors can send" hint="List the input names, separated by commas. For a document summary, you might use documentText, language.">
         <Input id="route-inputs" value={form.callerInputs} onChange={(e) => set({ callerInputs: e.target.value })} className="font-mono" autoComplete="off" />
       </FormField>
-      <FormField id="route-required" label="Required" hint="Names that must be given, separated by commas.">
+      <FormField id="route-required" label="Required" hint="List the inputs every request must include, separated by commas.">
         <Input id="route-required" value={form.required} onChange={(e) => set({ required: e.target.value })} className="font-mono" autoComplete="off" />
       </FormField>
-      <KeyValueEditor id="query" label="Query" hint="Adds ?name=value to the address. Left box: the name the service expects. Right box: the parameter it comes from." rows={form.query} onChange={(query) => set({ query })} keyLabel="Query name" valueLabel="From parameter" keyPlaceholder="symbol" valuePlaceholder="symbol" addLabel="Add query value" />
-      <FormField id="route-body" label="Body" hint="Only used by POST, PUT and PATCH. It is always sent as JSON.">
+      <KeyValueEditor id="query" label="URL options (query)" hint="Adds options to the service URL, like ?language=en. Enter the name the service expects and the input to use for it." rows={form.query} onChange={(query) => set({ query })} keyLabel="Query name" valueLabel="From parameter" keyPlaceholder="language" valuePlaceholder="language" addLabel="Add query value" />
+      <FormField id="route-body" label="Data sent with the request (body)" hint="For POST, PUT and PATCH requests, choose which data to send as JSON.">
         <Select value={form.bodyMode} onValueChange={(v) => set({ bodyMode: v as BodyMode })}>
           <SelectTrigger id="route-body" className="w-72"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -31,8 +31,8 @@ export function RouteRequestFields({ form, set, errors }: FieldGroupProps) {
       </FormField>
       {form.bodyMode === 'map' ? <KeyValueEditor id="body" label="Body fields" rows={form.bodyMap} onChange={(bodyMap) => set({ bodyMap })} keyLabel="Body field" valueLabel="From parameter" keyPlaceholder="input" valuePlaceholder="input" addLabel="Add body field" /> : null}
       <KeyValueEditor
-        id="headers" label="Headers" hint={`Allowed names: ${ALLOWED_HEADERS.join(', ')}. To send a secret, write \${SECRET_NAME} in the value, for example Bearer \${WEATHER_KEY}.`}
-        rows={form.headers} onChange={(headers) => set({ headers })} keyLabel="Header" valueLabel="Value" keyPlaceholder="authorization" valuePlaceholder="Bearer ${WEATHER_KEY}" addLabel="Add header"
+        id="headers" label="Headers" hint={`Allowed names: ${ALLOWED_HEADERS.join(', ')}. To send a saved API key, write \${SECRET_NAME} in the value, for example Bearer \${AI_PROVIDER_KEY}.`}
+        rows={form.headers} onChange={(headers) => set({ headers })} keyLabel="Header" valueLabel="Value" keyPlaceholder="authorization" valuePlaceholder="Bearer ${AI_PROVIDER_KEY}" addLabel="Add header"
       />
       <KeyValueEditor id="defaults" label="Defaults" hint="Values used when a visitor sends nothing. A visitor can still override a default. To stop that, use a locked setting below." rows={form.defaults} onChange={(defaults) => set({ defaults })} keyLabel="Parameter" valueLabel="Default" addLabel="Add default" />
       {errors.defaults ? <p role="alert" className="text-sm text-destructive">{errors.defaults}</p> : null}

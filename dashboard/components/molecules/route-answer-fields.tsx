@@ -7,7 +7,7 @@ import type { FieldGroupProps } from './route-basic-fields'
 export function RouteAnswerFields({ form, set }: FieldGroupProps) {
   return (
     <KeyValueEditor
-      id="pick" label="Answer fields" hint="Left box: the name in your answer. Right box: where to find it in the service's answer, with dots, for example data.price or output.0.text."
+      id="pick" label="Parts of the reply to keep" hint="Leave this empty to return the whole reply. To return only one part, give it a name and enter where to find it, like data.price."
       rows={form.pick} onChange={(pick) => set({ pick })} keyLabel="Answer name" valueLabel="Path" keyPlaceholder="price" valuePlaceholder="data.price" addLabel="Add answer field"
     />
   )

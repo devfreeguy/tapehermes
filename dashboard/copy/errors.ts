@@ -34,23 +34,23 @@ const BY_CODE: Record<string, { title: string; message: string }> = {
   SITE_NOT_FOUND: { title: 'No such site', message: 'That site name does not exist on X Layer, or it is not registered here.' },
   NOT_HOLDER: { title: 'This wallet is not the holder', message: 'Only the wallet that currently holds the site on X Layer can do this. Switch to that wallet.' },
   CHAIN_UNAVAILABLE: { title: 'X Layer could not be read', message: 'The chain did not answer. Nothing was changed. Try again in a minute.' },
-  ROUTE_EXISTS: { title: 'That route name is taken', message: 'Choose another name, or edit the existing route.' },
-  TOO_MANY_ROUTES: { title: 'Too many routes', message: 'A site can have at most 50 routes.' },
-  ROUTE_NOT_FOUND: { title: 'No such route', message: 'The route was removed or renamed. Reload the page.' },
-  SECRET_NOT_IN_HEADER: { title: 'Secrets go in headers only', message: 'A secret can only be placed in a header value. Remove it from the address, query, body or locked settings.' },
-  UNKNOWN_SECRET: { title: 'A secret is missing', message: 'A header uses a secret that is not saved for this site. Add it in Secrets first.' },
-  SECRET_IN_USE: { title: 'A route still uses this secret', message: 'Change or remove those routes first, or rename the secret instead.' },
-  SECRET_EXISTS: { title: 'That secret name is taken', message: 'Choose another name.' },
-  SECRET_NOT_FOUND: { title: 'No such secret', message: 'It was already removed. Reload the page.' },
-  TOO_MANY_SECRETS: { title: 'Too many secrets', message: 'A site can hold at most 20 secrets.' },
-  LOCKED_SETTING_INVALID: { title: 'A locked setting does not fit the route', message: '' },
-  DELEGATION_SIGNATURE_MISMATCH: { title: 'The signature is not from the holder', message: 'Sign the delegation with the wallet that holds this site, and do not change the length after the message was made.' },
+  ROUTE_EXISTS: { title: 'That action name is taken', message: 'Choose another name, or edit the existing action.' },
+  TOO_MANY_ROUTES: { title: 'Too many actions', message: 'A site can have up to 50 actions.' },
+  ROUTE_NOT_FOUND: { title: 'Action not found', message: 'It may have been removed or renamed. Reload the page.' },
+  SECRET_NOT_IN_HEADER: { title: 'API keys go in request headers', message: 'Put the key in a header value. Remove it from the address, query, body or fixed values.' },
+  UNKNOWN_SECRET: { title: 'An API key is missing', message: 'This action uses an API key that is not saved. Save it under Keys first.' },
+  SECRET_IN_USE: { title: 'An action still uses this API key', message: 'Remove the key from those actions first, or rename the key instead.' },
+  SECRET_EXISTS: { title: 'That key name is taken', message: 'Choose another name.' },
+  SECRET_NOT_FOUND: { title: 'API key not found', message: 'It was already removed. Reload the page.' },
+  TOO_MANY_SECRETS: { title: 'Too many API keys', message: 'A site can save up to 20 API keys.' },
+  LOCKED_SETTING_INVALID: { title: 'Check the fixed values for this action', message: '' },
+  DELEGATION_SIGNATURE_MISMATCH: { title: 'The signature must come from the site owner', message: 'Set how long permission should last, then approve it with the wallet that owns this site.' },
   DELEGATION_SIGNATURE_INVALID: { title: 'The signature could not be read', message: 'Try signing again.' },
-  DELEGATION_NOT_FROM_HOLDER: { title: 'The saved delegation is not from the current holder', message: 'The site changed hands or the delegation is wrong. Sign a new one.' },
+  DELEGATION_NOT_FROM_HOLDER: { title: 'The current owner needs to give permission', message: 'Open Permission and approve it with the wallet that owns this site now.' },
   NOT_ACTIVATED: { title: 'Your site is not switched on yet', message: 'Switch it on from the site page first, then publish.' },
   ALREADY_ACTIVE: { title: 'Your site is already switched on', message: 'Nothing to do. Reload the page to see the end date.' },
-  NOT_PUBLISHABLE: { title: 'The manifest cannot be published yet', message: 'Fix the points below, then try again.' },
-  MANIFEST_INVALID: { title: 'The manifest is not valid', message: 'Check your routes and prices, then try again.' },
+  NOT_PUBLISHABLE: { title: 'The API list is not ready to publish', message: 'Fix the points below, then try again.' },
+  MANIFEST_INVALID: { title: 'The API list has a problem', message: 'Check your actions and prices, then try again.' },
   NETWORK: { title: 'Cannot reach the server', message: 'Check your connection. If it keeps happening, the service may be down.' },
   BAD_ANSWER: { title: 'Unexpected answer', message: 'The server answered in a way this page does not understand. Reload the page.' },
 }
@@ -59,10 +59,10 @@ const BY_CODE: Record<string, { title: string; message: string }> = {
 export function explainProblem(problem: string): string {
   const [code] = problem.split(':')
   const known: Record<string, string> = {
-    NO_ROUTES: 'Add at least one route and turn it on.',
-    DELEGATION_REQUIRED: 'The holder has not signed a delegation yet.',
-    DELEGATION_EXPIRED: 'The delegation has expired. Sign a new one.',
-    MANIFEST_TOO_LARGE: 'The manifest is too large. Remove routes or shorten settings.',
+    NO_ROUTES: 'Add at least one action and turn it on.',
+    DELEGATION_REQUIRED: 'The wallet that owns this site has not given signing permission yet.',
+    DELEGATION_EXPIRED: 'Signing permission has expired. Renew it on the Permission page.',
+    MANIFEST_TOO_LARGE: 'The API list is too large. Turn off actions you don’t need or shorten their settings.',
   }
   return known[code] ?? problem
 }
@@ -73,7 +73,7 @@ export function explainError(e: unknown): PlainError {
   const technical = `${e.status} ${e.code}: ${e.message}`
   if (e.code === 'ROUTE_REFUSED') {
     const hit = ROUTE_REFUSALS.map(([re, say]) => { const m = e.message.match(re); return m ? say(m) : null }).find(Boolean)
-    return { title: 'This route is not allowed', message: hit ?? 'The settings break one of the hosted rules.', technical }
+    return { title: 'This action could not be saved', message: hit ?? 'The settings break one of the hosted rules.', technical }
   }
   if (e.code === 'BAD_REQUEST' && Array.isArray(e.details.fields) && e.details.fields.length) {
     const fields = (e.details.fields as { field: string; problem: string }[]).map((f) => (f.field ? `${f.field}: ${f.problem}` : f.problem))

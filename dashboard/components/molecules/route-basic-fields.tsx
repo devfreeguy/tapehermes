@@ -13,30 +13,30 @@ export interface FieldGroupProps { form: RouteForm; set: (patch: Partial<RouteFo
 export function RouteBasicFields({ form, set, errors, locked }: FieldGroupProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormField id="route-name" label="Route name" hint="What visitors call, for example fxRate." error={errors.name}>
+      <FormField id="route-name" label="Action name" hint="The name apps use to ask for this action, for example summarizeDocument." error={errors.name}>
         <Input id="route-name" value={form.name} disabled={locked} onChange={(e) => set({ name: e.target.value })} className="font-mono" autoComplete="off" />
       </FormField>
-      <FormField id="route-method" label="Method">
+      <FormField id="route-method" label="HTTP method" hint="For example, GET asks for data and POST sends data.">
         <Select value={form.method} onValueChange={(v) => set({ method: v as RouteForm['method'] })}>
           <SelectTrigger id="route-method" className="w-32 font-mono"><SelectValue /></SelectTrigger>
           <SelectContent>{HTTP_METHODS.map((m) => <SelectItem key={m} value={m} className="font-mono">{m}</SelectItem>)}</SelectContent>
         </Select>
       </FormField>
       <div className="sm:col-span-2">
-        <FormField id="route-url" label="Address of the outside service" hint="Must start with https://. Put placeholders in curly braces, for example https://api.example.com/v1/items/{id}." error={errors.url}>
+        <FormField id="route-url" label="Address of the outside service" hint="Use an HTTPS address, like https://api.example.com/v1/summaries. Put values that change in curly braces, like {documentId}." error={errors.url}>
           <Input id="route-url" value={form.url} onChange={(e) => set({ url: e.target.value })} className="font-mono" autoComplete="off" />
         </FormField>
       </div>
-      <FormField id="route-price" label="Price per call (USD)" hint="0 makes the route free." error={errors.priceUsd}>
+      <FormField id="route-price" label="Price per call (USD)" hint="0 makes the action free." error={errors.priceUsd}>
         <Input id="route-price" inputMode="decimal" value={form.priceUsd} onChange={(e) => set({ priceUsd: e.target.value })} className="w-40 font-mono" />
       </FormField>
-      <FormField id="route-rate" label="Calls per minute, per visitor" hint="More than this gets a 'too many requests' answer." error={errors.rateLimitPerMin}>
+      <FormField id="route-rate" label="Requests per minute, per visitor" hint="Requests above this limit are turned away." error={errors.rateLimitPerMin}>
         <Input id="route-rate" inputMode="numeric" value={form.rateLimitPerMin} onChange={(e) => set({ rateLimitPerMin: e.target.value })} className="w-40 font-mono" />
       </FormField>
       <FormField id="route-timeout" label="Wait for the service (milliseconds)" hint="Optional. Between 100 and 15000." error={errors.timeoutMs}>
         <Input id="route-timeout" inputMode="numeric" value={form.timeoutMs} onChange={(e) => set({ timeoutMs: e.target.value })} className="w-40 font-mono" />
       </FormField>
-      <label className="flex items-center gap-2 text-sm"><Switch checked={form.enabled} onCheckedChange={(v) => set({ enabled: v })} aria-label="Route on" />Route is on</label>
+      <label className="flex items-center gap-2 text-sm"><Switch checked={form.enabled} onCheckedChange={(v) => set({ enabled: v })} aria-label="Action on" />Action is on</label>
     </div>
   )
 }

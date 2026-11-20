@@ -20,7 +20,7 @@ export function ErrorNotice({ error }: { error: unknown }) {
         {error instanceof ApiError && error.code === 'NOT_PUBLISHABLE'
           ? <ul className="list-disc pl-5">{problems.map((p) => <li key={p}>{explainProblem(p)}</li>)}</ul>
           : null}
-        {users.length ? <p>Routes using it: {users.join(', ')}.</p> : null}
+        {users.length ? <p>Actions using it: {users.join(', ')}.</p> : null}
         <Collapsible>
           <CollapsibleTrigger className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline">
             Details <ChevronDown className="size-3" />

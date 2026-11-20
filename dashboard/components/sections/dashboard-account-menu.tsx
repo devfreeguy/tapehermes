@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronDown, LogOut, Wallet } from 'lucide-react'
+import { BookOpen, ChevronDown, LogOut, Wallet } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AddressText } from '@/components/atoms/address-text'
 import { Button } from '@/components/ui/button'
@@ -40,6 +41,7 @@ export function DashboardAccountMenu() {
             {themes.map((value) => <DropdownMenuRadioItem value={value} key={value}>{themeLabels[value]}</DropdownMenuRadioItem>)}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
+          <DropdownMenuItem asChild><Link href="/guide"><BookOpen aria-hidden="true" className="size-4" /> Guided setup</Link></DropdownMenuItem>
           <DropdownMenuItem onSelect={() => {
             if (isConnected) disconnect()
             signOut()

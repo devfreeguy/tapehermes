@@ -12,7 +12,7 @@ async function up() { for (let i = 0; i < 60; i++) { try { await fetch(`http://1
 
 try {
   await up()
-  for (const path of ['/', '/guide', '/sites', '/sites/secrets', '/sites/routes', '/sites/routes/new', '/sites/delegation', '/sites/manifest', '/sites/logs', '/sites/1.2.396.tape/manifest']) {
+  for (const path of ['/', '/guide', '/sites', '/sites/keys', '/sites/actions', '/sites/actions/new', '/sites/actions/summarizeDocument', '/sites/permission', '/sites/api-list', '/sites/call-log', '/sites/1.2.396.tape/api-list']) {
     const res = await fetch(`http://127.0.0.1:${PORT}${path}`)
     const html = await res.text()
     const csp = res.headers.get('content-security-policy') ?? ''
@@ -26,6 +26,20 @@ try {
     check(!csp.includes("'unsafe-inline'") || csp.split('; ').find((d) => d.startsWith('script-src ')).indexOf('unsafe-inline') === -1, `${path}: script-src has no unsafe-inline`)
     check(csp.includes(`connect-src 'self' ${API}`), `${path}: connect-src is this page and the API only`)
     check(res.headers.get('x-content-type-options') === 'nosniff' && res.headers.get('referrer-policy') === 'no-referrer' && !res.headers.get('x-powered-by'), `${path}: security headers set, no x-powered-by`)
+  }
+  for (const [previous, current] of [
+    ['/sites/secrets', '/sites/keys'],
+    ['/sites/routes', '/sites/actions'],
+    ['/sites/routes/new', '/sites/actions/new'],
+    ['/sites/routes/summarizeDocument', '/sites/actions/summarizeDocument'],
+    ['/sites/delegation', '/sites/permission'],
+    ['/sites/manifest', '/sites/api-list'],
+    ['/sites/logs', '/sites/call-log'],
+    ['/sites/1.2.396.tape/manifest', '/sites/1.2.396.tape/api-list'],
+    ['/sites/1.2.396.tape/routes/summarizeDocument', '/sites/1.2.396.tape/actions/summarizeDocument'],
+  ]) {
+    const res = await fetch(`http://127.0.0.1:${PORT}${previous}`, { redirect: 'manual' })
+    check(res.status === 308 && res.headers.get('location') === current, `${previous}: redirects to ${current}`)
   }
   // Addresses the app does not have are a real 404, still with the CSP and a nonce on every script, and crawlers are kept out.
   for (const path of ['/no-such-page', '/sites/not-a-site', '/sites/1.2.396.tape/no-such-tab']) {

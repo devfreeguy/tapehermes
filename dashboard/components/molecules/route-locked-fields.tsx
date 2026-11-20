@@ -8,8 +8,8 @@ export function RouteLockedFields({ form, set, errors }: FieldGroupProps) {
   return (
     <div className="space-y-5">
       <KeyValueEditor
-        id="locked" label="Locked settings"
-        hint="Fixed by you and always sent: a model name, instructions, a limit. A visitor who tries to set one is refused before anything is called, and is not charged. Numbers and true/false are sent as such; put quotes around a value to send it as text."
+        id="locked" label="Values visitors cannot change"
+        hint="Set values your action always sends, like an AI model name. If a visitor tries to change one, their request stops before it is sent or charged. Use quotes to send a number as text."
         rows={form.locked} onChange={(locked) => set({ locked })} keyLabel="Parameter" valueLabel="Fixed value" keyPlaceholder="max_output_tokens" valuePlaceholder="60" addLabel="Add locked setting"
       />
       <KeyValueEditor

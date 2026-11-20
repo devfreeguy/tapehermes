@@ -17,11 +17,11 @@ beforeEach(() => {
 })
 
 function openDelegation() {
-  fireEvent.click(screen.getByRole('button', { name: /Sign a delegation|Renew delegation/ }))
+  fireEvent.click(screen.getByRole('button', { name: /Give permission|Renew permission/ }))
 }
 
 function openPublish() {
-  fireEvent.click(screen.getByRole('button', { name: 'Review publish' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Review before publishing' }))
 }
 
 describe('DelegationSection', () => {
@@ -92,12 +92,12 @@ describe('DelegationSection', () => {
     S.signing.error = new ApiError(400, 'DELEGATION_SIGNATURE_MISMATCH', 'x')
     const { unmount } = render(<DelegationSection siteName="1.2.396.tape" />)
     openDelegation()
-    expect(screen.getByRole('alert')).toHaveTextContent('The signature is not from the holder')
+    expect(screen.getByRole('alert')).toHaveTextContent('The signature must come from the site owner')
     unmount()
     S.signing.error = null; S.signing.isSuccess = true
     render(<DelegationSection siteName="1.2.396.tape" />)
     openDelegation()
-    expect(screen.getByText(/Publish the manifest again/)).toBeInTheDocument()
+    expect(screen.getByText(/Publish your API list again/)).toBeInTheDocument()
   })
 })
 
@@ -118,7 +118,7 @@ describe('ManifestSection', () => {
     S.status = done(status('out-of-date', { onChain: { sha256: '0x' + 'cd'.repeat(32), size: 700, updatedAt: '2026-11-10T10:00:00.000Z' } }))
     render(<ManifestSection siteName="1.2.396.tape" />)
     expect(screen.getByText('Out of date')).toHaveAttribute('data-tone', 'bad')
-    expect(screen.getByTestId('manifest-sentence')).toHaveTextContent('older than your settings')
+    expect(screen.getByTestId('manifest-sentence')).toHaveTextContent('changed your settings after')
     expect(S.publish.mutate).not.toHaveBeenCalled()
     openPublish()
     expect(S.publish.mutate).not.toHaveBeenCalled()
@@ -131,16 +131,16 @@ describe('ManifestSection', () => {
     S.status = done(status('current'))
     render(<ManifestSection siteName="1.2.396.tape" />)
     expect(screen.getByText('Up to date')).toHaveAttribute('data-tone', 'good')
-    expect(screen.getByRole('button', { name: 'Review publish' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Review before publishing' })).toBeDisabled()
   })
 
   it('lists what is missing before publishing, in words, and blocks the button', () => {
     S.preview = done(preview({ publishable: false, problems: ['NO_ROUTES: the site has no enabled route', 'DELEGATION_REQUIRED: x'] }))
     S.status = done(status('not-ready', { expected: null }))
     render(<ManifestSection siteName="1.2.396.tape" />)
-    expect(screen.getByText('Add at least one route and turn it on.')).toBeInTheDocument()
-    expect(screen.getByText('The holder has not signed a delegation yet.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Review publish' })).toBeDisabled()
+    expect(screen.getByText('Add at least one action and turn it on.')).toBeInTheDocument()
+    expect(screen.getByText('The wallet that owns this site has not given signing permission yet.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Review before publishing' })).toBeDisabled()
   })
 
   it('only the holder wallet can publish', () => {
@@ -149,7 +149,7 @@ describe('ManifestSection', () => {
     render(<ManifestSection siteName="1.2.396.tape" />)
     openPublish()
     expect(screen.getByText(/Connect the holder wallet/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Publish manifest' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Publish API list' })).toBeDisabled()
   })
 
   it('explains the wallet step and its cost before the publish button, and the switch to X Layer when needed', () => {
@@ -159,8 +159,8 @@ describe('ManifestSection', () => {
     openPublish()
     const notices = screen.getAllByTestId('wallet-step-notice')
     expect(notices.map((n) => n.textContent).join(' ')).toMatch(/Switch to X Layer/)
-    expect(notices.map((n) => n.textContent).join(' ')).toMatch(/network gas in OKB/)
-    const button = screen.getByRole('button', { name: 'Publish manifest' })
+    expect(notices.map((n) => n.textContent).join(' ')).toMatch(/network fee in OKB/)
+    const button = screen.getByRole('button', { name: 'Publish API list' })
     for (const n of notices) expect(n.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
@@ -168,7 +168,7 @@ describe('ManifestSection', () => {
     S.status = { data: undefined, isPending: false, error: new ApiError(503, 'CHAIN_UNAVAILABLE', 'x') }
     render(<ManifestSection siteName="1.2.396.tape" />)
     expect(screen.getByRole('alert')).toHaveTextContent('X Layer could not be read')
-    expect(screen.getByText(/Show the manifest/)).toBeInTheDocument()
+    expect(screen.getByText(/View JSON/)).toBeInTheDocument()
   })
 
   it('reports a finished publish and a refused one', () => {
@@ -181,6 +181,6 @@ describe('ManifestSection', () => {
     S.publish.isSuccess = false; S.publish.data = undefined; S.publish.error = new ApiError(409, 'NOT_PUBLISHABLE', 'x', { problems: ['DELEGATION_EXPIRED: x'] })
     render(<ManifestSection siteName="1.2.396.tape" />)
     openPublish()
-    expect(screen.getAllByRole('alert')[0]).toHaveTextContent('cannot be published yet')
+    expect(screen.getAllByRole('alert')[0]).toHaveTextContent('not ready to publish')
   })
 })

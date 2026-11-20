@@ -10,12 +10,12 @@ export interface GuideStep {
 }
 
 export const GUIDE_STEPS: GuideStep[] = [
-  { id: 'signin', title: 'Sign in', why: 'Your wallet is your account. There is no password and no email.', wallet: 'signMessage' },
-  { id: 'register', title: 'Add your site', why: 'Enter the name of a TapeOut site you hold on X Layer, for example 1.2.396.tape. We check on chain that your wallet is its current holder.' },
-  { id: 'activate', title: 'Switch on your site', why: 'A new TapeOut site is off until its holder switches it on. While it is off, apps cannot find it. It takes one transaction from your wallet.', wallet: 'transactions' },
-  { id: 'secret', title: 'Save a secret key', why: 'If the outside service needs an API key, save it here. It is encrypted, never shown again, and never sent to your visitors.', optional: true },
-  { id: 'route', title: 'Create a route', why: 'A route is one call to an outside service that your site offers. You set the address, what visitors may send, and the price. Prices of zero make the route free.' },
-  { id: 'delegation', title: 'Sign the delegation', why: 'Visitors need proof that answers really come from your site. You authorize our signing key for a set time, and your wallet signs it.', wallet: 'signTypedData' },
-  { id: 'publish', title: 'Publish the manifest', why: 'The manifest lists your routes and prices and carries the delegation. Publishing writes it into your site on X Layer, so anyone can read it.', wallet: 'transactions' },
-  { id: 'live', title: 'You are live', why: 'Your routes now answer. Use the call log to watch calls arrive. Renew the delegation before it ends.' },
+  { id: 'signin', title: 'Sign in', why: 'Connect your wallet, then sign a short message to prove it is yours. There is no password.', wallet: 'signMessage' },
+  { id: 'register', title: 'Add your site', why: 'Enter your TapeOut site name, like 1.2.396.tape. TapeHermes checks that the wallet you signed in with owns it.' },
+  { id: 'activate', title: 'Switch on your site', why: 'Turn on your site so apps can find it. Your wallet will show the cost before you pay.', wallet: 'transactions' },
+  { id: 'secret', title: 'Save an API key', why: 'If the service you want to use gave you an API key, save it here. Skip this step if the service works without one.', optional: true },
+  { id: 'route', title: 'Add an action', why: 'Set up an action like summarizing a document with an AI service. Choose what people can send and what to charge per summary. Use 0 to make it free.' },
+  { id: 'delegation', title: 'Give signing permission', why: 'Let TapeHermes sign replies for your site until a date you choose. That signature helps apps check who sent the reply.', wallet: 'signTypedData' },
+  { id: 'publish', title: 'Publish your API list', why: 'Put your list of actions and prices on X Layer so apps know what they can ask your site to do.', wallet: 'transactions' },
+  { id: 'live', title: 'Your site is live', why: 'Open the Call Log to see what people ask your site to do. Renew signing permission before it expires.' },
 ]

@@ -11,7 +11,7 @@ export function DashboardSitePicker() {
   return (
     <SitePicker sites={sites} selected={selected} pending={pending} onChange={(site) => {
       if (site === selected) return
-      if (pathname.startsWith('/sites/routes/')) router.replace('/sites/routes')
+      if (pathname.startsWith('/sites/actions/')) router.replace('/sites/actions')
       else if (pathname === '/sites/new') router.replace('/sites')
       selectSite(site)
     }} />

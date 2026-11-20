@@ -57,15 +57,15 @@ export function SiteTabs() {
 
   function warmTab(path: string, site: string) {
     switch (path) {
-      case '/secrets': void cache.prefetchQuery(siteSecretsQuery(api, site)); break
-      case '/routes': void cache.prefetchQuery(siteRoutesQuery(api, site)); break
-      case '/delegation': void cache.prefetchQuery(siteDetailsQuery(api, site)); break
-      case '/manifest':
+      case '/keys': void cache.prefetchQuery(siteSecretsQuery(api, site)); break
+      case '/actions': void cache.prefetchQuery(siteRoutesQuery(api, site)); break
+      case '/permission': void cache.prefetchQuery(siteDetailsQuery(api, site)); break
+      case '/api-list':
         void cache.prefetchQuery(siteDetailsQuery(api, site))
         void cache.prefetchQuery(manifestStatusQuery(api, site))
         void cache.prefetchQuery(manifestPreviewQuery(api, site))
         break
-      case '/logs':
+      case '/call-log':
         void cache.prefetchQuery(callSummaryQuery(api, site, 7))
         void cache.prefetchQuery(recentCallsQuery(api, site))
         break

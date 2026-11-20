@@ -14,7 +14,7 @@ import { ApiError } from '@/lib/api/errors'
 vi.mock('next/link', () => import('./mocks/next-link'))
 
 describe('SecretRow: a value is never shown', () => {
-  const secret = { name: 'WEATHER_KEY', createdAt: '2026-11-14T10:00:00.000Z', updatedAt: '2026-11-15T10:00:00.000Z' }
+  const secret = { name: 'AI_PROVIDER_KEY', createdAt: '2026-11-14T10:00:00.000Z', updatedAt: '2026-11-15T10:00:00.000Z' }
   const edit = () => ({
     mutate: vi.fn((_input: unknown, { onSuccess }: { onSuccess: () => void }) => onSuccess()),
     reset: vi.fn(),
@@ -25,7 +25,7 @@ describe('SecretRow: a value is never shown', () => {
 
   it('shows the name and says the value is hidden, with no way to reveal it', () => {
     render(<ul><SecretRow secret={secret} busy={false} actions={handlers()} /></ul>)
-    expect(screen.getByText('WEATHER_KEY')).toBeInTheDocument()
+    expect(screen.getByText('AI_PROVIDER_KEY')).toBeInTheDocument()
     expect(screen.getByText('Value hidden')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /show|reveal|copy/i })).toBeNull()
     expect(screen.queryByRole('textbox')).toBeNull()
@@ -41,7 +41,7 @@ describe('SecretRow: a value is never shown', () => {
     expect(box).toHaveAttribute('autocomplete', 'off')
     await user.type(box, 'sk-new-value')
     await user.click(screen.getByRole('button', { name: 'Save new value' }))
-    expect(h.save.mutate).toHaveBeenCalledWith({ name: 'WEATHER_KEY', value: 'sk-new-value' }, expect.anything())
+    expect(h.save.mutate).toHaveBeenCalledWith({ name: 'AI_PROVIDER_KEY', value: 'sk-new-value' }, expect.anything())
     expect(screen.queryByLabelText('New value')).toBeNull() // the box is gone, so the value is not left on the page
     expect(document.body.textContent).not.toContain('sk-new-value')
   })
@@ -52,11 +52,11 @@ describe('SecretRow: a value is never shown', () => {
     render(<ul><SecretRow secret={secret} busy={false} actions={h} /></ul>)
     await user.click(screen.getByRole('button', { name: 'Rename' }))
     const box = screen.getByLabelText('New name')
-    expect(box).toHaveValue('WEATHER_KEY')
+    expect(box).toHaveValue('AI_PROVIDER_KEY')
     await user.clear(box)
     await user.type(box, 'rates_key')
     await user.click(screen.getByRole('button', { name: 'Save new name' }))
-    expect(h.rename.mutate).toHaveBeenCalledWith({ name: 'WEATHER_KEY', to: 'RATES_KEY' }, expect.anything())
+    expect(h.rename.mutate).toHaveBeenCalledWith({ name: 'AI_PROVIDER_KEY', to: 'RATES_KEY' }, expect.anything())
   })
 
   it('asks before deleting, and deletes only after the owner agrees', async () => {
@@ -67,7 +67,7 @@ describe('SecretRow: a value is never shown', () => {
     expect(h.remove.mutate).not.toHaveBeenCalled()
     const dialog = await screen.findByRole('alertdialog')
     await user.click(within(dialog).getByRole('button', { name: 'Delete secret' }))
-    expect(h.remove.mutate).toHaveBeenCalledWith('WEATHER_KEY')
+    expect(h.remove.mutate).toHaveBeenCalledWith('AI_PROVIDER_KEY')
   })
 
   it('can cancel an edit, and disables actions while busy', async () => {
@@ -114,12 +114,12 @@ describe('ErrorNotice', () => {
   })
   it('lists the reasons a manifest cannot be published, and the routes that still use a secret', () => {
     render(<ErrorNotice error={new ApiError(409, 'NOT_PUBLISHABLE', 'x', { problems: ['NO_ROUTES: none', 'DELEGATION_REQUIRED: none'] })} />)
-    expect(screen.getByText('Add at least one route and turn it on.')).toBeInTheDocument()
-    expect(screen.getByText('The holder has not signed a delegation yet.')).toBeInTheDocument()
+    expect(screen.getByText('Add at least one action and turn it on.')).toBeInTheDocument()
+    expect(screen.getByText('The wallet that owns this site has not given signing permission yet.')).toBeInTheDocument()
   })
   it('names routes that still use a secret', () => {
     render(<ErrorNotice error={new ApiError(409, 'SECRET_IN_USE', 'x', { routes: ['fx', 'ai'] })} />)
-    expect(screen.getByText('Routes using it: fx, ai.')).toBeInTheDocument()
+    expect(screen.getByText('Actions using it: fx, ai.')).toBeInTheDocument()
   })
 })
 
@@ -132,15 +132,15 @@ describe('WalletStepNotice', () => {
     expect(n).toHaveTextContent('What it cannot do')
     expect(n).toHaveTextContent(step.whatHappens)
   })
-  it('tells the owner that publishing costs gas and signing the delegation is free', () => {
-    expect(WALLET_STEPS.publish.cost).toMatch(/gas/i)
+  it('tells the owner that publishing costs a network fee in OKB and signing permission is free', () => {
+    expect(WALLET_STEPS.publish.cost).toMatch(/network fee in OKB/i)
     expect(WALLET_STEPS.delegation.cost).toMatch(/free/i)
     expect(WALLET_STEPS.signIn.cost).toMatch(/free/i)
   })
 })
 
 describe('state badges', () => {
-  it.each([['none', 'No delegation', 'neutral'], ['valid', 'Valid', 'good'], ['expiring', 'Expiring soon', 'warn'], ['expired', 'Expired', 'bad']] as const)('delegation %s', (state, label, tone) => {
+  it.each([['none', 'No permission', 'neutral'], ['valid', 'Permission active', 'good'], ['expiring', 'Expiring soon', 'warn'], ['expired', 'Expired', 'bad']] as const)('delegation %s', (state, label, tone) => {
     render(<DelegationBadge state={state} />)
     expect(screen.getByText(label)).toHaveAttribute('data-tone', tone)
   })

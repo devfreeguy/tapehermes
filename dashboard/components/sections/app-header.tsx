@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { AddressText } from '@/components/atoms/address-text'
+import { BrandWordmark } from '@/components/atoms/brand-wordmark'
 import { Button } from '@/components/ui/button'
 import { ThemeSelect } from './theme-select'
 import { NAV_ITEMS } from '@/config/nav'
@@ -18,10 +19,16 @@ export function AppHeader() {
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="font-mono text-lg font-semibold tracking-tight">tape<span className="text-primary-action">hermes</span></Link>
-          <nav aria-label="Main" className="flex items-center gap-4 text-sm">
-            {NAV_ITEMS.map((n) => <Link key={n.href} href={n.href} className="text-muted-foreground hover:text-foreground">{n.label}</Link>)}
+        <div className="flex items-center gap-2 sm:gap-6">
+          <Link href="/" className="inline-flex shrink-0 rounded-lg"><BrandWordmark compact /></Link>
+          <nav aria-label="Main" className="flex items-center gap-1 text-sm sm:gap-4">
+            {NAV_ITEMS.map((n) => (
+              <Button key={n.href} asChild variant="ghost" className="pill-control max-sm:px-4!">
+                <Link href={n.href} aria-current={pathname === n.href ? 'page' : undefined} className="aria-[current=page]:bg-primary-action/12 aria-[current=page]:text-primary-action">
+                  {n.label}
+                </Link>
+              </Button>
+            ))}
           </nav>
         </div>
         <div className="flex items-center gap-3 text-sm">

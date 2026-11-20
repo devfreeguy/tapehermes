@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { PageTitle } from '@/components/atoms/page-title'
 import { useActivation } from '@/hooks/use-activation'
 import { useManifestStatus } from '@/hooks/use-manifest'
 import { useRoutes } from '@/hooks/use-routes'
@@ -32,7 +31,6 @@ export function GuidedPathSection() {
   const first = sites.data?.[0]
   return (
     <section className="space-y-6">
-      <PageTitle title="Guided setup" description="Eight short steps from sign-in to a live route. Every step that opens your wallet explains itself first." />
       {first
         ? <SiteGuide site={first.name} signedIn={!!session} delegation={first.delegation.status} />
         : <GuideSteps site={null} onSkipSecret={() => undefined} facts={{ signedIn: !!session, hasSite: false, activated: null, secretCount: 0, secretSkipped: false, routeCount: 0, delegation: null, manifest: null }} />}
