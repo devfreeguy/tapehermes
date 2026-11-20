@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslator } from '@/lib/locale-context'
 import { useQueryClient } from '@tanstack/react-query'
 import { KeyRound, LayoutGrid, ListChecks, Network, Plus, ScrollText, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
@@ -19,19 +20,21 @@ import { TabScrollArea } from './tab-scroll-area'
 const tabIcons = [LayoutGrid, KeyRound, Network, ShieldCheck, ScrollText, ListChecks]
 
 export function NewSiteNavLink({ iconOnly = false }: { iconOnly?: boolean }) {
+  const t = useTranslator()
   const active = usePathname() === '/sites/new'
   return (
     <Button asChild variant={active ? 'outline' : 'default'} size={iconOnly ? 'icon' : 'default'}
       className={iconOnly ? 'size-11 rounded-full md:hidden' : 'pill-control mt-auto hidden w-full md:inline-flex'}
     >
-      <Link href="/sites/new" prefetch aria-label={iconOnly ? 'New site' : undefined} aria-current={active ? 'page' : undefined}>
-        <Plus aria-hidden="true" className="size-4" />{!iconOnly && 'New site'}
+      <Link href="/sites/new" prefetch aria-label={iconOnly ? t('New site') : undefined} aria-current={active ? 'page' : undefined}>
+        <Plus aria-hidden="true" className="size-4" />{!iconOnly && t('New site')}
       </Link>
     </Button>
   )
 }
 
 export function SiteTabs() {
+  const t = useTranslator()
   const pathname = usePathname()
   const { selected } = useSiteSelection()
   const api = useApi()
@@ -79,7 +82,7 @@ export function SiteTabs() {
 
   return (
     <TabScrollArea>
-      <nav aria-label="Site" className="flex min-w-0 gap-1 md:grid md:grid-cols-1 md:[@media(max-height:28rem)]:grid-cols-2">
+      <nav aria-label={t('Site')} className="flex min-w-0 gap-1 md:grid md:grid-cols-1 md:[@media(max-height:28rem)]:grid-cols-2">
         {SITE_TABS.map(({ path, label }, index) => {
           const href = '/sites' + path
           const active = pathname === href || (path !== '' && pathname.startsWith(href + '/'))
@@ -94,7 +97,7 @@ export function SiteTabs() {
               )}
             >
               <Icon aria-hidden="true" className="size-4 shrink-0" />
-              {label}
+              {t(label)}
             </Link>
           )
         })}

@@ -1,3 +1,4 @@
+import { useTranslator } from '@/lib/locale-context'
 import Link from 'next/link'
 import { AddressText } from '@/components/atoms/address-text'
 import { StatusBadge } from '@/components/atoms/status-badge'
@@ -12,23 +13,24 @@ import { DelegationBadge } from './delegation-badge'
  * (`activated`, null while not known), its payout address and its delegation state.
  */
 export function SiteCard({ site, activated = null }: { site: Site; activated?: boolean | null }) {
+  const t = useTranslator()
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between gap-2">
         <CardTitle className="font-mono text-lg"><Link href={`/sites/${encodeURIComponent(site.name)}`} className="hover:underline">{site.name}</Link></CardTitle>
-        <StatusBadge tone={site.status === 'ACTIVE' ? 'good' : 'neutral'}>{site.status === 'ACTIVE' ? 'Answering calls' : 'Paused'}</StatusBadge>
+        <StatusBadge tone={site.status === 'ACTIVE' ? 'good' : 'neutral'}>{site.status === 'ACTIVE' ? t('Answering calls') : t('Paused')}</StatusBadge>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         <p className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground">On X Layer</span>
-          {activated === null ? <span className="text-muted-foreground">checking...</span> : <StatusBadge tone={activated ? 'good' : 'warn'}>{activated ? 'Switched on' : 'Not switched on'}</StatusBadge>}
+          <span className="text-muted-foreground">{t('On X Layer')}</span>
+          {activated === null ? <span className="text-muted-foreground">{t('checking...')}</span> : <StatusBadge tone={activated ? 'good' : 'warn'}>{activated ? t('Switched on') : t('Not switched on')}</StatusBadge>}
         </p>
-        <p className="flex flex-wrap items-center gap-2"><span className="text-muted-foreground">Payout</span><AddressText value={site.payoutAddress} /></p>
+        <p className="flex flex-wrap items-center gap-2"><span className="text-muted-foreground">{t('Payout')}</span><AddressText value={site.payoutAddress} /></p>
         <p className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground">Delegation</span><DelegationBadge state={site.delegation.status} />
+          <span className="text-muted-foreground">{t('Delegation')}</span><DelegationBadge state={site.delegation.status} />
           <span className="text-muted-foreground">{daysLeftLabel(site.delegation.status === 'none' ? null : site.delegation.daysLeft)}</span>
         </p>
-        {activated === false ? <Button asChild size="sm"><Link href={`/sites/${encodeURIComponent(site.name)}`}>Switch on my site</Link></Button> : null}
+        {activated === false ? <Button asChild size="sm"><Link href={`/sites/${encodeURIComponent(site.name)}`}>{t('Switch on my site')}</Link></Button> : null}
       </CardContent>
     </Card>
   )

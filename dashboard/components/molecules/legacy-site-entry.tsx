@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslator } from '@/lib/locale-context'
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { ErrorNotice } from '@/components/molecules/error-notice'
@@ -7,6 +8,7 @@ import { Spinner } from '@/components/atoms/spinner'
 import { useSiteSelection } from './site-selection-provider'
 
 export function LegacySiteEntry({ site }: { site: string }) {
+  const t = useTranslator()
   const { sites, pending, error, selectSite } = useSiteSelection()
   const pathname = usePathname()
   const router = useRouter()
@@ -21,5 +23,5 @@ export function LegacySiteEntry({ site }: { site: string }) {
     router.replace(suffix ? `/sites/${suffix}` : '/sites')
   }, [sites, pending, error, pathname, router, selectSite, site])
 
-  return error ? <ErrorNotice error={error} /> : <Spinner label="Opening your site" />
+  return error ? <ErrorNotice error={error} /> : <Spinner label={t('Opening your site')} />
 }

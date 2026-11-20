@@ -1,3 +1,5 @@
+import { translator, type Locale, type Translate } from '@/lib/locale'
+
 /** 0x1234567890abcdef... to 0x1234...cdef. Short values come back as they are. */
 export function shortHex(value: string, head = 6, tail = 4): string {
   return value.length <= head + tail + 3 ? value : `${value.slice(0, head)}...${value.slice(-tail)}`
@@ -10,15 +12,15 @@ export function usdLabel(value: string): string {
 }
 
 /** A date as "14 Nov 2026, 19:05" in the viewer's own time zone. Bad input returns an empty string. */
-export function dateLabel(iso: string | null | undefined): string {
+export function dateLabel(iso: string | null | undefined, locale: Locale = 'en'): string {
   if (!iso) return ''
   const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString(locale === 'en' ? 'en-GB' : locale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 /** "in 12 days", "tomorrow", "expired". */
-export function daysLeftLabel(daysLeft: number | null): string {
+export function daysLeftLabel(daysLeft: number | null, t: Translate = translator('en')): string {
   if (daysLeft === null) return ''
-  if (daysLeft <= 0) return 'ends today'
-  return daysLeft === 1 ? '1 day left' : `${daysLeft} days left`
+  if (daysLeft <= 0) return t('ends today')
+  return daysLeft === 1 ? t('1 day left') : t('{0} days left', daysLeft)
 }

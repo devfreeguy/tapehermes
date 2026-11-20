@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslator } from '@/lib/locale-context'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils'
 const edgeTolerance = 1
 
 export function TabScrollArea({ children }: { children: ReactNode }) {
+  const t = useTranslator()
   const id = useId()
   const container = useRef<HTMLDivElement>(null)
   const leftButton = useRef<HTMLButtonElement>(null)
@@ -64,18 +66,18 @@ export function TabScrollArea({ children }: { children: ReactNode }) {
     <div ref={container} className="flex min-w-0 items-center">
       <Button type="button" variant="ghost" size="icon" ref={leftButton}
         className={cn(buttonClass, !edges.left && 'invisible')} disabled={!edges.left}
-        aria-label="Scroll tabs left" aria-controls={id} onClick={() => move(-1)}
+        aria-label={t('Scroll tabs left')} aria-controls={id} onClick={() => move(-1)}
       >
         <ChevronLeft aria-hidden="true" />
       </Button>
       <div id={id} className="min-w-0 flex-1">
-        <ScrollArea label="Site navigation" orientation="horizontal" className="max-md:[&_[data-orientation=horizontal]]:hidden">
+        <ScrollArea label={t('Site navigation')} orientation="horizontal" className="max-md:[&_[data-orientation=horizontal]]:hidden">
           {children}
         </ScrollArea>
       </div>
       <Button type="button" variant="ghost" size="icon" ref={rightButton}
         className={cn(buttonClass, !edges.right && 'invisible')} disabled={!edges.right}
-        aria-label="Scroll tabs right" aria-controls={id} onClick={() => move(1)}
+        aria-label={t('Scroll tabs right')} aria-controls={id} onClick={() => move(1)}
       >
         <ChevronRight aria-hidden="true" />
       </Button>

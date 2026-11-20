@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { SITE_TERMS } from '@/copy/site-terms'
 import { KeyRound, ShieldCheck } from 'lucide-react'
@@ -29,25 +30,26 @@ import { daysLeftLabel } from '@/lib/format/text'
 import { useSelectedSiteName } from '@/components/molecules/site-selection-provider'
 
 export function DelegationSection({ siteName: explicitSite }: { siteName?: string }) {
+  const t = useTranslator()
   const siteName = useSelectedSiteName(explicitSite)
   const site = useSite(siteName)
   const wallet = useWallet()
   const signing = useDelegationSigning(siteName)
   const [open, setOpen] = useState(false)
   const [days, setDays] = useState(String(DELEGATION_DAYS.default))
-  if (site.isPending) return <Spinner label="Loading delegation" />
+  if (site.isPending) return <Spinner label={t('Loading delegation')} />
   if (!site.data) return <ErrorNotice error={site.error} />
   const { delegation, holder, signer } = site.data
   const status = DELEGATION_LOOK[delegation.status]
   const holderConnected = wallet.address !== null && wallet.address === holder.toLowerCase()
   const duration = daysOrNull(days)
-  const title = delegation.stored ? 'Renew permission' : 'Give permission'
+  const title = delegation.stored ? t('Renew permission') : t('Give permission')
 
   return (
     <section className="space-y-7 lg:space-y-9">
-      <PageTitle variant="dashboard" title={SITE_TERMS.delegation.label} description={SITE_TERMS.delegation.description}
+      <PageTitle variant="dashboard" title={t(SITE_TERMS.delegation.label)} description={t(SITE_TERMS.delegation.description)}
         action={
-          <ActionDialog title={title} description="Choose how long the permission lasts, then approve the signature in the holder wallet."
+          <ActionDialog title={title} description={t('Choose how long the permission lasts, then approve the signature in the holder wallet.')}
             open={open} onOpenChange={(next) => {
               if (signing.isPending) return
               if (next) setDays(String(DELEGATION_DAYS.default))
@@ -58,15 +60,15 @@ export function DelegationSection({ siteName: explicitSite }: { siteName?: strin
             <DaysField id="days" value={days} onChange={setDays} presentation="dialog" />
             <ConnectWallet wallet={wallet} className="pill-control" />
             {wallet.isConnected && !holderConnected && (
-              <Alert variant="destructive"><AlertDescription>This wallet is not the holder of {siteName}. Switch your wallet to <AddressText value={holder} />. Only the holder can sign.</AlertDescription></Alert>
+              <Alert variant="destructive"><AlertDescription>{t('This wallet is not the holder of') + ' '}{siteName}{t('. Switch your wallet to') + ' '}<AddressText value={holder} />{t('. Only the holder can sign.')}</AlertDescription></Alert>
             )}
             <WalletStepNotice step={WALLET_STEPS.delegation} presentation="dialog" />
             <ErrorNotice error={signing.error} />
-            {signing.isSuccess && <p role="status" className="text-sm text-muted-foreground">Permission saved. Publish your API list again so apps can check your replies.</p>}
+            {signing.isSuccess && <p role="status" className="text-sm text-muted-foreground">{t('Permission saved. Publish your API list again so apps can check your replies.')}</p>}
             <div className="auth-actions">
-              <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control" disabled={signing.isPending}>Close</Button></Dialog.Close>
+              <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control" disabled={signing.isPending}>{t('Close')}</Button></Dialog.Close>
               <Button type="button" className="pill-control" disabled={!holderConnected || duration === null || signing.isPending} onClick={() => duration !== null && signing.mutate(duration)}>
-                {signing.isPending && <Spinner />}{delegation.stored ? 'Sign and renew' : 'Sign and save'}
+                {signing.isPending && <Spinner />}{delegation.stored ? t('Sign and renew') : t('Sign and save')}
               </Button>
             </div>
           </ActionDialog>
@@ -74,25 +76,25 @@ export function DelegationSection({ siteName: explicitSite }: { siteName?: strin
       />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <OverviewTile title="Current permission" icon={ShieldCheck} accentClassName="text-primary-action" attention={status.tone}>
+        <OverviewTile title={t('Current permission')} icon={ShieldCheck} accentClassName="text-primary-action" attention={status.tone}>
           <div className="space-y-2 rounded-xl bg-primary-action/6 p-4">
-            <p className="text-xl font-semibold tracking-tight group-data-[attention=bad]/tile:text-destructive group-data-[attention=warn]/tile:text-warning">{status.label}</p>
+            <p className="text-xl font-semibold tracking-tight group-data-[attention=bad]/tile:text-destructive group-data-[attention=warn]/tile:text-warning">{t(status.label)}</p>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {delegation.expiresAt ? <>Expires <TimeText value={delegation.expiresAt} /> · <span>{daysLeftLabel(delegation.daysLeft)}</span></> : 'You haven’t given permission yet.'}
+              {delegation.expiresAt ? <>{t('Expires') + ' '}<TimeText value={delegation.expiresAt} /> · <span>{daysLeftLabel(delegation.daysLeft, t)}</span></> : t('You haven’t given permission yet.')}
             </p>
           </div>
-          {delegation.status === 'expired' && <HintText>It has ended, so your site cannot answer. Renew permission, then publish your API list again.</HintText>}
-          {delegation.status === 'expiring' && <HintText>It ends soon. Renew before it expires, then publish your API list again.</HintText>}
+          {delegation.status === 'expired' && <HintText>{t('It has ended, so your site cannot answer. Renew permission, then publish your API list again.')}</HintText>}
+          {delegation.status === 'expiring' && <HintText>{t('It ends soon. Renew before it expires, then publish your API list again.')}</HintText>}
           {signing.isSuccess && !open && (
             <Button asChild variant="outline" className="pill-control self-start">
-              <Link href="/sites/api-list">Open API List</Link>
+              <Link href="/sites/api-list">{t('Open API List')}</Link>
             </Button>
           )}
         </OverviewTile>
-        <OverviewTile title="Wallets and keys" icon={KeyRound} accentClassName="text-accent">
+        <OverviewTile title={t('Wallets and keys')} icon={KeyRound} accentClassName="text-accent">
           <dl className="space-y-4 rounded-xl bg-accent/7 p-4 text-sm">
-            <div><dt className="text-muted-foreground">Wallet that owns the site</dt><dd className="mt-1"><AddressText value={holder} full /></dd></div>
-            <div><dt className="text-muted-foreground">Key TapeHermes uses to sign replies</dt><dd className="mt-1"><AddressText value={signer} full /></dd></div>
+            <div><dt className="text-muted-foreground">{t('Wallet that owns the site')}</dt><dd className="mt-1"><AddressText value={holder} full /></dd></div>
+            <div><dt className="text-muted-foreground">{t('Key TapeHermes uses to sign replies')}</dt><dd className="mt-1"><AddressText value={signer} full /></dd></div>
           </dl>
         </OverviewTile>
       </div>

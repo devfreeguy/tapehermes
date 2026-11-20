@@ -6,11 +6,12 @@ import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 export function OverviewTile({
-  title, icon: Icon, href, children, className, accentClassName, attention,
+  title, icon: Icon, href, linkLabel, children, className, accentClassName, attention,
 }: {
   title: string
   icon: LucideIcon
   href?: string
+  linkLabel?: string
   children: ReactNode
   className?: string
   accentClassName?: string
@@ -31,7 +32,7 @@ export function OverviewTile({
           <h2 className="font-(family-name:--font-auth) text-sm leading-5 font-semibold text-muted-foreground">{title}</h2>
         </div>
         {href && (
-          <Link href={href} aria-label={`Open ${title.toLowerCase()}`} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-action/12 text-primary-action transition-colors hover:bg-primary-action/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+          <Link href={href} aria-label={linkLabel ?? `Open ${title.toLowerCase()}`} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-action/12 text-primary-action transition-colors hover:bg-primary-action/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
             <ArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         )}

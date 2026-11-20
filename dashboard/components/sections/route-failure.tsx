@@ -4,6 +4,7 @@ import { CircleAlert, RotateCw } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { CRASH } from '@/copy/pages'
+import { useTranslator } from '@/lib/locale-context'
 import { FailurePanel } from './failure-panel'
 
 export type FailureProps = {
@@ -13,16 +14,17 @@ export type FailureProps = {
 }
 
 export function RouteFailure({ error, retry, reset, standalone }: FailureProps & { standalone?: boolean }) {
+  const t = useTranslator()
   return (
-    <FailurePanel title={CRASH.title} description={CRASH.description} standalone={standalone} tone="warning"
+    <FailurePanel title={t(CRASH.title)} description={t(CRASH.description)} standalone={standalone} tone="warning"
       icon={<CircleAlert aria-hidden="true" className="size-5" />}
       actions={
         <>
-          <Button type="button" className="pill-control" onClick={retry ?? reset}><RotateCw aria-hidden="true" />{CRASH.retry}</Button>
-          <Button asChild variant="outline" className="pill-control"><Link href="/sites">{CRASH.home}</Link></Button>
+          <Button type="button" className="pill-control" onClick={retry ?? reset}><RotateCw aria-hidden="true" />{t(CRASH.retry)}</Button>
+          <Button asChild variant="outline" className="pill-control"><Link href="/sites">{t(CRASH.home)}</Link></Button>
         </>
       }
-      reference={error?.digest ? <p>{CRASH.reference}: <code className="font-mono">{error.digest}</code></p> : undefined}
+      reference={error?.digest ? <p>{t(CRASH.reference)}: <code className="font-mono">{error.digest}</code></p> : undefined}
     />
   )
 }

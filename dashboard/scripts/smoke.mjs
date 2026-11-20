@@ -27,6 +27,15 @@ try {
     check(csp.includes(`connect-src 'self' ${API}`), `${path}: connect-src is this page and the API only`)
     check(res.headers.get('x-content-type-options') === 'nosniff' && res.headers.get('referrer-policy') === 'no-referrer' && !res.headers.get('x-powered-by'), `${path}: security headers set, no x-powered-by`)
   }
+  for (const [preference, language, heading] of [
+    [undefined, 'zh-CN', '让你的 API 密钥'],
+    ['en', 'en', 'Keep your API keys'],
+    ['invalid', 'zh-CN', '让你的 API 密钥'],
+  ]) {
+    const headers = preference ? { cookie: `tapehermes-locale=${preference}` } : undefined
+    const html = await (await fetch(`http://127.0.0.1:${PORT}/`, { headers })).text()
+    check(html.includes(`<html lang="${language}"`) && html.includes(heading), `/: renders ${language} from the language preference`)
+  }
   for (const [previous, current] of [
     ['/sites/secrets', '/sites/keys'],
     ['/sites/routes', '/sites/actions'],
@@ -49,7 +58,7 @@ try {
     const nonce = /'nonce-([^']+)'/.exec(csp)?.[1]
     const tags = [...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1])
     check(res.status === 404, `${path}: 404`)
-    check(html.includes('Page not found'), `${path}: shows the not-found page`)
+    check(html.includes('找不到页面'), `${path}: shows the localized not-found page`)
     check(!!nonce && tags.every((t) => t.includes(`nonce="${nonce}"`)), `${path}: CSP nonce on every script (${tags.length})`)
   }
   const robots = await fetch(`http://127.0.0.1:${PORT}/robots.txt`)

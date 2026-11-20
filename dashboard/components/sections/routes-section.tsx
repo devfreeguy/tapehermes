@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { SITE_TERMS } from '@/copy/site-terms'
 import { Plus } from 'lucide-react'
@@ -13,13 +14,14 @@ import { useRouteActions, useRoutes } from '@/hooks/use-routes'
 import { useSelectedSiteName } from '@/components/molecules/site-selection-provider'
 
 export function RoutesSection({ siteName: explicitSite }: { siteName?: string }) {
+  const t = useTranslator()
   const siteName = useSelectedSiteName(explicitSite)
   const routes = useRoutes(siteName)
   const actions = useRouteActions(siteName)
   const busy = actions.update.isPending || actions.remove.isPending
   const newRoute = (
     <Button asChild className="pill-control">
-      <Link href="/sites/actions/new" prefetch><Plus aria-hidden="true" />New action</Link>
+      <Link href="/sites/actions/new" prefetch><Plus aria-hidden="true" />{t('New action')}</Link>
     </Button>
   )
 
@@ -27,19 +29,19 @@ export function RoutesSection({ siteName: explicitSite }: { siteName?: string })
     <section aria-labelledby="routes-title" className="space-y-7 lg:space-y-9">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 id="routes-title" className="font-(family-name:--font-auth) text-3xl font-extrabold tracking-tight sm:text-4xl">{SITE_TERMS.routes.label}</h1>
+          <h1 id="routes-title" className="font-(family-name:--font-auth) text-3xl font-extrabold tracking-tight sm:text-4xl">{t(SITE_TERMS.routes.label)}</h1>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            {SITE_TERMS.routes.description}
+            {t(SITE_TERMS.routes.description)}
           </p>
         </div>
         {newRoute}
       </header>
 
       <ErrorNotice error={actions.update.error ?? actions.remove.error ?? routes.error} />
-      {routes.isPending && <Spinner label="Loading routes" />}
-      {routes.data?.length === 0 && <EmptyState title="No actions yet" description="Add something your site can do for visitors. Set the price to 0 if you want it to be free." />}
+      {routes.isPending && <Spinner label={t('Loading routes')} />}
+      {routes.data?.length === 0 && <EmptyState title={t('No actions yet')} description={t('Add something your site can do for visitors. Set the price to 0 if you want it to be free.')} />}
       {!!routes.data?.length && (
-        <ul aria-label="Saved actions" className="grid gap-4 xl:grid-cols-2">
+        <ul aria-label={t('Saved actions')} className="grid gap-4 xl:grid-cols-2">
           {routes.data.map((route) => (
             <RouteRow key={route.name} route={route} busy={busy}
               onToggle={(name, enabled) => actions.update.mutate({ name, patch: { enabled } })}

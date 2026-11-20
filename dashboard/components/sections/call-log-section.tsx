@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { SITE_TERMS } from '@/copy/site-terms'
 import { useState } from 'react'
@@ -23,6 +24,7 @@ const DAYS = [1, 7, 30, 90]
 import { useSelectedSiteName } from '@/components/molecules/site-selection-provider'
 
 export function CallLogSection({ siteName: explicitSite }: { siteName?: string }) {
+  const t = useTranslator()
   const siteName = useSelectedSiteName(explicitSite)
   const [route, setRoute] = useState(ALL)
   const [days, setDays] = useState(7)
@@ -31,32 +33,32 @@ export function CallLogSection({ siteName: explicitSite }: { siteName?: string }
   const names = Object.keys(summary.data?.routes ?? {})
   return (
     <section className="space-y-7 lg:space-y-9">
-      <PageTitle variant="dashboard" title={SITE_TERMS.logs.label} description={SITE_TERMS.logs.description} />
+      <PageTitle variant="dashboard" title={t(SITE_TERMS.logs.label)} description={t(SITE_TERMS.logs.description)} />
       <ErrorNotice error={summary.error ?? logs.error} />
-      <OverviewTile title="Request totals" icon={Activity} accentClassName="text-primary-action">
+      <OverviewTile title={t('Request totals')} icon={Activity} accentClassName="text-primary-action">
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-          <SelectTrigger aria-label="Period" className="h-11! w-40 rounded-full px-4"><SelectValue /></SelectTrigger>
-          <SelectContent position="popper">{DAYS.map((d) => <SelectItem key={d} value={String(d)}>{d === 1 ? 'Last day' : `Last ${d} days`}</SelectItem>)}</SelectContent>
+          <SelectTrigger aria-label={t('Period')} className="h-11! w-40 rounded-full px-4"><SelectValue /></SelectTrigger>
+          <SelectContent position="popper">{DAYS.map((d) => <SelectItem key={d} value={String(d)}>{d === 1 ? t('Last day') : t('Last {0} days', d)}</SelectItem>)}</SelectContent>
         </Select>
         {summary.data ? (
           <dl className="grid grid-cols-3 gap-2 sm:gap-3">
-            <SummaryStat label="Requests" className="bg-primary-action/8">{summary.data.totals.calls}</SummaryStat>
-            <SummaryStat label="Paid requests" className="bg-info/8">{summary.data.totals.paidCalls}</SummaryStat>
-            <SummaryStat label="Earned" className="bg-accent/8"><UsdText value={summary.data.totals.paidUsd} /></SummaryStat>
+            <SummaryStat label={t('Requests')} className="bg-primary-action/8">{summary.data.totals.calls}</SummaryStat>
+            <SummaryStat label={t('Paid requests')} className="bg-info/8">{summary.data.totals.paidCalls}</SummaryStat>
+            <SummaryStat label={t('Earned')} className="bg-accent/8"><UsdText value={summary.data.totals.paidUsd} /></SummaryStat>
           </dl>
-        ) : summary.isPending ? <Spinner label="Loading request totals" /> : null}
+        ) : summary.isPending ? <Spinner label={t('Loading request totals')} /> : null}
       </OverviewTile>
-      <OverviewTile title="Recent requests" icon={ListChecks} accentClassName="text-info">
+      <OverviewTile title={t('Recent requests')} icon={ListChecks} accentClassName="text-info">
         <Select value={route} onValueChange={setRoute}>
-          <SelectTrigger aria-label="Action" className="h-11! w-48 max-w-full rounded-full px-4 font-mono"><SelectValue /></SelectTrigger>
-          <SelectContent position="popper"><SelectItem value={ALL}>All actions</SelectItem>{names.map((n) => <SelectItem key={n} value={n} className="font-mono">{n}</SelectItem>)}</SelectContent>
+          <SelectTrigger aria-label={t('Action')} className="h-11! w-48 max-w-full rounded-full px-4 font-mono"><SelectValue /></SelectTrigger>
+          <SelectContent position="popper"><SelectItem value={ALL}>{t('All actions')}</SelectItem>{names.map((n) => <SelectItem key={n} value={n} className="font-mono">{n}</SelectItem>)}</SelectContent>
         </Select>
-        {logs.isPending && <Spinner label="Loading recent requests" />}
-        {logs.data?.length === 0 && <EmptyState title="No requests yet" description="Requests show up here when someone uses an action." />}
+        {logs.isPending && <Spinner label={t('Loading recent requests')} />}
+        {logs.data?.length === 0 && <EmptyState title={t('No requests yet')} description={t('Requests show up here when someone uses an action.')} />}
         {!!logs.data?.length && (
-        <ScrollArea label="Call Log table" orientation="horizontal" className="rounded-xl border border-border pb-3 [&_[data-slot=table-container]]:overflow-visible [&_td]:px-4 [&_th]:px-4">
+        <ScrollArea label={t('Call Log table')} orientation="horizontal" className="rounded-xl border border-border pb-3 [&_[data-slot=table-container]]:overflow-visible [&_td]:px-4 [&_th]:px-4">
           <Table>
-            <TableHeader className="bg-surface/65"><TableRow><TableHead>Time</TableHead><TableHead>Action</TableHead><TableHead>Result</TableHead><TableHead>Price</TableHead><TableHead>Paid</TableHead><TableHead>Payment</TableHead><TableHead className="text-right">Time taken</TableHead></TableRow></TableHeader>
+            <TableHeader className="bg-surface/65"><TableRow><TableHead>{t('Time')}</TableHead><TableHead>{t('Action')}</TableHead><TableHead>{t('Result')}</TableHead><TableHead>{t('Price')}</TableHead><TableHead>{t('Paid')}</TableHead><TableHead>{t('Payment')}</TableHead><TableHead className="text-right">{t('Time taken')}</TableHead></TableRow></TableHeader>
             <TableBody>{logs.data.map((r, i) => <LogRow key={`${r.at}-${i}`} row={r} />)}</TableBody>
           </Table>
         </ScrollArea>

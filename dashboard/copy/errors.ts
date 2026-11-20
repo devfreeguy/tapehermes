@@ -1,5 +1,6 @@
 import { ALLOWED_HEADERS } from '@/config/app'
 import { ApiError } from '@/lib/api/errors'
+import { translator, type Translate } from '@/lib/locale'
 
 /** What the owner reads when something is refused: a short title, a plain sentence, and the technical text kept apart. */
 export interface PlainError {
@@ -10,15 +11,15 @@ export interface PlainError {
 }
 
 /** The hosted rules give technical refusals. Each pattern here turns one into words an owner can act on. */
-const ROUTE_REFUSALS: [RegExp, (m: RegExpMatchArray) => string][] = [
+const ROUTE_REFUSALS: [RegExp, (m: RegExpMatchArray, t: Translate) => string][] = [
   [/https only|must be http\(s\)/i, () => 'The address must start with https://. Plain http is not allowed.'],
   [/port 443 only/i, () => 'Remove the port number from the address. Only the standard https port is allowed.'],
   [/user:password/i, () => 'The address cannot contain a user name or password.'],
   [/an IP address/i, () => 'Use a host name such as api.example.com, not an IP address.'],
   [/single-label host/i, () => 'The address needs a full host name with a dot, such as api.example.com.'],
   [/is not reachable from here/i, () => 'That host cannot be called from our servers. Local, internal and platform names are blocked.'],
-  [/header (\S+) is not allowed here/i, (m) => `The header "${m[1]}" is not allowed. You can use: ${ALLOWED_HEADERS.join(', ')}.`],
-  [/names (\d+) upstream hosts/i, (m) => `This site would call ${m[1]} different outside hosts. The limit is 3.`],
+  [/header (\S+) is not allowed here/i, (m, t) => t('The header "{0}" is not allowed. You can use: {1}.', m[1], ALLOWED_HEADERS.join(', '))],
+  [/names (\d+) upstream hosts/i, (m, t) => t('This site would call {0} different outside hosts. The limit is 3.', m[1])],
   [/must not contain query/i, () => 'Do not put a question mark and values in the address. Add them in the Query section instead.'],
   [/must not place \{param\} in the origin/i, () => 'A {placeholder} can only appear in the path, never in the host name.'],
   [/must start with a full origin/i, () => 'The address must start with https:// and a full host name before any {placeholder}.'],
@@ -68,11 +69,11 @@ export function explainProblem(problem: string): string {
 }
 
 /** Turn any failure into plain words. Unknown codes still get a calm sentence and keep their technical text. */
-export function explainError(e: unknown): PlainError {
+export function explainError(e: unknown, t: Translate = translator('en')): PlainError {
   if (!(e instanceof ApiError)) return { title: 'Something went wrong', message: 'Try again. If it keeps happening, reload the page.', technical: e instanceof Error ? e.message : String(e) }
   const technical = `${e.status} ${e.code}: ${e.message}`
   if (e.code === 'ROUTE_REFUSED') {
-    const hit = ROUTE_REFUSALS.map(([re, say]) => { const m = e.message.match(re); return m ? say(m) : null }).find(Boolean)
+    const hit = ROUTE_REFUSALS.map(([re, say]) => { const m = e.message.match(re); return m ? say(m, t) : null }).find(Boolean)
     return { title: 'This action could not be saved', message: hit ?? 'The settings break one of the hosted rules.', technical }
   }
   if (e.code === 'BAD_REQUEST' && Array.isArray(e.details.fields) && e.details.fields.length) {

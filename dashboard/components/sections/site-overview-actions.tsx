@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { useState } from 'react'
 import { Dialog } from 'radix-ui'
@@ -12,14 +13,15 @@ import { useSetPayout, useSetSiteStatus } from '@/hooks/use-sites'
 import { ActivationSection } from './activation-section'
 
 export function PayoutAction({ siteName }: { siteName: string }) {
+  const t = useTranslator()
   const [open, setOpen] = useState(false)
   const [payout, setPayout] = useState('')
   const save = useSetPayout(siteName)
   return (
     <ActionDialog
-      title="Edit payout address"
-      description="This is the wallet that gets paid when someone uses a paid action. It starts as the wallet that owns your site."
-      trigger={<Button type="button" variant="outline" className="pill-control">Edit payout address</Button>}
+      title={t('Edit payout address')}
+      description={t('This is the wallet that gets paid when someone uses a paid action. It starts as the wallet that owns your site.')}
+      trigger={<Button type="button" variant="outline" className="pill-control">{t('Edit payout address')}</Button>}
       open={open}
       onOpenChange={(next) => {
         if (save.isPending) return
@@ -33,14 +35,14 @@ export function PayoutAction({ siteName }: { siteName: string }) {
         if (!payout.trim() || save.isPending) return
         save.mutate(payout.trim(), { onSuccess: () => { setPayout(''); setOpen(false) } })
       }}>
-        <FormField id="payout" label="Where payments go">
+        <FormField id="payout" label={t('Where payments go')}>
           <Input id="payout" value={payout} onChange={(event) => setPayout(event.target.value)} placeholder="0x..." className="h-13 rounded-xl px-4 font-mono" autoComplete="off" />
         </FormField>
         <ErrorNotice error={save.error} />
         <div className="auth-actions">
-          <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control" disabled={save.isPending}>Cancel</Button></Dialog.Close>
+          <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control" disabled={save.isPending}>{t('Cancel')}</Button></Dialog.Close>
           <Button type="submit" className="pill-control" disabled={!payout.trim() || save.isPending}>
-            {save.isPending && <Spinner />}Save payout address
+            {save.isPending && <Spinner />}{t('Save payout address')}
           </Button>
         </div>
       </form>
@@ -49,15 +51,16 @@ export function PayoutAction({ siteName }: { siteName: string }) {
 }
 
 export function CallAvailabilityAction({ siteName, active }: { siteName: string; active: boolean }) {
+  const t = useTranslator()
   const [open, setOpen] = useState(false)
   const update = useSetSiteStatus(siteName)
-  const action = active ? 'Pause calls' : 'Resume calls'
+  const action = active ? t('Pause calls') : t('Resume calls')
   return (
     <ActionDialog
       title={action}
       description={active
-        ? 'Pausing answers every call with "not found" at once and clears its keys from memory. Your settings are kept. This is TapeHermes only, and does not change the switch-on state on X Layer.'
-        : 'Calls are paused. Resume to answer calls again.'}
+        ? t('Pausing answers every call with "not found" at once and clears its keys from memory. Your settings are kept. This is TapeHermes only, and does not change the switch-on state on X Layer.')
+        : t('Calls are paused. Resume to answer calls again.')}
       trigger={<Button type="button" variant="ghost" className="pill-control">{action}</Button>}
       open={open}
       onOpenChange={(next) => {
@@ -68,7 +71,7 @@ export function CallAvailabilityAction({ siteName, active }: { siteName: string;
     >
       <ErrorNotice error={update.error} />
       <div className="auth-actions">
-        <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control" disabled={update.isPending}>Cancel</Button></Dialog.Close>
+        <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control" disabled={update.isPending}>{t('Cancel')}</Button></Dialog.Close>
         <Button type="button" variant={active ? 'destructive' : 'default'} className="pill-control" disabled={update.isPending} onClick={() => update.mutate(active ? 'DISABLED' : 'ACTIVE', { onSuccess: () => setOpen(false) })}>
           {update.isPending && <Spinner />}{action}
         </Button>
@@ -78,14 +81,15 @@ export function CallAvailabilityAction({ siteName, active }: { siteName: string;
 }
 
 export function ActivationAction({ siteName }: { siteName: string }) {
+  const t = useTranslator()
   return (
     <ActionDialog
-      title="X Layer activation"
-      description="See whether apps can find your site. To turn it on, connect the wallet that owns it."
-      trigger={<Button type="button" variant="outline" className="pill-control">Manage activation</Button>}
+      title={t('X Layer activation')}
+      description={t('See whether apps can find your site. To turn it on, connect the wallet that owns it.')}
+      trigger={<Button type="button" variant="outline" className="pill-control">{t('Manage activation')}</Button>}
     >
       <ActivationSection siteName={siteName} />
-      <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control w-full">Close</Button></Dialog.Close>
+      <Dialog.Close asChild><Button type="button" variant="outline" className="pill-control w-full">{t('Close')}</Button></Dialog.Close>
     </ActionDialog>
   )
 }

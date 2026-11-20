@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { useEffect, useState } from 'react'
 import { systemThemeQuery, themes, themeStorageKey, type Theme } from '@/lib/theme'
@@ -55,15 +56,16 @@ export function useThemePreference() {
 }
 
 export function ThemeSelect() {
+  const t = useTranslator()
   const { theme, changeTheme } = useThemePreference()
   return (
     <select
-      aria-label="Color theme"
+      aria-label={t('Color theme')}
       value={theme}
       onChange={(event) => changeTheme(event.target.value)}
       className="h-8 rounded-md border border-input bg-card px-2 text-card-foreground hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-ring"
     >
-      {themes.map((value) => <option key={value} value={value}>{themeLabels[value]}</option>)}
+      {themes.map((value) => <option key={value} value={value}>{t(themeLabels[value])}</option>)}
     </select>
   )
 }

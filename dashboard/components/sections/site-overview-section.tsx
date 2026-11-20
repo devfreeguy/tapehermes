@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { SITE_TERMS } from '@/copy/site-terms'
 import { Activity, CreditCard, Globe2, KeyRound, Network, ScrollText, ShieldCheck } from 'lucide-react'
@@ -29,14 +30,16 @@ function readout(pending: boolean) {
 import { useSelectedSiteName } from '@/components/molecules/site-selection-provider'
 
 export function SiteOverviewSection({ siteName: explicitSite }: { siteName?: string }) {
+  const t = useTranslator()
   const siteName = useSelectedSiteName(explicitSite)
   const site = useSite(siteName)
-  if (site.isPending) return <Spinner label="Loading site overview" />
+  if (site.isPending) return <Spinner label={t('Loading site overview')} />
   if (!site.data) return <ErrorNotice error={site.error} />
   return <SiteOverview site={site.data} />
 }
 
 function SiteOverview({ site }: { site: Site }) {
+  const t = useTranslator()
   const { name, delegation } = site
   const base = '/sites'
   const active = site.status === 'ACTIVE'
@@ -53,35 +56,35 @@ function SiteOverview({ site }: { site: Site }) {
   return (
     <section aria-labelledby="overview-title" className="space-y-7 lg:space-y-9">
       <header className="space-y-2">
-        <h1 id="overview-title" className="font-(family-name:--font-auth) text-3xl font-extrabold break-all sm:text-4xl">Overview</h1>
+        <h1 id="overview-title" className="font-(family-name:--font-auth) text-3xl font-extrabold break-all sm:text-4xl">{t('Overview')}</h1>
         <p className="font-mono text-sm break-all text-muted-foreground">{name}</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-        <OverviewTile title="Call activity" icon={Activity} href={base + '/call-log'} accentClassName="text-primary-action" className="sm:col-span-2">
+        <OverviewTile title={t('Call activity')} icon={Activity} href={base + '/call-log'} linkLabel={t('Open {0}', t('Call activity').toLowerCase())} accentClassName="text-primary-action" className="sm:col-span-2">
           <div className="my-auto space-y-5 rounded-xl bg-primary-action/6 px-3 py-4 sm:px-5 sm:py-5">
-            <p className="text-sm text-muted-foreground">Last {periodDays} days</p>
+            <p className="text-sm text-muted-foreground">{t('Last {0} days', periodDays)}</p>
             {totals ? (
               <dl className="grid grid-cols-3 gap-2 sm:gap-4">
-                <Metric label="Total calls" value={totals.calls.toLocaleString()} />
-                <Metric label="Paid calls" value={totals.paidCalls.toLocaleString()} />
-                <Metric label="Earned (USD)" value={'$' + totals.paidUsd} />
+                <Metric label={t('Total calls')} value={totals.calls.toLocaleString()} />
+                <Metric label={t('Paid calls')} value={totals.paidCalls.toLocaleString()} />
+                <Metric label={t('Earned (USD)')} value={'$' + totals.paidUsd} />
               </dl>
-            ) : <p role="status" className="text-sm text-muted-foreground">{readout(calls.isPending)}</p>}
+            ) : <p role="status" className="text-sm text-muted-foreground">{t(readout(calls.isPending))}</p>}
           </div>
         </OverviewTile>
 
-        <OverviewTile title="Availability" icon={Globe2}>
+        <OverviewTile title={t('Availability')} icon={Globe2}>
           <div className="space-y-2 rounded-xl bg-surface/65 px-4 py-4">
-            <p className="text-lg font-semibold tracking-tight">{active ? 'Answering calls' : 'Paused'}</p>
+            <p className="text-lg font-semibold tracking-tight">{active ? t('Answering calls') : t('Paused')}</p>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {activation.data
                 ? activation.data.activated
                   ? activation.data.paidUntil
-                    ? <>Switched on until <TimeText value={activation.data.paidUntil} /></>
-                    : 'Switched on'
-                  : 'Not switched on'
-                : activation.isPending ? 'Checking X Layer activation…' : 'X Layer activation status is unavailable.'}
+                    ? <>{t('Switched on until') + ' '}<TimeText value={activation.data.paidUntil} /></>
+                    : t('Switched on')
+                  : t('Not switched on')
+                : activation.isPending ? t('Checking X Layer activation…') : t('X Layer activation status is unavailable.')}
             </p>
           </div>
           <div className="mt-auto flex flex-wrap gap-2">
@@ -90,47 +93,47 @@ function SiteOverview({ site }: { site: Site }) {
           </div>
         </OverviewTile>
 
-        <OverviewTile title={SITE_TERMS.routes.label} icon={Network} href={base + '/actions'} accentClassName="text-info">
+        <OverviewTile title={t(SITE_TERMS.routes.label)} icon={Network} href={base + '/actions'} linkLabel={t('Open {0}', t(SITE_TERMS.routes.label).toLowerCase())} accentClassName="text-info">
           <div className="space-y-2 rounded-xl bg-info/8 p-4">
-            <p className="text-xl font-semibold tracking-tight tabular-nums">{enabledRoutes === undefined ? readout(routes.isPending) : enabledRoutes + ' enabled'}</p>
-            <p className="text-sm text-muted-foreground">{routes.data ? routes.data.length + ' configured in total' : 'See which actions are on and what they cost.'}</p>
+            <p className="text-xl font-semibold tracking-tight tabular-nums">{enabledRoutes === undefined ? t(readout(routes.isPending)) : t('{0} enabled', enabledRoutes)}</p>
+            <p className="text-sm text-muted-foreground">{routes.data ? t('{0} configured in total', routes.data.length) : t('See which actions are on and what they cost.')}</p>
           </div>
         </OverviewTile>
 
-        <OverviewTile title={SITE_TERMS.secrets.label} icon={KeyRound} href={base + '/keys'} accentClassName="text-accent">
+        <OverviewTile title={t(SITE_TERMS.secrets.label)} icon={KeyRound} href={base + '/keys'} linkLabel={t('Open {0}', t(SITE_TERMS.secrets.label).toLowerCase())} accentClassName="text-accent">
           <div className="space-y-2 rounded-xl bg-accent/8 p-4">
-            <p className="text-xl font-semibold tracking-tight tabular-nums">{secrets.data ? secrets.data.length + ' stored' : readout(secrets.isPending)}</p>
-            <p className="text-sm text-muted-foreground">Private keys used by your actions.</p>
+            <p className="text-xl font-semibold tracking-tight tabular-nums">{secrets.data ? t('{0} stored', secrets.data.length) : t(readout(secrets.isPending))}</p>
+            <p className="text-sm text-muted-foreground">{t('Private keys used by your actions.')}</p>
           </div>
         </OverviewTile>
 
-        <OverviewTile title={SITE_TERMS.delegation.label} icon={ShieldCheck} href={base + '/permission'} accentClassName="text-primary-action" attention={delegationStatus.tone}>
+        <OverviewTile title={t(SITE_TERMS.delegation.label)} icon={ShieldCheck} href={base + '/permission'} linkLabel={t('Open {0}', t(SITE_TERMS.delegation.label).toLowerCase())} accentClassName="text-primary-action" attention={delegationStatus.tone}>
           <div className="space-y-2 border-s-2 border-primary-action/25 py-2 ps-4">
-            <OverviewStatus>{delegationStatus.label}</OverviewStatus>
+            <OverviewStatus>{t(delegationStatus.label)}</OverviewStatus>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {delegation.expiresAt
-                ? <>Expires <TimeText value={delegation.expiresAt} /> · {daysLeftLabel(delegation.daysLeft)}</>
-                : 'Give TapeHermes permission to sign your site’s replies.'}
+                ? <>{t('Expires') + ' '}<TimeText value={delegation.expiresAt} /> · {daysLeftLabel(delegation.daysLeft, t)}</>
+                : t('Give TapeHermes permission to sign your site’s replies.')}
             </p>
           </div>
         </OverviewTile>
 
-        <OverviewTile title={SITE_TERMS.manifest.label} icon={ScrollText} href={base + '/api-list'} attention={manifestStatus?.tone}>
+        <OverviewTile title={t(SITE_TERMS.manifest.label)} icon={ScrollText} href={base + '/api-list'} linkLabel={t('Open {0}', t(SITE_TERMS.manifest.label).toLowerCase())} attention={manifestStatus?.tone}>
           {manifestStatus ? (
             <>
-              <OverviewStatus>{manifestStatus.label}</OverviewStatus>
-              <p className="text-sm leading-relaxed text-muted-foreground">{manifestStatus.sentence}</p>
+              <OverviewStatus>{t(manifestStatus.label)}</OverviewStatus>
+              <p className="text-sm leading-relaxed text-muted-foreground">{t(manifestStatus.sentence)}</p>
             </>
-          ) : <p role="status" className="text-sm text-muted-foreground">{readout(manifest.isPending)}</p>}
+          ) : <p role="status" className="text-sm text-muted-foreground">{t(readout(manifest.isPending))}</p>}
         </OverviewTile>
 
-        <OverviewTile title="Site details" icon={CreditCard} className="sm:col-span-2">
+        <OverviewTile title={t('Site details')} icon={CreditCard} className="sm:col-span-2">
           <dl className="grid gap-x-5 gap-y-3 rounded-xl bg-surface/65 p-4 text-sm sm:grid-cols-2">
-            <AddressDetail label="Holder" address={site.holder} />
-            <AddressDetail label="Payout address" address={site.payoutAddress} />
-            <AddressDetail label="Signing key" address={site.signer} />
+            <AddressDetail label={t('Holder')} address={site.holder} />
+            <AddressDetail label={t('Payout address')} address={site.payoutAddress} />
+            <AddressDetail label={t('Signing key')} address={site.signer} />
             <div>
-              <dt className="text-muted-foreground">Added</dt>
+              <dt className="text-muted-foreground">{t('Added')}</dt>
               <dd className="mt-1"><TimeText value={site.createdAt} /></dd>
             </div>
           </dl>

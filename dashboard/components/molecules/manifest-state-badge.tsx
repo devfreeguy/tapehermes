@@ -1,5 +1,6 @@
 import { StatusBadge, type Tone } from '@/components/atoms/status-badge'
 import type { ManifestState } from '@/lib/api/schemas'
+import { useTranslator } from '@/lib/locale-context'
 
 export const MANIFEST_LOOK: Record<ManifestState, { tone: Tone; label: string; sentence: string }> = {
   'not-ready': { tone: 'neutral', label: 'Not ready', sentence: 'Follow the steps below to get your API list ready.' },
@@ -9,6 +10,7 @@ export const MANIFEST_LOOK: Record<ManifestState, { tone: Tone; label: string; s
 }
 
 export function ManifestStateBadge({ state }: { state: ManifestState }) {
+  const t = useTranslator()
   const l = MANIFEST_LOOK[state]
-  return <StatusBadge tone={l.tone}>{l.label}</StatusBadge>
+  return <StatusBadge tone={l.tone}>{t(l.label)}</StatusBadge>
 }

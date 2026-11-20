@@ -8,13 +8,14 @@ import SiteLayout from '@/app/sites/[name]/layout'
 import { parseSiteParam } from '@/lib/site-param'
 
 vi.mock('next/link', () => import('./mocks/next-link'))
+vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => ({ value: 'en' }) }) }))
 vi.mock('@/components/molecules/require-session', () => ({ RequireSession: ({ children }: { children: React.ReactNode }) => children }))
 vi.mock('@/components/molecules/site-selection-provider', () => ({ SiteSelectionProvider: ({ children }: { children: React.ReactNode }) => children }))
 vi.mock('@/components/molecules/legacy-site-entry', () => ({ LegacySiteEntry: ({ site }: { site: string }) => <p>Redirecting {site}</p> }))
 
 describe('the 404 page', () => {
-  it('says the page is missing in plain words and offers two ways out', () => {
-    render(<NotFound />)
+  it('says the page is missing in plain words and offers two ways out', async () => {
+    render(await NotFound())
     expect(screen.getByText('Page not found')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Go to my sites' })).toHaveAttribute('href', '/sites')
     expect(screen.getByRole('link', { name: 'Open the guide' })).toHaveAttribute('href', '/guide')

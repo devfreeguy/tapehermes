@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { BrandWordmark } from '@/components/atoms/brand-wordmark'
 import { DashboardSitePicker } from '@/components/molecules/dashboard-site-picker'
 import { DashboardViewer } from '@/components/molecules/dashboard-viewer'
+import { LanguageMenu } from '@/components/molecules/language-menu'
 import { SiteSelectionProvider } from '@/components/molecules/site-selection-provider'
 import { NewSiteNavLink, SiteTabs } from '@/components/molecules/site-tabs'
 import { DashboardAccountMenu } from './dashboard-account-menu'
@@ -18,6 +19,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <div className="min-w-0 border-l border-border pl-2 sm:pl-4"><DashboardSitePicker /></div>
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <NewSiteNavLink iconOnly />
+            <div className="hidden lg:block"><LanguageMenu /></div>
             <DashboardAccountMenu />
           </div>
         </header>

@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { SITE_TERMS } from '@/copy/site-terms'
 import { Plus } from 'lucide-react'
@@ -13,6 +14,7 @@ import { useSecretActions, useSecrets } from '@/hooks/use-secrets'
 import { useSelectedSiteName } from '@/components/molecules/site-selection-provider'
 
 export function SecretsSection({ siteName: explicitSite }: { siteName?: string }) {
+  const t = useTranslator()
   const siteName = useSelectedSiteName(explicitSite)
   const secrets = useSecrets(siteName)
   const actions = useSecretActions(siteName)
@@ -23,23 +25,23 @@ export function SecretsSection({ siteName: explicitSite }: { siteName?: string }
     <section aria-labelledby="secrets-title" className="space-y-7 lg:space-y-9">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 id="secrets-title" className="font-(family-name:--font-auth) text-3xl font-extrabold tracking-tight sm:text-4xl">{SITE_TERMS.secrets.label}</h1>
+          <h1 id="secrets-title" className="font-(family-name:--font-auth) text-3xl font-extrabold tracking-tight sm:text-4xl">{t(SITE_TERMS.secrets.label)}</h1>
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            {SITE_TERMS.secrets.description}
+            {t(SITE_TERMS.secrets.description)}
           </p>
         </div>
         <SecretFormDialog
           mode="add" busy={busy} pending={save.isPending} error={save.error} reset={save.reset}
-          trigger={<Button type="button" className="pill-control" disabled={busy}><Plus aria-hidden="true" />Add API key</Button>}
+          trigger={<Button type="button" className="pill-control" disabled={busy}><Plus aria-hidden="true" />{t('Add API key')}</Button>}
           onSave={(draft, onSuccess) => save.mutate(draft, { onSuccess })}
         />
       </header>
 
       <ErrorNotice error={remove.error ?? secrets.error} />
-      {secrets.isPending && <Spinner label="Loading secrets" />}
-      {secrets.data?.length === 0 && <EmptyState title="No keys yet" description="Add a key when an action needs one to use an outside service." />}
+      {secrets.isPending && <Spinner label={t('Loading secrets')} />}
+      {secrets.data?.length === 0 && <EmptyState title={t('No keys yet')} description={t('Add a key when an action needs one to use an outside service.')} />}
       {!!secrets.data?.length && (
-        <ul aria-label="Saved secrets" className="grid gap-4 xl:grid-cols-2">
+        <ul aria-label={t('Saved secrets')} className="grid gap-4 xl:grid-cols-2">
           {secrets.data.map((secret) => <SecretRow key={secret.name} secret={secret} busy={busy} actions={actions} />)}
         </ul>
       )}

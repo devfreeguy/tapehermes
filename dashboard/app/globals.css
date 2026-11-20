@@ -17,6 +17,11 @@
   font-display: swap;
 }
 
+:root:lang(zh-CN) {
+  --font-sans: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif;
+  --font-auth-highlight: var(--font-sans);
+}
+
 @utility pill-control {
   && {
     box-sizing: border-box;

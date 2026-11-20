@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslator } from '@/lib/locale-context'
 import { useRouter } from 'next/navigation'
 import { HintText } from '@/components/atoms/hint-text'
 import { Spinner } from '@/components/atoms/spinner'
@@ -13,18 +14,19 @@ import { useWallet } from '@/hooks/use-wallet'
 
 /** Sign in with a wallet. The signature proves the wallet is yours; it is free and moves nothing. */
 export function SignInSection({ onDone }: { onDone?: () => void }) {
+  const t = useTranslator()
   const router = useRouter()
   const wallet = useWallet()
   const signIn = useSignIn(wallet.address)
   return (
     <div className="space-y-4">
-      <HintText>Your wallet is your account. There is no password and no email.</HintText>
+      <HintText>{t('Your wallet is your account. There is no password and no email.')}</HintText>
       <ConnectWallet wallet={wallet} className="pill-control" />
       {wallet.isConnected ? (
         <>
           <WalletStepNotice step={WALLET_STEPS.signIn} presentation="dialog" />
           <Button type="button" className="pill-control h-auto! min-h-11 whitespace-normal" disabled={signIn.isPending} onClick={() => signIn.mutate(undefined, { onSuccess: () => (onDone ? onDone() : router.push('/sites')) })}>
-            {signIn.isPending ? <Spinner /> : null}Sign in with this wallet
+            {signIn.isPending ? <Spinner /> : null}{t('Sign in with this wallet')}
           </Button>
         </>
       ) : null}

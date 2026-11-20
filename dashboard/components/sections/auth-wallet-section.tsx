@@ -1,4 +1,5 @@
 'use client'
+import { useTranslator } from '@/lib/locale-context'
 
 import { useRouter } from 'next/navigation'
 import { useState, type ReactNode } from 'react'
@@ -16,6 +17,7 @@ import { useSignIn } from '@/hooks/use-sign-in'
 import { useWallet } from '@/hooks/use-wallet'
 
 export function AuthWalletSection({ secondaryAction }: { secondaryAction: ReactNode }) {
+  const t = useTranslator()
   const router = useRouter()
   const wallet = useWallet()
   const signIn = useSignIn(wallet.address)
@@ -58,30 +60,30 @@ export function AuthWalletSection({ secondaryAction }: { secondaryAction: ReactN
             <AlertDialogTrigger asChild>
               <Button type="button" className="pill-control" aria-disabled={pending}>
                 {pending && <Spinner />}
-                {pending ? 'Check your wallet' : 'Connect wallet'}
+                {pending ? t('Check your wallet') : t('Connect wallet')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="block rounded-2xl p-0 font-(family-name:--font-auth)">
-              <ScrollArea label="Wallet connection instructions" viewportClassName="max-h-[calc(100dvh-2rem)]">
+              <ScrollArea label={t('Wallet connection instructions')} viewportClassName="max-h-[calc(100dvh-2rem)]">
                 <div className="space-y-6 p-6 sm:p-8">
                 <AlertDialogHeader className="block text-start">
-                  <AlertDialogTitle className="font-(family-name:--font-auth) text-2xl font-bold">Before you connect</AlertDialogTitle>
+                  <AlertDialogTitle className="font-(family-name:--font-auth) text-2xl font-bold">{t('Before you connect')}</AlertDialogTitle>
                   <AlertDialogDescription className="mt-3 text-base leading-relaxed">
-                    Connect your wallet, then approve a one-time signature to prove you control it.
+                    {t('Connect your wallet, then approve a one-time signature to prove you control it.')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <dl className="space-y-4 text-sm leading-relaxed">
                   <div>
-                    <dt className="font-semibold">What happens</dt>
-                    <dd className="mt-1 text-muted-foreground">{WALLET_STEPS.signIn.whatHappens}</dd>
+                    <dt className="font-semibold">{t('What happens')}</dt>
+                    <dd className="mt-1 text-muted-foreground">{t(WALLET_STEPS.signIn.whatHappens)}</dd>
                   </div>
                   <div>
-                    <dt className="font-semibold">Cost</dt>
-                    <dd className="mt-1 text-muted-foreground">{WALLET_STEPS.signIn.cost}</dd>
+                    <dt className="font-semibold">{t('Cost')}</dt>
+                    <dd className="mt-1 text-muted-foreground">{t(WALLET_STEPS.signIn.cost)}</dd>
                   </div>
                   <div>
-                    <dt className="font-semibold">What it cannot do</dt>
-                    <dd className="mt-1 text-muted-foreground">{WALLET_STEPS.signIn.cannotDo}</dd>
+                    <dt className="font-semibold">{t('What it cannot do')}</dt>
+                    <dd className="mt-1 text-muted-foreground">{t(WALLET_STEPS.signIn.cannotDo)}</dd>
                   </div>
                 </dl>
                 <label className="flex min-h-13 cursor-pointer items-center gap-3 border-t border-border pt-4 text-sm font-medium">
@@ -91,11 +93,11 @@ export function AuthWalletSection({ secondaryAction }: { secondaryAction: ReactN
                     checked={accepted}
                     onChange={(event) => setAccepted(event.target.checked)}
                   />
-                  <span>I understand and agree to continue.</span>
+                  <span>{t('I understand and agree to continue.')}</span>
                 </label>
                 <div className="auth-actions">
-                    <AlertDialogCancel className="pill-control">Cancel</AlertDialogCancel>
-                    <Button type="button" className="pill-control" disabled={!accepted} onClick={proceed}>Proceed</Button>
+                    <AlertDialogCancel className="pill-control">{t('Cancel')}</AlertDialogCancel>
+                    <Button type="button" className="pill-control" disabled={!accepted} onClick={proceed}>{t('Proceed')}</Button>
                 </div>
                 </div>
               </ScrollArea>
@@ -103,7 +105,7 @@ export function AuthWalletSection({ secondaryAction }: { secondaryAction: ReactN
           </AlertDialog>
         )}
       </div>
-      {wallet.noWallet && <HintText>No wallet was found in this browser. Install a wallet extension such as MetaMask or OKX Wallet, then reload this page.</HintText>}
+      {wallet.noWallet && <HintText>{t('No wallet was found in this browser. Install a wallet extension such as MetaMask or OKX Wallet, then reload this page.')}</HintText>}
       <ErrorNotice error={error} />
     </div>
   )
