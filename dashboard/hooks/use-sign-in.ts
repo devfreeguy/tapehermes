@@ -14,9 +14,10 @@ export function useSignIn(address: string | null) {
   const { signIn } = useSession()
   const sign = useSignMessage()
   return useMutation({
-    mutationFn: async () => {
-      if (!address) throw new Error('Connect a wallet first.')
-      const { message } = await api.auth.message(address)
+    mutationFn: async (connectedAddress?: string) => {
+      const walletAddress = connectedAddress ?? address
+      if (!walletAddress) throw new Error('Connect a wallet first.')
+      const { message } = await api.auth.message(walletAddress)
       const signature = await sign.mutateAsync({ message })
       return api.auth.verify(message, signature)
     },

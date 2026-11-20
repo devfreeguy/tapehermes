@@ -3,7 +3,7 @@ import type { Activation, Route, Site } from '@/lib/api/schemas'
 
 /** Hook results the section tests set before rendering. The vi.mock factories in sections-mocks.ts read them lazily. */
 const build = () => {
-  const noop = () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false, isSuccess: false, error: null as unknown, data: undefined as unknown })
+  const noop = () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), reset: vi.fn(), isPending: false, isSuccess: false, error: null as unknown, data: undefined as unknown })
   return {
     router: { push: vi.fn(), replace: vi.fn() },
     wallet: {

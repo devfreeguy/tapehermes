@@ -1,63 +1,76 @@
-/*
- * Design tokens: the ONLY file in the dashboard that holds color values (oklch, never hex).
- * Direction "Tape": dark first, near-black surface, one signal green for live and valid states.
- * Everything else reads these variables through Tailwind (see globals.css) or className.
- */
+/* Dashboard colors, exposed to components through globals.css. */
 :root {
-  /* light theme (secondary) */
-  --background: oklch(0.985 0.004 120);
-  --foreground: oklch(0.2 0.02 150);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 150);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 150);
-  --primary: oklch(0.52 0.16 150);
-  --primary-foreground: oklch(0.985 0.01 150);
-  --secondary: oklch(0.95 0.01 140);
-  --secondary-foreground: oklch(0.25 0.02 150);
-  --muted: oklch(0.95 0.008 140);
-  --muted-foreground: oklch(0.45 0.02 150);
-  --accent: oklch(0.93 0.03 150);
-  --accent-foreground: oklch(0.25 0.04 150);
-  --destructive: oklch(0.55 0.21 27);
-  --destructive-foreground: oklch(0.985 0.01 27);
-  --warning: oklch(0.72 0.15 80);
-  --warning-foreground: oklch(0.22 0.04 80);
-  --signal: oklch(0.52 0.16 150);
-  --signal-foreground: oklch(0.985 0.01 150);
-  --border: oklch(0.9 0.01 140);
-  --input: oklch(0.9 0.01 140);
-  --ring: oklch(0.52 0.16 150);
-  --tape-strip: oklch(0.88 0.02 140);
+  color-scheme: light;
+  --background: rgb(250 250 251);
+  --foreground: rgb(24 25 27);
+  --card: rgb(255 255 255);
+  --card-foreground: rgb(24 25 27);
+  --popover: rgb(255 255 255);
+  --popover-foreground: rgb(24 25 27);
+  --surface: rgb(242 243 245);
+  --surface-hover: rgb(236 238 240);
+  --primary: rgb(0 138 91);
+  --primary-foreground: rgb(255 255 255);
+  --secondary: rgb(242 243 245);
+  --secondary-foreground: rgb(24 25 27);
+  --accent: rgb(117 85 199);
+  --accent-foreground: rgb(255 255 255);
+  --muted: rgb(242 243 245);
+  --muted-foreground: rgb(102 107 115);
+  --border: rgb(228 229 231);
+  --input: rgb(228 229 231);
+  --ring: rgb(0 138 91);
+  --success: rgb(0 138 91);
+  --warning: rgb(155 101 0);
+  --destructive: rgb(200 61 80);
+  --info: rgb(33 102 195);
+  --brand-mint: rgb(0 239 157);
+  --brand-obsidian: rgb(16 26 22);
+  --primary-action: rgb(0 122 80);
+  --destructive-foreground: rgb(255 255 255);
+  --overlay: rgb(0 0 0);
+
   --radius: 0.5rem;
+  --auth-control-height: 3.25rem;
+  --auth-control-padding: 1.5rem;
+  --font-auth: 'Plus Jakarta Sans', var(--font-sans);
+  --font-auth-highlight: 'Patrick Hand', cursive;
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
 .dark {
-  /* dark theme (default) */
-  --background: oklch(0.16 0.01 150);
-  --foreground: oklch(0.95 0.01 120);
-  --card: oklch(0.2 0.012 150);
-  --card-foreground: oklch(0.95 0.01 120);
-  --popover: oklch(0.2 0.012 150);
-  --popover-foreground: oklch(0.95 0.01 120);
-  --primary: oklch(0.8 0.19 150);
-  --primary-foreground: oklch(0.18 0.03 150);
-  --secondary: oklch(0.26 0.012 150);
-  --secondary-foreground: oklch(0.95 0.01 120);
-  --muted: oklch(0.26 0.012 150);
-  --muted-foreground: oklch(0.72 0.02 140);
-  --accent: oklch(0.28 0.05 150);
-  --accent-foreground: oklch(0.95 0.01 120);
-  --destructive: oklch(0.68 0.2 25);
-  --destructive-foreground: oklch(0.15 0.02 25);
-  --warning: oklch(0.82 0.15 85);
-  --warning-foreground: oklch(0.2 0.04 85);
-  --signal: oklch(0.8 0.19 150);
-  --signal-foreground: oklch(0.18 0.03 150);
-  --border: oklch(0.3 0.015 150);
-  --input: oklch(0.3 0.015 150);
-  --ring: oklch(0.8 0.19 150);
-  --tape-strip: oklch(0.3 0.015 150);
+  color-scheme: dark;
+  --background: rgb(12 13 15);
+  --foreground: rgb(245 246 247);
+  --card: rgb(20 21 24);
+  --card-foreground: rgb(245 246 247);
+  --popover: rgb(28 30 34);
+  --popover-foreground: rgb(245 246 247);
+  --surface: rgb(28 30 34);
+  --surface-hover: rgb(36 38 42);
+  --primary: rgb(0 239 157);
+  --primary-foreground: rgb(8 21 16);
+  --secondary: rgb(36 38 42);
+  --secondary-foreground: rgb(245 246 247);
+  --accent: rgb(167 139 250);
+  --accent-foreground: rgb(16 26 22);
+  --muted: rgb(28 30 34);
+  --muted-foreground: rgb(160 163 170);
+  --border: rgb(43 45 49);
+  --input: rgb(43 45 49);
+  --ring: rgb(0 239 157);
+  --success: rgb(64 223 165);
+  --warning: rgb(244 190 98);
+  --destructive: rgb(255 115 133);
+  --info: rgb(121 184 255);
+  --primary-action: var(--brand-mint);
+  --destructive-foreground: var(--primary-foreground);
+}
+
+:root, .dark {
+  /* The action colors keep small text above 4.5:1 in both modes. */
+  --primary-hover: color-mix(in srgb, var(--primary-action) 85%, var(--foreground));
+  --destructive-hover: color-mix(in srgb, var(--destructive) 90%, var(--foreground));
+  --overview-alert-glow: color-mix(in srgb, var(--destructive) 23%, transparent);
 }

@@ -1,5 +1,5 @@
 import './sections-mocks'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DelegationSection } from '@/components/sections/delegation-section'
@@ -16,10 +16,19 @@ beforeEach(() => {
   S.publish.mutate = vi.fn(); S.publish.isPending = false; S.publish.isSuccess = false; S.publish.error = null; S.publish.data = undefined
 })
 
+function openDelegation() {
+  fireEvent.click(screen.getByRole('button', { name: /Sign a delegation|Renew delegation/ }))
+}
+
+function openPublish() {
+  fireEvent.click(screen.getByRole('button', { name: 'Review publish' }))
+}
+
 describe('DelegationSection', () => {
   it('blocks signing when the connected wallet is not the holder, and says which wallet to use', () => {
     Object.assign(S.wallet, { address: '0x' + 'ee'.repeat(20), isConnected: true })
     render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     expect(screen.getByText(/is not the holder of 1\.2\.396\.tape/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Sign and save' })).toBeDisabled()
   })
@@ -28,6 +37,7 @@ describe('DelegationSection', () => {
     const user = userEvent.setup()
     Object.assign(S.wallet, { address: HOLDER, isConnected: true })
     render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     const button = screen.getByRole('button', { name: 'Sign and save' })
     expect(button).toBeEnabled()
     await user.click(button)
@@ -41,6 +51,8 @@ describe('DelegationSection', () => {
     const user = userEvent.setup()
     Object.assign(S.wallet, { address: HOLDER, isConnected: true })
     render(<DelegationSection siteName="1.2.396.tape" />)
+    expect(screen.queryByLabelText(/How long should it last/)).toBeNull()
+    openDelegation()
     const input = screen.getByLabelText(/How long should it last/)
     for (const bad of ['0', '367', '1.5', '']) {
       await user.clear(input)
@@ -53,6 +65,7 @@ describe('DelegationSection', () => {
   it('explains what the wallet will do BEFORE the button that opens it', () => {
     Object.assign(S.wallet, { address: HOLDER, isConnected: true })
     render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     const notice = screen.getByTestId('wallet-step-notice')
     const button = screen.getByRole('button', { name: 'Sign and save' })
     expect(notice.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -63,12 +76,14 @@ describe('DelegationSection', () => {
     Object.assign(S.wallet, { address: HOLDER, isConnected: true })
     S.site = done(site({ delegation: { stored: true, status: 'expiring', expiresAt: '2026-11-20T10:00:00.000Z', daysLeft: 5 } }))
     const { unmount } = render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     expect(screen.getByRole('button', { name: 'Sign and renew' })).toBeInTheDocument()
     expect(screen.getByText(/ends soon/)).toBeInTheDocument()
     expect(screen.getByText('5 days left')).toBeInTheDocument()
     unmount()
     S.site = done(site({ delegation: { stored: true, status: 'expired', expiresAt: '2026-11-01T10:00:00.000Z', daysLeft: 0 } }))
     render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     expect(screen.getByText(/has ended, so your site cannot answer/)).toBeInTheDocument()
   })
 
@@ -76,10 +91,12 @@ describe('DelegationSection', () => {
     Object.assign(S.wallet, { address: HOLDER, isConnected: true })
     S.signing.error = new ApiError(400, 'DELEGATION_SIGNATURE_MISMATCH', 'x')
     const { unmount } = render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     expect(screen.getByRole('alert')).toHaveTextContent('The signature is not from the holder')
     unmount()
     S.signing.error = null; S.signing.isSuccess = true
     render(<DelegationSection siteName="1.2.396.tape" />)
+    openDelegation()
     expect(screen.getByText(/Publish the manifest again/)).toBeInTheDocument()
   })
 })
@@ -102,7 +119,10 @@ describe('ManifestSection', () => {
     render(<ManifestSection siteName="1.2.396.tape" />)
     expect(screen.getByText('Out of date')).toHaveAttribute('data-tone', 'bad')
     expect(screen.getByTestId('manifest-sentence')).toHaveTextContent('older than your settings')
-    const publish = screen.getByRole('button', { name: 'Publish the update' })
+    expect(S.publish.mutate).not.toHaveBeenCalled()
+    openPublish()
+    expect(S.publish.mutate).not.toHaveBeenCalled()
+    const publish = screen.getByRole('button', { name: 'Publish update' })
     await user.click(publish)
     expect(S.publish.mutate).toHaveBeenCalledTimes(1)
   })
@@ -111,7 +131,7 @@ describe('ManifestSection', () => {
     S.status = done(status('current'))
     render(<ManifestSection siteName="1.2.396.tape" />)
     expect(screen.getByText('Up to date')).toHaveAttribute('data-tone', 'good')
-    expect(screen.getByRole('button', { name: 'Publish the manifest' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Review publish' })).toBeDisabled()
   })
 
   it('lists what is missing before publishing, in words, and blocks the button', () => {
@@ -120,25 +140,27 @@ describe('ManifestSection', () => {
     render(<ManifestSection siteName="1.2.396.tape" />)
     expect(screen.getByText('Add at least one route and turn it on.')).toBeInTheDocument()
     expect(screen.getByText('The holder has not signed a delegation yet.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Publish the manifest' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Review publish' })).toBeDisabled()
   })
 
   it('only the holder wallet can publish', () => {
     Object.assign(S.wallet, { address: '0x' + 'ee'.repeat(20) })
     S.status = done(status('not-published'))
     render(<ManifestSection siteName="1.2.396.tape" />)
+    openPublish()
     expect(screen.getByText(/Connect the holder wallet/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Publish the manifest' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Publish manifest' })).toBeDisabled()
   })
 
   it('explains the wallet step and its cost before the publish button, and the switch to X Layer when needed', () => {
     Object.assign(S.wallet, { onXLayer: false })
     S.status = done(status('not-published'))
     render(<ManifestSection siteName="1.2.396.tape" />)
+    openPublish()
     const notices = screen.getAllByTestId('wallet-step-notice')
     expect(notices.map((n) => n.textContent).join(' ')).toMatch(/Switch to X Layer/)
     expect(notices.map((n) => n.textContent).join(' ')).toMatch(/network gas in OKB/)
-    const button = screen.getByRole('button', { name: 'Publish the manifest' })
+    const button = screen.getByRole('button', { name: 'Publish manifest' })
     for (const n of notices) expect(n.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
@@ -153,10 +175,12 @@ describe('ManifestSection', () => {
     S.status = done(status('not-published'))
     S.publish.isSuccess = true; S.publish.data = ['0x1', '0x2']
     const { unmount } = render(<ManifestSection siteName="1.2.396.tape" />)
+    openPublish()
     expect(screen.getByText('Published in 2 transactions.')).toBeInTheDocument()
     unmount()
     S.publish.isSuccess = false; S.publish.data = undefined; S.publish.error = new ApiError(409, 'NOT_PUBLISHABLE', 'x', { problems: ['DELEGATION_EXPIRED: x'] })
     render(<ManifestSection siteName="1.2.396.tape" />)
+    openPublish()
     expect(screen.getAllByRole('alert')[0]).toHaveTextContent('cannot be published yet')
   })
 })

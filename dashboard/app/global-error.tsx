@@ -1,17 +1,26 @@
 'use client'
 
-import { EmptyState } from '@/components/molecules/empty-state'
+import { CircleAlert, RotateCw } from 'lucide-react'
+import { FailurePanel } from '@/components/sections/failure-panel'
 import { Button } from '@/components/ui/button'
 import { FATAL } from '@/copy/pages'
 import './globals.css'
 
-/** Last resort: the root layout itself failed, so this page brings its own html and body. */
-export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+/** The root layout failed. This recovery page supplies its own document and works without dashboard providers. */
+export default function GlobalError() {
   return (
     <html lang="en" className="dark">
       <body>
-        <main className="mx-auto max-w-xl px-4 py-16">
-          <EmptyState title={FATAL.title} description={FATAL.description} action={<Button type="button" onClick={reset}>{FATAL.retry}</Button>} />
+        <main className="grid min-h-dvh place-items-center px-4 py-8">
+          <FailurePanel title={FATAL.title} description={FATAL.description} standalone tone="warning"
+            icon={<CircleAlert aria-hidden="true" className="size-5" />}
+            actions={
+              <>
+                <Button type="button" className="pill-control" onClick={() => window.location.reload()}><RotateCw aria-hidden="true" />{FATAL.retry}</Button>
+                <Button asChild variant="outline" className="pill-control"><a href="/">{FATAL.home}</a></Button>
+              </>
+            }
+          />
         </main>
       </body>
     </html>

@@ -15,10 +15,16 @@ vi.mock('next/link', () => import('./mocks/next-link'))
 
 describe('SecretRow: a value is never shown', () => {
   const secret = { name: 'WEATHER_KEY', createdAt: '2026-11-14T10:00:00.000Z', updatedAt: '2026-11-15T10:00:00.000Z' }
-  const handlers = () => ({ onReplace: vi.fn(), onRename: vi.fn(), onDelete: vi.fn() })
+  const edit = () => ({
+    mutate: vi.fn((_input: unknown, { onSuccess }: { onSuccess: () => void }) => onSuccess()),
+    reset: vi.fn(),
+    isPending: false,
+    error: null,
+  })
+  const handlers = () => ({ save: edit(), rename: edit(), remove: { mutate: vi.fn() } })
 
   it('shows the name and says the value is hidden, with no way to reveal it', () => {
-    render(<ul><SecretRow secret={secret} {...handlers()} /></ul>)
+    render(<ul><SecretRow secret={secret} busy={false} actions={handlers()} /></ul>)
     expect(screen.getByText('WEATHER_KEY')).toBeInTheDocument()
     expect(screen.getByText('Value hidden')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /show|reveal|copy/i })).toBeNull()
@@ -28,14 +34,14 @@ describe('SecretRow: a value is never shown', () => {
   it('replaces the value through a password box and sends it once', async () => {
     const h = handlers()
     const user = userEvent.setup()
-    render(<ul><SecretRow secret={secret} {...h} /></ul>)
+    render(<ul><SecretRow secret={secret} busy={false} actions={h} /></ul>)
     await user.click(screen.getByRole('button', { name: 'Replace value' }))
     const box = screen.getByLabelText('New value')
     expect(box).toHaveAttribute('type', 'password')
     expect(box).toHaveAttribute('autocomplete', 'off')
     await user.type(box, 'sk-new-value')
     await user.click(screen.getByRole('button', { name: 'Save new value' }))
-    expect(h.onReplace).toHaveBeenCalledWith('WEATHER_KEY', 'sk-new-value')
+    expect(h.save.mutate).toHaveBeenCalledWith({ name: 'WEATHER_KEY', value: 'sk-new-value' }, expect.anything())
     expect(screen.queryByLabelText('New value')).toBeNull() // the box is gone, so the value is not left on the page
     expect(document.body.textContent).not.toContain('sk-new-value')
   })
@@ -43,35 +49,35 @@ describe('SecretRow: a value is never shown', () => {
   it('renames with capital letters forced, and starts from the current name', async () => {
     const h = handlers()
     const user = userEvent.setup()
-    render(<ul><SecretRow secret={secret} {...h} /></ul>)
+    render(<ul><SecretRow secret={secret} busy={false} actions={h} /></ul>)
     await user.click(screen.getByRole('button', { name: 'Rename' }))
     const box = screen.getByLabelText('New name')
     expect(box).toHaveValue('WEATHER_KEY')
     await user.clear(box)
     await user.type(box, 'rates_key')
     await user.click(screen.getByRole('button', { name: 'Save new name' }))
-    expect(h.onRename).toHaveBeenCalledWith('WEATHER_KEY', 'RATES_KEY')
+    expect(h.rename.mutate).toHaveBeenCalledWith({ name: 'WEATHER_KEY', to: 'RATES_KEY' }, expect.anything())
   })
 
   it('asks before deleting, and deletes only after the owner agrees', async () => {
     const h = handlers()
     const user = userEvent.setup()
-    render(<ul><SecretRow secret={secret} {...h} /></ul>)
+    render(<ul><SecretRow secret={secret} busy={false} actions={h} /></ul>)
     await user.click(screen.getByRole('button', { name: 'Delete' }))
-    expect(h.onDelete).not.toHaveBeenCalled()
+    expect(h.remove.mutate).not.toHaveBeenCalled()
     const dialog = await screen.findByRole('alertdialog')
     await user.click(within(dialog).getByRole('button', { name: 'Delete secret' }))
-    expect(h.onDelete).toHaveBeenCalledWith('WEATHER_KEY')
+    expect(h.remove.mutate).toHaveBeenCalledWith('WEATHER_KEY')
   })
 
   it('can cancel an edit, and disables actions while busy', async () => {
     const h = handlers()
     const user = userEvent.setup()
-    const { rerender } = render(<ul><SecretRow secret={secret} {...h} /></ul>)
+    const { rerender } = render(<ul><SecretRow secret={secret} busy={false} actions={h} /></ul>)
     await user.click(screen.getByRole('button', { name: 'Replace value' }))
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(screen.getByRole('button', { name: 'Replace value' })).toBeInTheDocument()
-    rerender(<ul><SecretRow secret={secret} busy {...h} /></ul>)
+    rerender(<ul><SecretRow secret={secret} busy actions={h} /></ul>)
     expect(screen.getByRole('button', { name: 'Replace value' })).toBeDisabled()
   })
 })

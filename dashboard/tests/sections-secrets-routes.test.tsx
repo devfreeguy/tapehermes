@@ -32,12 +32,16 @@ describe('SecretsSection', () => {
     const user = userEvent.setup()
     S.secretActions.save.mutate = vi.fn((_v: unknown, o?: { onSuccess?: () => void }) => o?.onSuccess?.())
     render(<SecretsSection siteName="1.2.396.tape" />)
+    expect(screen.queryByLabelText('Value')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Add secret' }))
     const value = screen.getByLabelText('Value')
     expect(value).toHaveAttribute('type', 'password')
     await user.type(screen.getByLabelText('Name'), 'rates_key')
     await user.type(value, VALUE)
     await user.click(screen.getByRole('button', { name: 'Save secret' }))
     expect(S.secretActions.save.mutate).toHaveBeenCalledWith({ name: 'RATES_KEY', value: VALUE }, expect.anything())
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Add secret' }))
     expect(screen.getByLabelText('Name')).toHaveValue('')
     expect(screen.getByLabelText('Value')).toHaveValue('') // the key does not stay on the page
   })
@@ -45,6 +49,7 @@ describe('SecretsSection', () => {
   it('will not save a bad name, or an empty value', async () => {
     const user = userEvent.setup()
     render(<SecretsSection siteName="1.2.396.tape" />)
+    await user.click(screen.getByRole('button', { name: 'Add secret' }))
     await user.type(screen.getByLabelText('Name'), '1BAD')
     await user.type(screen.getByLabelText('Value'), 'x')
     expect(screen.getByText(/Use capital letters, numbers and underscores/)).toBeInTheDocument()
@@ -60,12 +65,13 @@ describe('SecretsSection', () => {
 
   it('passes rename and delete to the server', async () => {
     const user = userEvent.setup()
+    S.secretActions.rename.mutate = vi.fn((_value, options) => options.onSuccess())
     render(<SecretsSection siteName="1.2.396.tape" />)
     await user.click(screen.getByRole('button', { name: 'Rename' }))
     await user.clear(screen.getByLabelText('New name'))
     await user.type(screen.getByLabelText('New name'), 'NEW_NAME')
     await user.click(screen.getByRole('button', { name: 'Save new name' }))
-    expect(S.secretActions.rename.mutate).toHaveBeenCalledWith({ name: 'WEATHER_KEY', to: 'NEW_NAME' })
+    expect(S.secretActions.rename.mutate).toHaveBeenCalledWith({ name: 'WEATHER_KEY', to: 'NEW_NAME' }, expect.anything())
     await user.click(screen.getByRole('button', { name: 'Delete' }))
     await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete secret' }))
     expect(S.secretActions.remove.mutate).toHaveBeenCalledWith('WEATHER_KEY')
@@ -84,7 +90,7 @@ describe('RoutesSection', () => {
     expect(screen.getByText('fx')).toBeInTheDocument()
     expect(screen.getByText('$0.002')).toBeInTheDocument()
     expect(screen.getByText(/api\.data-provider\.com/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/sites/1.2.396.tape/routes/fx')
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/sites/routes/fx')
   })
   it('turns a route off and asks before deleting it', async () => {
     const user = userEvent.setup()
@@ -134,7 +140,7 @@ describe('RouteEditorSection', () => {
     expect(S.routeActions.create.mutate).toHaveBeenCalledWith(
       { name: 'fxRate', config: { url: 'https://api.data-provider.com/v1/rate' }, priceUsd: '0.005', enabled: true, rateLimitPerMin: 60 }, expect.anything(),
     )
-    expect(S.router.push).toHaveBeenCalledWith('/sites/1.2.396.tape/routes')
+    expect(S.router.push).toHaveBeenCalledWith('/sites/routes')
   })
 
   it('collects locked settings and limits into the payload', async () => {

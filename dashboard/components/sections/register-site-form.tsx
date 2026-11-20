@@ -10,22 +10,23 @@ import { SITE_NAME_RE } from '@/config/app'
 import { useRegisterSite } from '@/hooks/use-sites'
 
 /** Add a site by its on-chain name. The server checks that the signed-in wallet is its current holder. */
-export function RegisterSiteForm({ onDone }: { onDone?: (name: string, takeover: boolean) => void }) {
+export function RegisterSiteForm({ onDone, presentation }: { onDone?: (name: string, takeover: boolean) => void; presentation?: 'viewer' }) {
   const [name, setName] = useState('')
   const register = useRegisterSite()
   const bad = name !== '' && !SITE_NAME_RE.test(name.trim())
+  const inViewer = presentation === 'viewer'
   return (
     <form
-      className="space-y-3"
+      className={inViewer ? 'space-y-5' : 'space-y-3'}
       onSubmit={(e) => {
         e.preventDefault()
         register.mutate(name.trim(), { onSuccess: (r) => { setName(''); onDone?.(r.site.name, r.takeover) } })
       }}
     >
-      <FormField id="site-name" label="Site name" hint="For example 1.2.396.tape. Your signed-in wallet must be the wallet that holds this site on X Layer." error={bad ? 'A site name looks like 1.2.396.tape: three numbers and .tape.' : null}>
-        <Input id="site-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="1.2.396.tape" className="max-w-sm font-mono" autoComplete="off" />
+      <FormField id="site-name" label="Site name" hint={inViewer ? 'Enter the full name, including .tape.' : 'For example 1.2.396.tape. Your signed-in wallet must be the wallet that holds this site on X Layer.'} error={bad ? 'A site name looks like 1.2.396.tape: three numbers and .tape.' : null}>
+        <Input id="site-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="1.2.396.tape" className={inViewer ? 'h-13 rounded-xl px-4 font-mono' : 'max-w-sm font-mono'} aria-invalid={bad || undefined} autoCapitalize="none" autoComplete="off" />
       </FormField>
-      <Button type="submit" disabled={!name || bad || register.isPending}>{register.isPending ? <Spinner /> : null}Add site</Button>
+      <Button type="submit" className={inViewer ? 'pill-control w-full' : undefined} disabled={!name || bad || register.isPending}>{register.isPending ? <Spinner /> : null}Add site</Button>
       <ErrorNotice error={register.error} />
     </form>
   )

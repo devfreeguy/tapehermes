@@ -1,7 +1,7 @@
 import { StatusBadge, type Tone } from '@/components/atoms/status-badge'
 import type { DelegationState } from '@/lib/api/schemas'
 
-const LOOK: Record<DelegationState, { tone: Tone; label: string }> = {
+export const DELEGATION_LOOK: Record<DelegationState, { tone: Tone; label: string }> = {
   none: { tone: 'neutral', label: 'No delegation' },
   valid: { tone: 'good', label: 'Valid' },
   expiring: { tone: 'warn', label: 'Expiring soon' },
@@ -10,6 +10,6 @@ const LOOK: Record<DelegationState, { tone: Tone; label: string }> = {
 
 /** The delegation state of a site as one badge: none, valid, expiring (7 days or less) or expired. */
 export function DelegationBadge({ state }: { state: DelegationState }) {
-  const l = LOOK[state]
+  const l = DELEGATION_LOOK[state]
   return <StatusBadge tone={l.tone}>{l.label}</StatusBadge>
 }

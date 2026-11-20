@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/alert-dialog'
 
 /** A button that asks "are you sure" first. Used for anything that cannot be undone. */
-export function ConfirmButton({ trigger, title, description, confirmLabel, onConfirm }: { trigger: ReactNode; title: string; description: string; confirmLabel: string; onConfirm: () => void }) {
+export function ConfirmButton({ trigger, title, description, confirmLabel, onConfirm, destructive = false }: { trigger: ReactNode; title: string; description: string; confirmLabel: string; onConfirm: () => void; destructive?: boolean }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
@@ -16,8 +16,8 @@ export function ConfirmButton({ trigger, title, description, confirmLabel, onCon
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmLabel}</AlertDialogAction>
+          <AlertDialogCancel className={destructive ? 'pill-control' : undefined}>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant={destructive ? 'destructive' : 'default'} className={destructive ? 'pill-control' : undefined} onClick={onConfirm}>{confirmLabel}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

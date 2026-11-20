@@ -12,7 +12,7 @@ export function CopyButton({ value, label = 'Copy' }: { value: string; label?: s
   }
   return (
     <Button type="button" variant="ghost" size="icon" aria-label={done ? 'Copied' : label} title={done ? 'Copied' : label} onClick={copy}>
-      {done ? <Check className="size-4 text-signal" /> : <Copy className="size-4" />}
+      {done ? <Check className="size-4 text-primary-action dark:text-success" /> : <Copy className="size-4" />}
     </Button>
   )
 }

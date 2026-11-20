@@ -1,13 +1,14 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { siteSecretsQuery } from '@/lib/site-queries'
 import { useApi } from './use-api'
 
 const key = (site: string) => ['secrets', site] as const
 
 export function useSecrets(site: string) {
   const api = useApi()
-  return useQuery({ queryKey: key(site), queryFn: () => api.secrets.list(site) })
+  return useQuery(siteSecretsQuery(api, site))
 }
 
 /** Add, replace, rename or delete a secret. The list is refreshed afterwards; a value is never kept on this page. */

@@ -4,6 +4,8 @@ const config: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   reactStrictMode: true,
+  // The development indicator injects style tags without the request nonce.
+  devIndicators: false,
   async headers() {
     return [{
       source: '/:path*',

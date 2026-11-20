@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { connection } from 'next/server'
-import { AppHeader } from '@/components/sections/app-header'
+import { headers } from 'next/headers'
+import { ScrollAreaNonceProvider } from '@/components/ui/scroll-area'
+import { themeInitializer } from '@/lib/theme'
 import { Providers } from './providers'
 import './globals.css'
 
@@ -12,18 +13,21 @@ export const metadata: Metadata = {
 }
 
 /**
- * Dark is the default look (the "Tape" direction); the tokens also define a light theme.
  * Every page is rendered per request: Next only puts the CSP nonce on its scripts when it renders on demand, and without
  * the nonce a strict CSP blocks every script. `pnpm smoke` checks this against a real build.
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  await connection()
+  const nonce = (await headers()).get('x-nonce') ?? undefined
   return (
-    <html lang="en" className="dark">
-      <body>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitializer }} />
+      </head>
+      <body className="h-dvh overflow-hidden">
         <Providers>
-          <AppHeader />
-          <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+          <ScrollAreaNonceProvider nonce={nonce}>
+            {children}
+          </ScrollAreaNonceProvider>
         </Providers>
       </body>
     </html>

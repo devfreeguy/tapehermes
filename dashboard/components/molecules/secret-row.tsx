@@ -1,58 +1,69 @@
 'use client'
 
-import { Lock } from 'lucide-react'
-import { useState } from 'react'
-import { CodeText } from '@/components/atoms/code-text'
+import { KeyRound, LockKeyhole, Pencil, RotateCw, Trash2 } from 'lucide-react'
 import { TimeText } from '@/components/atoms/time-text'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
 import type { Secret } from '@/lib/api/schemas'
 import { ConfirmButton } from './confirm-button'
+import { SecretFormDialog } from './secret-form-dialog'
 
-interface Props {
-  secret: Secret
-  busy?: boolean
-  onReplace: (name: string, value: string) => void
-  onRename: (name: string, to: string) => void
-  onDelete: (name: string) => void
+type EditAction<T> = {
+  mutate: (input: T, options: { onSuccess: () => void }) => void
+  reset: () => void
+  isPending: boolean
+  error: unknown
 }
 
-type Mode = 'idle' | 'replace' | 'rename'
-
-/**
- * One saved secret. Its value is never shown, there is no way to reveal it, and replacing it takes a new value typed in
- * a password box that is emptied as soon as it is sent.
- */
-export function SecretRow({ secret, busy, onReplace, onRename, onDelete }: Props) {
-  const [mode, setMode] = useState<Mode>('idle')
-  const [text, setText] = useState('')
-  const close = () => { setMode('idle'); setText('') }
+export function SecretRow({ secret, busy, actions }: {
+  secret: Secret
+  busy: boolean
+  actions: {
+    save: EditAction<{ name: string; value: string }>
+    rename: EditAction<{ name: string; to: string }>
+    remove: { mutate: (name: string) => void }
+  }
+}) {
+  const { save, rename, remove } = actions
   return (
-    <li className="space-y-2 rounded-lg border border-border p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2"><Lock className="size-4 text-muted-foreground" /><CodeText>{secret.name}</CodeText><span className="text-sm text-muted-foreground">Value hidden</span></div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">Updated <TimeText value={secret.updatedAt} /></div>
-      </div>
-      {mode === 'idle' ? (
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => setMode('replace')}>Replace value</Button>
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => { setMode('rename'); setText(secret.name) }}>Rename</Button>
+    <li className="min-w-0">
+      <Card className="h-full gap-5 rounded-2xl bg-background p-5 shadow-none sm:p-6">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <KeyRound aria-hidden="true" className="size-4" />
+          </span>
+          <div className="min-w-0 space-y-1">
+            <h2 className="font-mono text-sm font-semibold break-all text-foreground sm:text-base">{secret.name}</h2>
+            <p className="text-xs leading-relaxed text-muted-foreground">Updated <TimeText value={secret.updatedAt} /></p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl bg-accent/7 px-3 py-3 text-sm text-muted-foreground">
+          <LockKeyhole aria-hidden="true" className="size-4 shrink-0 text-accent" />
+          <span>Value hidden</span>
+        </div>
+
+        <div className="mt-auto flex flex-wrap items-center gap-1 border-t border-border pt-3">
+          <SecretFormDialog
+            mode="replace" secretName={secret.name}
+            busy={busy} pending={save.isPending} error={save.error} reset={save.reset}
+            trigger={<Button type="button" variant="ghost" disabled={busy} className="h-11 rounded-full px-3 has-[>svg]:px-3"><RotateCw aria-hidden="true" />Replace value</Button>}
+            onSave={(draft, onSuccess) => save.mutate(draft, { onSuccess })}
+          />
+          <SecretFormDialog
+            mode="rename" secretName={secret.name}
+            busy={busy} pending={rename.isPending} error={rename.error} reset={rename.reset}
+            trigger={<Button type="button" variant="ghost" disabled={busy} className="h-11 rounded-full px-3 has-[>svg]:px-3"><Pencil aria-hidden="true" />Rename</Button>}
+            onSave={(draft, onSuccess) => rename.mutate({ name: secret.name, to: draft.name }, { onSuccess })}
+          />
           <ConfirmButton
-            trigger={<Button type="button" variant="outline" size="sm" disabled={busy}>Delete</Button>}
+            destructive
+            trigger={<Button type="button" variant="ghost" size="icon" disabled={busy} aria-label="Delete" className="ml-auto size-11 rounded-full text-muted-foreground hover:text-destructive"><Trash2 aria-hidden="true" /></Button>}
             title={`Delete ${secret.name}?`} description="The key is removed for good. Routes that use it must be changed first." confirmLabel="Delete secret"
-            onConfirm={() => onDelete(secret.name)}
+            onConfirm={() => remove.mutate(secret.name)}
           />
         </div>
-      ) : (
-        <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); if (mode === 'replace') onReplace(secret.name, text); else onRename(secret.name, text.trim()); close() }}>
-          <Input
-            aria-label={mode === 'replace' ? 'New value' : 'New name'} type={mode === 'replace' ? 'password' : 'text'} autoComplete="off" value={text}
-            onChange={(e) => setText(mode === 'rename' ? e.target.value.toUpperCase() : e.target.value)} className="max-w-sm font-mono" required
-          />
-          <Button type="submit" size="sm" disabled={busy || !text}>{mode === 'replace' ? 'Save new value' : 'Save new name'}</Button>
-          <Button type="button" variant="ghost" size="sm" onClick={close}>Cancel</Button>
-        </form>
-      )}
+      </Card>
     </li>
   )
 }

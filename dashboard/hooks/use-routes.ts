@@ -2,13 +2,14 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { RouteConfig } from '@/lib/api/schemas'
+import { siteRoutesQuery } from '@/lib/site-queries'
 import { useApi } from './use-api'
 
 const key = (site: string) => ['routes', site] as const
 
 export function useRoutes(site: string) {
   const api = useApi()
-  return useQuery({ queryKey: key(site), queryFn: () => api.routes.list(site) })
+  return useQuery(siteRoutesQuery(api, site))
 }
 
 export interface RouteInput { name: string; config: RouteConfig; priceUsd: string; enabled: boolean; rateLimitPerMin: number }

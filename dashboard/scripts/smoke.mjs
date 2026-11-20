@@ -12,7 +12,7 @@ async function up() { for (let i = 0; i < 60; i++) { try { await fetch(`http://1
 
 try {
   await up()
-  for (const path of ['/', '/guide', '/sites', '/sites/1.2.396.tape', '/sites/1.2.396.tape/manifest', '/sites/1.2.396.tape/routes/new']) {
+  for (const path of ['/', '/guide', '/sites', '/sites/secrets', '/sites/routes', '/sites/routes/new', '/sites/delegation', '/sites/manifest', '/sites/logs', '/sites/1.2.396.tape/manifest']) {
     const res = await fetch(`http://127.0.0.1:${PORT}${path}`)
     const html = await res.text()
     const csp = res.headers.get('content-security-policy') ?? ''

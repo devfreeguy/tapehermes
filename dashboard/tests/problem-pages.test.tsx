@@ -8,8 +8,9 @@ import SiteLayout from '@/app/sites/[name]/layout'
 import { parseSiteParam } from '@/lib/site-param'
 
 vi.mock('next/link', () => import('./mocks/next-link'))
-vi.mock('@/components/molecules/require-session', () => ({ RequireSession: ({ children }: { children: React.ReactNode }) => <div data-testid="session">{children}</div> }))
-vi.mock('@/components/molecules/site-tabs', () => ({ SiteTabs: ({ site }: { site: string }) => <nav>tabs for {site}</nav> }))
+vi.mock('@/components/molecules/require-session', () => ({ RequireSession: ({ children }: { children: React.ReactNode }) => children }))
+vi.mock('@/components/molecules/site-selection-provider', () => ({ SiteSelectionProvider: ({ children }: { children: React.ReactNode }) => children }))
+vi.mock('@/components/molecules/legacy-site-entry', () => ({ LegacySiteEntry: ({ site }: { site: string }) => <p>Redirecting {site}</p> }))
 
 describe('the 404 page', () => {
   it('says the page is missing in plain words and offers two ways out', () => {
@@ -59,7 +60,7 @@ describe('site address segments', () => {
   it('draws the site layout for a good name and ends in a 404 for a bad one', async () => {
     const good = await SiteLayout({ children: <p>inside</p>, params: Promise.resolve({ name: '26.2.2.tape' }) })
     render(good)
-    expect(screen.getByText('tabs for 26.2.2.tape')).toBeInTheDocument()
+    expect(screen.getByText('Redirecting 26.2.2.tape')).toBeInTheDocument()
     await expect(SiteLayout({ children: null, params: Promise.resolve({ name: 'not-a-site' }) })).rejects.toMatchObject({ digest: expect.stringContaining('404') })
   })
 })

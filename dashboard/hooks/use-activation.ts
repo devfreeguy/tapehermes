@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useConfig, useSendTransaction } from 'wagmi'
 import { waitForTransactionReceipt } from 'wagmi/actions'
 import { sendAll } from '@/lib/wallet/tx'
+import { activationQuery } from '@/lib/site-queries'
 import { useApi } from './use-api'
 import { useWallet } from './use-wallet'
 
@@ -12,7 +13,7 @@ const key = (site: string) => ['activation', site] as const
 /** Is the site switched on, until when, and what one month costs. Reads the chain, so it can fail with CHAIN_UNAVAILABLE. */
 export function useActivation(site: string) {
   const api = useApi()
-  return useQuery({ queryKey: key(site), queryFn: () => api.activation.status(site), retry: false })
+  return useQuery(activationQuery(api, site))
 }
 
 /** Ask the chain again whether the site is on (the wallet may be a block ahead of the node). */

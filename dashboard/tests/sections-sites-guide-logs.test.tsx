@@ -1,5 +1,5 @@
 import './sections-mocks'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConnectWallet } from '@/components/molecules/connect-wallet'
@@ -7,7 +7,9 @@ import { CallLogSection } from '@/components/sections/call-log-section'
 import { GuidedPathSection } from '@/components/sections/guided-path-section'
 import { SignInSection } from '@/components/sections/sign-in-section'
 import { SiteOverviewSection } from '@/components/sections/site-overview-section'
-import { SitesSection } from '@/components/sections/sites-section'
+import { SelectedSiteView } from '@/components/sections/selected-site-view'
+import { SiteSelectionProvider, useSelectedSiteName } from '@/components/molecules/site-selection-provider'
+import { rememberSite } from '@/lib/site-selection'
 import { ApiError } from '@/lib/api/errors'
 import { activationFacts, done, HOLDER, route, S, site } from './sections-state'
 
@@ -15,6 +17,7 @@ const session = { token: 't', wallet: HOLDER, expiresAt: Date.now() + 60_000 }
 
 beforeEach(() => {
   vi.clearAllMocks()
+  localStorage.clear()
   Object.assign(S.wallet, { address: null, isConnected: false, onXLayer: true, noWallet: false, connecting: false })
   S.session.session = null
   S.sites = done([])
@@ -64,33 +67,42 @@ describe('ConnectWallet', () => {
   })
 })
 
-describe('SitesSection', () => {
-  it('points a first-time owner to the guided setup', () => {
-    render(<SitesSection />)
-    expect(screen.getByText('No sites yet')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Start the guided setup' })).toHaveAttribute('href', '/guide')
+describe('Selected site view', () => {
+  function SelectedName() { return <p>{useSelectedSiteName()}</p> }
+
+  function renderSiteView() {
+    S.session.session = session
+    return render(<SiteSelectionProvider><SelectedSiteView><SelectedName /></SelectedSiteView></SiteSelectionProvider>)
+  }
+
+  it('puts the registration form first for an owner with no sites', () => {
+    renderSiteView()
+    expect(screen.getByRole('heading', { name: 'Add your first site' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Site name')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open the setup guide' })).toHaveAttribute('href', '/guide')
   })
-  it('lists sites with status, payout and delegation', () => {
-    S.sites = done([site(), site({ name: '1.2.400.tape', status: 'DISABLED', delegation: { stored: true, status: 'expiring', expiresAt: '2026-11-20T00:00:00.000Z', daysLeft: 5 } })])
-    render(<SitesSection />)
-    expect(screen.getByRole('link', { name: '1.2.396.tape' })).toHaveAttribute('href', '/sites/1.2.396.tape')
-    expect(screen.getByText('Paused')).toBeInTheDocument()
-    expect(screen.getAllByText('Answering calls')).toHaveLength(1)
-    expect(screen.getAllByText('Switched on')).toHaveLength(2) // the chain state of each card, read from the API
-    expect(screen.getByText('Expiring soon')).toBeInTheDocument()
-    expect(screen.getByText('5 days left')).toBeInTheDocument()
+
+  it('opens the first owned site when a saved choice is unavailable', () => {
+    S.session.session = session
+    S.sites = done([site(), site({ name: '1.2.400.tape' })])
+    rememberSite(HOLDER, '9.2.396.tape')
+    renderSiteView()
+    expect(screen.getByText('1.2.396.tape')).toBeInTheDocument()
+    expect(S.router.replace).not.toHaveBeenCalled()
   })
-  it('shows the chain state apart from the answering switch, so "On" never means two things', () => {
-    S.sites = done([site()])
-    S.activation = done(activationFacts({ activated: false, paidUntil: null }))
-    render(<SitesSection />)
-    expect(screen.getByText('Answering calls')).toBeInTheDocument()
-    expect(screen.getByText('Not switched on')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Switch on my site' })).toHaveAttribute('href', '/sites/1.2.396.tape')
+
+  it('restores the saved site for the signed-in wallet', () => {
+    S.session.session = session
+    S.sites = done([site(), site({ name: '1.2.400.tape' })])
+    rememberSite(HOLDER, '1.2.400.tape')
+    renderSiteView()
+    expect(screen.getByText('1.2.400.tape')).toBeInTheDocument()
+    expect(S.router.replace).not.toHaveBeenCalled()
   })
+
   it('checks the site name shape, then registers it', async () => {
     const user = userEvent.setup()
-    render(<SitesSection />)
+    renderSiteView()
     const input = screen.getByLabelText('Site name')
     await user.type(input, 'nope')
     expect(screen.getByText(/looks like 1\.2\.396\.tape/)).toBeInTheDocument()
@@ -102,7 +114,7 @@ describe('SitesSection', () => {
   })
   it('says why a registration was refused, in words', () => {
     S.register.error = new ApiError(403, 'NOT_HOLDER', 'x')
-    render(<SitesSection />)
+    renderSiteView()
     expect(screen.getByRole('alert')).toHaveTextContent('This wallet is not the holder')
   })
 })
@@ -117,12 +129,18 @@ describe('SiteOverviewSection', () => {
   })
   it('changes the payout address and pauses the site', async () => {
     const user = userEvent.setup()
+    S.setPayout.mutate = vi.fn((_address, options) => options.onSuccess())
     render(<SiteOverviewSection siteName="1.2.396.tape" />)
+    expect(screen.queryByLabelText('Where payments go')).toBeNull()
+    expect(screen.queryByLabelText('Months to switch on for')).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Edit payout address' }))
     await user.type(screen.getByLabelText('Where payments go'), '0x' + 'dd'.repeat(20))
     await user.click(screen.getByRole('button', { name: 'Save payout address' }))
     expect(S.setPayout.mutate).toHaveBeenCalledWith('0x' + 'dd'.repeat(20), expect.anything())
     await user.click(screen.getByRole('button', { name: 'Pause calls' }))
-    expect(S.setStatus.mutate).toHaveBeenCalledWith('DISABLED')
+    expect(S.setStatus.mutate).not.toHaveBeenCalled()
+    await user.click(within(screen.getByRole('dialog', { name: 'Pause calls' })).getByRole('button', { name: 'Pause calls' }))
+    expect(S.setStatus.mutate).toHaveBeenCalledWith('DISABLED', expect.anything())
   })
   it('offers to resume a paused site', () => {
     S.site = done(site({ status: 'DISABLED' }))
@@ -194,7 +212,7 @@ describe('GuidedPathSection', () => {
     expect(states().slice(0, 4)).toEqual(['done', 'done', 'done', 'current'])
     await user.click(screen.getByRole('button', { name: 'My service needs no key' }))
     expect(states()[4]).toBe('current')
-    expect(screen.getByRole('link', { name: 'Create a route' })).toHaveAttribute('href', '/sites/1.2.396.tape/routes/new')
+    expect(screen.getByRole('link', { name: 'Create a route' })).toHaveAttribute('href', '/sites/routes/new')
     first.unmount()
 
     S.routes = done([route()])
@@ -219,6 +237,6 @@ describe('GuidedPathSection', () => {
     S.status = done({ state: 'current', expected: null, problems: [], onChain: null })
     render(<GuidedPathSection />)
     expect(states()[7]).toBe('current')
-    expect(screen.getByRole('link', { name: 'Open the call log' })).toHaveAttribute('href', '/sites/1.2.396.tape/logs')
+    expect(screen.getByRole('link', { name: 'Open the call log' })).toHaveAttribute('href', '/sites/logs')
   })
 })

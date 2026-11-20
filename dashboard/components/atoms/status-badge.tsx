@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils'
 const tones = cva('border font-mono text-xs', {
   variants: {
     tone: {
-      good: 'border-signal/40 bg-signal/15 text-signal',
-      warn: 'border-warning/40 bg-warning/15 text-warning',
-      bad: 'border-destructive/40 bg-destructive/15 text-destructive',
+      good: 'border-success/40 bg-card text-primary-action dark:bg-success/15 dark:text-success',
+      warn: 'border-warning/40 bg-card dark:bg-warning/15 text-warning',
+      bad: 'border-destructive/40 bg-card dark:bg-destructive/15 text-destructive',
       neutral: 'border-border bg-muted text-muted-foreground',
     },
   },

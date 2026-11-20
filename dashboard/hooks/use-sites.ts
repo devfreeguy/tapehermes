@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/lib/session/session-context'
+import { siteDetailsQuery } from '@/lib/site-queries'
 import { useApi } from './use-api'
 
 export const siteKeys = {
@@ -13,13 +14,13 @@ export const siteKeys = {
 export function useSites() {
   const api = useApi()
   const { session } = useSession()
-  return useQuery({ queryKey: siteKeys.all, queryFn: () => api.sites.list(), enabled: !!session })
+  return useQuery({ queryKey: [...siteKeys.all, 'owner', session?.wallet], queryFn: () => api.sites.list(), enabled: !!session })
 }
 
 export function useSite(name: string) {
   const api = useApi()
   const { session } = useSession()
-  return useQuery({ queryKey: siteKeys.one(name), queryFn: () => api.sites.get(name), enabled: !!session })
+  return useQuery({ ...siteDetailsQuery(api, name), enabled: !!session })
 }
 
 /** Run a site-changing call and refresh the site and the list afterwards. */

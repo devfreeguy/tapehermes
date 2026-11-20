@@ -1,43 +1,68 @@
 'use client'
 
+import { ArrowUpRight, Network, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { CodeText } from '@/components/atoms/code-text'
 import { UsdText } from '@/components/atoms/usd-text'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import type { Route } from '@/lib/api/schemas'
 import { ConfirmButton } from './confirm-button'
 
-const hostOf = (url: string) => { try { return new URL(url.replace(/\{[^}]*\}/g, 'x')).host } catch { return url } }
+function hostOf(url: string) {
+  try { return new URL(url.replace(/\{[^}]*\}/g, 'x')).host } catch { return url }
+}
 
 interface Props {
-  site: string
   route: Route
   busy?: boolean
   onToggle: (name: string, enabled: boolean) => void
   onDelete: (name: string) => void
 }
 
-/** One route in the list: name, method and host it calls, price, an on/off switch, and edit or delete. */
-export function RouteRow({ site, route, busy, onToggle, onDelete }: Props) {
+export function RouteRow({ route, busy, onToggle, onDelete }: Props) {
   return (
-    <li className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2"><CodeText>{route.name}</CodeText><UsdText value={route.priceUsd} /></div>
-        <p className="text-sm text-muted-foreground"><span className="font-mono">{route.config.method ?? 'GET'}</span> {hostOf(route.config.url)}</p>
-      </div>
-      <div className="flex items-center gap-3">
-        <label className="flex items-center gap-2 text-sm">
-          <Switch checked={route.enabled} disabled={busy} aria-label={`${route.name} on`} onCheckedChange={(v) => onToggle(route.name, v)} />
-          {route.enabled ? 'On' : 'Off'}
-        </label>
-        <Button asChild variant="outline" size="sm"><Link href={`/sites/${encodeURIComponent(site)}/routes/${encodeURIComponent(route.name)}`}>Edit</Link></Button>
-        <ConfirmButton
-          trigger={<Button type="button" variant="outline" size="sm" disabled={busy}>Delete</Button>}
-          title={`Delete ${route.name}?`} description="Visitors can no longer call it. Publish the manifest again afterwards." confirmLabel="Delete route"
-          onConfirm={() => onDelete(route.name)}
-        />
-      </div>
+    <li className="min-w-0">
+      <Card className="h-full gap-5 rounded-2xl bg-background p-5 shadow-none sm:p-6">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info">
+            <Network aria-hidden="true" className="size-4" />
+          </div>
+          <div className="min-w-0 space-y-1">
+            <h2 className="font-mono text-sm font-semibold break-all sm:text-base">{route.name}</h2>
+            <p className="text-xs leading-relaxed break-all text-muted-foreground">{hostOf(route.config.url)}</p>
+          </div>
+        </div>
+
+        <dl className="grid grid-cols-2 gap-3 rounded-xl bg-info/7 px-4 py-3">
+          <div className="min-w-0 space-y-1">
+            <dt className="text-xs text-muted-foreground">Method</dt>
+            <dd className="font-mono text-sm font-semibold text-info">{route.config.method ?? 'GET'}</dd>
+          </div>
+          <div className="min-w-0 space-y-1 border-s border-border ps-3">
+            <dt className="text-xs text-muted-foreground">Price per call</dt>
+            <dd className="text-sm font-semibold break-all"><UsdText value={route.priceUsd} /></dd>
+          </div>
+        </dl>
+
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+          <label className="flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
+            <Switch checked={route.enabled} disabled={busy} aria-label={`${route.name} on`} onCheckedChange={(value) => onToggle(route.name, value)} />
+            {route.enabled ? 'On' : 'Off'}
+          </label>
+          <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" className="h-11 rounded-full bg-primary-action/12 px-3 text-primary-action hover:bg-primary-action/20 hover:text-primary-action has-[>svg]:px-3">
+              <Link href={`/sites/routes/${encodeURIComponent(route.name)}`}>Edit <ArrowUpRight aria-hidden="true" /></Link>
+            </Button>
+            <ConfirmButton
+              destructive
+              trigger={<Button type="button" variant="ghost" size="icon" disabled={busy} aria-label="Delete" className="size-11 rounded-full text-muted-foreground hover:text-destructive"><Trash2 aria-hidden="true" /></Button>}
+              title={`Delete ${route.name}?`} description="Visitors can no longer call it. Publish the manifest again afterwards." confirmLabel="Delete route"
+              onConfirm={() => onDelete(route.name)}
+            />
+          </div>
+        </div>
+      </Card>
     </li>
   )
 }
