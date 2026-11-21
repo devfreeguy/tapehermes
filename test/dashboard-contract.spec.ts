@@ -129,8 +129,8 @@ describe('dashboard code against the real backend', () => {
       [{ url: 'https://data.upstream-api.com:8443/x' }, 'Remove the port number'],
       [{ url: 'https://10.0.0.1/x' }, 'not an IP address'],
       [{ url: 'https://data.upstream-api.com/x', headers: { cookie: 'a=b' } }, 'The header "cookie" is not allowed'],
-      [{ url: 'https://data.upstream-api.com/x', headers: { authorization: '${MISSING}' } }, 'A secret is missing'],
-      [{ url: 'https://data.upstream-api.com/${KEY}' }, 'Secrets go in headers only'],
+      [{ url: 'https://data.upstream-api.com/x', headers: { authorization: '${MISSING}' } }, 'An API key is missing'],
+      [{ url: 'https://data.upstream-api.com/${KEY}' }, 'API keys go in request headers'],
       [{ url: 'https://data.upstream-api.com/x', body: { a: 'a' }, method: 'POST', params: { a: 'string' }, locked: { color: 'red' } }, 'locked setting "color"'],
     ]
     for (const [config, words] of cases) {
@@ -162,7 +162,7 @@ describe('dashboard code against the real backend', () => {
     const m = await api.sites.delegationMessage(SITE, 30)
     const stranger = newWallet()
     const bad = await api.sites.saveDelegation(SITE, await stranger.signTypedData(toSignableTypedData(m.typedData)), m.expires).catch((e) => e)
-    expect(explainError(bad).title).toBe('The signature is not from the holder')
+    expect(explainError(bad).title).toBe('The signature must come from the site owner')
     t.chain.set(SITE, newWallet().address) // the site was sold
     const moved = await api.sites.saveDelegation(SITE, await owner.signTypedData(toSignableTypedData(m.typedData)), m.expires).catch((e) => e)
     expect(explainError(moved).title).toBe('This wallet is not the holder')

@@ -65,6 +65,18 @@ try {
   check(robots.status === 200 && /Disallow: \//.test(await robots.text()), '/robots.txt disallows everything')
   const home = await (await fetch(`http://127.0.0.1:${PORT}/`)).text()
   check(/<meta name="robots" content="noindex, nofollow"/.test(home), 'pages carry noindex, nofollow')
+  const shareOrigin = `http://127.0.0.1:${PORT}`
+  const shared = await (await fetch(shareOrigin, { headers: { 'user-agent': 'facebookexternalhit/1.1' } })).text()
+  const head = shared.split('</head>')[0]
+  const previewUrl = `${shareOrigin}/brand/sign-in-preview.jpg`
+  check(head.includes('<title>TapeHermes | TapeOut 站点的付费 API</title>'), 'home has a Chinese page title')
+  check(/<meta name="description" content="为 TapeOut 站点/.test(head), 'home has a Chinese description')
+  check(head.includes('<meta property="og:locale" content="zh_CN"') && head.includes(`<meta property="og:image" content="${previewUrl}"`), 'sharing preview has a Chinese locale and a same-origin image')
+  check(head.includes('<meta name="twitter:card" content="summary_large_image"') && head.includes(`<meta name="twitter:image" content="${previewUrl}"`), 'X card uses the same sharing image')
+  const preview = await fetch(previewUrl)
+  check(preview.ok && preview.headers.get('content-type')?.startsWith('image/jpeg'), 'sharing image is available as a JPEG')
+  const icon = await fetch(`${shareOrigin}/favicon.ico`)
+  check(/<link rel="icon" href="\/favicon\.ico[?"]/.test(head) && icon.ok && icon.headers.get('content-type')?.startsWith('image/'), 'favicon is linked and available')
   const a = (await fetch(`http://127.0.0.1:${PORT}/`)).headers.get('content-security-policy')
   const b = (await fetch(`http://127.0.0.1:${PORT}/`)).headers.get('content-security-policy')
   check(a !== b, 'a fresh nonce for every request')
