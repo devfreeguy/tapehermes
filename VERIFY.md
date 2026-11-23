@@ -8,7 +8,7 @@ Status words: **READY** (can be run now), **NEEDS** (needs something first, name
 
 | Item | Detail |
 |---|---|
-| Node and pnpm | Node 22.12 or newer, `pnpm install` at the repo root (installs dashboard and demo-site too). |
+| Node and pnpm | Node 22.12 or newer, `pnpm install` at the repo root (installs dashboard and public-site too). |
 | Postgres 17 and Redis 8 | `pnpm services:up`. The Postgres image pull failed on the build machine (Docker Hub), so this may fail for you too. If it does, send the error. Any Postgres 17 and Redis on the ports in `.env` also work. |
 | Database | `pnpm db:migrate` (uses `DATABASE_URL`), and `TEST_DATABASE_URL` pointing at the test database. |
 | `.env` | Names are listed at the end of this file. Never paste values into chat. |
@@ -20,7 +20,7 @@ Send back for 0: the output of `pnpm services:up` and `pnpm db:migrate` if eithe
 
 1. `pnpm test` (expect 17 files, 242 tests passed)
 2. `pnpm --dir dashboard test` (expect 12 files, 154 passed; the em-dash rule can fail on `dashboard/AGENTS.md`, a file `next dev` writes, see check 9) and `pnpm --dir dashboard exec tsc --noEmit` (no output)
-3. `pnpm --dir demo-site test` (expect 2 files, 38 passed)
+3. `pnpm --dir public-site test` (expect 2 files, 38 passed)
 4. `pnpm --dir dashboard smoke` (builds the dashboard, serves it, checks the strict CSP nonce; expect it to end with a pass line)
 
 Send back: any failing test name and its message, or "all green".
@@ -110,7 +110,7 @@ Steps:
 1. Sign in with the holder wallet (check 3).
 1b. A site that was just created reads "Not switched on". On the site page, press **Switch on my site** and confirm in the wallet. It costs the network fee only while the chain price is 0. The card should turn to "Switched on" with an end date (press Check again if the node is a few seconds behind). Publishing before this is refused with "Your site is not switched on yet".
 2. Register the site (name from `XLAYER_SITE`). The backend reads the holder from chain 196; if you are not the holder it refuses.
-3. Add one route (a free one is enough, for example `asteroid` from `demo-site/routes.json`) and its secret.
+3. Add one route (a free one is enough, for example `asteroid` from `public-site/routes.json`) and its secret.
 4. Follow the guided path to **delegate**: sign the delegation (a typed-data signature in the wallet, valid 30 days). Check the typed data shown names the TapeAPI domain and your site.
 5. **Publish the manifest**: the dashboard sends one transaction to the SiteRegistry contract. Approve it in the wallet.
 6. After it confirms, the manifest status in the dashboard should change from "not published" to "published" and "delegation valid".
@@ -126,10 +126,10 @@ Send back: screenshots of the steps (especially the wallet prompts), the transac
 
 What this proves: on a real TapeOut site, `createHermes()` with no options fetches `/.well-known/tapeapi.json` from the same origin through the TapeKit gateway, finds the delegation, checks the holder on chain, and verifies a signed answer.
 
-**Blocked:** publishing the site's own files (`demo-site/*`) to chain 196 is **not built**. Only the manifest publish transaction exists. The SDK has no generic site-file publisher, and the HashPort console for X Layer is unverified. So I cannot give you an exact publish command for the demo files, and I will not guess.
+**Blocked:** publishing the site's own files (`public-site/*`) to chain 196 is **not built**. Only the manifest publish transaction exists. The SDK has no generic site-file publisher, and the HashPort console for X Layer is unverified. So I cannot give you an exact publish command for the demo files, and I will not guess.
 
 Two ways to unblock, your choice:
-- (a) You publish the demo-site files (list: `index.html`, `styles.css`, `app.js`, `main.js`, `checks.js`, `tapehermes.min.js`, about 70 KB) with whatever TapeKit or HashPort tool you normally use for your site, after `pnpm demo:build`. Tell me which tool and I will check the file rules against it.
+- (a) You publish the public-site files (list: `index.html`, `styles.css`, `app.js`, `main.js`, `checks.js`, `tapehermes.min.js`, about 70 KB) with whatever TapeKit or HashPort tool you normally use for your site, after `pnpm site:build`. Tell me which tool and I will check the file rules against it.
 - (b) I build a file publisher in a later phase.
 
 Once the files are on your site (check 7 already done for the same site), open the site's gateway address in the browser and check:

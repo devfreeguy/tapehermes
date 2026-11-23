@@ -43,7 +43,7 @@ export function mockUpstream(): typeof fetch {
 
 /** The demo, end to end on this computer: the real backend, the demo routes from routes.json, and the static site. */
 export async function startDemo(o: DemoOptions) {
-  const routes = JSON.parse(readFileSync(join(o.dir ?? 'demo-site', 'routes.json'), 'utf8')) as { secrets: string[]; routes: { name: string; enabledBy?: string; priceUsd: string; rateLimitPerMin: number; enabled: boolean; config: unknown }[] }
+  const routes = JSON.parse(readFileSync(join(o.dir ?? 'public-site', 'routes.json'), 'utf8')) as { secrets: string[]; routes: { name: string; enabledBy?: string; priceUsd: string; rateLimitPerMin: number; enabled: boolean; config: unknown }[] }
   const owner = privateKeyToAccount(generatePrivateKey())
   const apiPort = o.apiPort ?? 0
   const started = await createApp(
@@ -81,7 +81,7 @@ export async function startDemo(o: DemoOptions) {
   const payout = process.env.PAY_TO_ADDRESS
   if (payout && !o.mock) await call('PUT', `/api/sites/${DEMO_SITE}/payout`, token, { payoutAddress: payout })
 
-  const root = join(process.cwd(), o.dir ?? 'demo-site')
+  const root = join(process.cwd(), o.dir ?? 'public-site')
   const site: Server = createServer((req, res) => {
     const path = normalize(decodeURIComponent(new URL(req.url ?? '/', 'http://x').pathname)).replace(/^([\\/])+/, '')
     const file = join(root, path === '' ? 'index.html' : path)

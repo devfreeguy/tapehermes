@@ -20,7 +20,7 @@ Tests: backend 242 (17 files), dashboard 154 (12 files), demo site 38 (2 files).
 | Manifest on-chain status | `chain.service.ts`, `manifest.service.ts` | 4 |
 | Helper: `proof` in every result and `verify()` | `helper/tapehermes.js` | 1 (21 helper tests) |
 | Dashboard | `dashboard/` | 154, plus 8 contract tests and a smoke script |
-| Demo site and local runner | `demo-site/`, `proofs/lib/demo-server.ts`, `proofs/12-demo-dev.ts` | 17 + 36 |
+| Demo site and local runner | `public-site/`, `proofs/lib/demo-server.ts`, `proofs/12-demo-dev.ts` | 17 + 36 |
 
 ## Locked route settings (half a day limit: it fit cleanly)
 A route may now carry two optional members, handled in our own layer before the adapter runs. The adapter file is unmodified.
@@ -55,14 +55,14 @@ Direction "Tape": dark first, one signal green, monospace headings, no outside f
 
 **A defect found by the smoke script and fixed**: the production build served `/` as a static page, so Next could not put the CSP nonce on any script. With `strict-dynamic` a browser blocks every script without it, so the dashboard would have been blank in a real browser. The root layout now renders on demand, and `pnpm smoke` (`dashboard/scripts/smoke.mjs`) fails the build if any script lacks the nonce, if a script comes from another origin, or if `unsafe-inline` returns.
 
-## Demo site (`demo-site/`)
-Static files: `index.html`, `styles.css`, `app.js`, `main.js`, `checks.js`, and `tapehermes.min.js` (the helper, 51,034 bytes, copied by `pnpm demo:build`). About 70 KB in all; at about 200 gas per byte that is roughly 14 million gas to publish, a small fraction of one OKB at today's gas price. `routes.json` and the tests are not part of the site.
+## Public site (`public-site/`)
+Static files: `index.html`, `styles.css`, `app.js`, `main.js`, `checks.js`, and `tapehermes.min.js` (the helper, 51,034 bytes, copied by `pnpm site:build`). About 70 KB in all; at about 200 gas per byte that is roughly 14 million gas to publish, a small fraction of one OKB at today's gas price. `routes.json` and the tests are not part of the site.
 
 **What a visitor sees**: a free route (NASA asteroid lookup), a paid route (USDA FoodData Central food lookup, $0.002 from the manifest, page size locked to 1, search text limited to 60 characters). The AI route `ask` is built but **off**: it is created disabled and the page shows its section only if the manifest lists it; it turns on only when `DEMO_ENABLE_AI` is set, and under every answer the list of checks the browser made: where the manifest came from and the gateway tier, the holder delegation, holder on chain, the answer signature, price against manifest, payment transaction. A button changes one character of the answer and runs the check again, which fails. A second button calls NASA directly without a key and shows its `403 API_KEY_MISSING` (NASA allows browser reads of that answer). The page says in plain words that sites using TapeHermes make outside calls, so they do not carry the "100% on-chain" badge.
 **Safe by construction**: every answer is placed on the page as text, never as HTML (a test feeds markup and checks it stays text); `?dev=` is honoured only when the page is served from this computer, so a link cannot point the real site at someone else's manifest; the page never pays more than $0.05.
 
 ### TapeKit rules that apply (sources: TapeKit README handbook sections 2 to 8, `sw-gateway/serve.js`, `kernel/src/path.js`)
-Enforced by tests in `test/demo-site.spec.ts` unless marked "doc":
+Enforced by tests in `test/public-site.spec.ts` unless marked "doc":
 1. Plain static folder, `index.html` at the root, no server code.
 2. Relative paths only (`./x.js`), never an absolute address to our own files.
 3. No outside reference in HTML or CSS: `src`, `href`, `action`, `poster`, `srcset`, `url()`, `@import`, meta refresh. Fonts, icons and scripts are self-hosted (system fonts here).
@@ -103,7 +103,7 @@ Dashboard: `pnpm --dir dashboard dev` (port 3001, API at `NEXT_PUBLIC_API_URL`, 
 - The dashboard's publish step sends transactions through the wallet, which no test can complete without a chain; it is covered up to the conversion of the transactions and by the contract test that checks their targets.
 - Guided path actions link to the real pages rather than repeating them inline.
 - Dashboard text is English only. There is no dark/light switch yet (dark is fixed; the light tokens exist).
-- `demo-site/tapehermes.min.js` is a committed copy of the helper build; a test fails if it drifts.
+- `public-site/tapehermes.min.js` is a committed copy of the helper build; a test fails if it drifts.
 
 ## Open questions
 1. The two domains (dashboard, API) and the API key you hold (or "none yet").

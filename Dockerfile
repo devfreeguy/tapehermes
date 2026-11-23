@@ -19,12 +19,12 @@ RUN apt-get update \
 WORKDIR /app
 USER node
 
-# ---- manifests: only what `pnpm install --frozen-lockfile` needs. dashboard and demo-site contribute their package.json only. ----
+# ---- manifests: only what `pnpm install --frozen-lockfile` needs. dashboard and public-site contribute their package.json only. ----
 FROM base AS manifests
 COPY --chown=node:node package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=node:node vendor ./vendor
 COPY --chown=node:node dashboard/package.json ./dashboard/package.json
-COPY --chown=node:node demo-site/package.json ./demo-site/package.json
+COPY --chown=node:node public-site/package.json ./public-site/package.json
 
 # ---- builder: full install, prisma generate, nest build ----
 FROM manifests AS builder

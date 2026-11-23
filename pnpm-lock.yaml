@@ -197,7 +197,7 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@types/node@24.19.2)(jsdom@31.0.1(@noble/hashes@1.8.0))(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))
 
-  demo-site:
+  public-site:
     devDependencies:
       jsdom:
         specifier: 31.0.1

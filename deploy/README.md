@@ -71,4 +71,4 @@ The older images must still exist in ghcr.io.
 
 - The container runs as a non-root user with a read-only root filesystem, no capabilities and `no-new-privileges`. This was tested with sign-in, health and database writes; the app writes no files.
 - The pipeline trusts the server's SSH host key on first contact (`ssh-keyscan`). To pin it, store the expected key in a secret and write it to `known_hosts` instead.
-- The Dockerfile is only for the backend. The dashboard, demo-site and helper are not part of the image.
+- The Dockerfile is only for the backend. The dashboard, public-site and helper are not part of the image.

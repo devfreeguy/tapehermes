@@ -5,8 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { CONTENT_TYPES, DEMO_SITE, startDemo } from '../proofs/lib/demo-server.js'
 import { newWallet } from './helpers/app.js'
 
-// The helper the demo site SHIPS (the copy inside demo-site/), driven by a fake EIP-1193 wallet.
-const helper = await import(pathToFileURL(resolve('demo-site/tapehermes.min.js')).href)
+// The helper the demo site SHIPS (the copy inside public-site/), driven by a fake EIP-1193 wallet.
+const helper = await import(pathToFileURL(resolve('public-site/tapehermes.min.js')).href)
 const buyer = newWallet()
 const wallet = () => {
   let chain = 196
@@ -127,13 +127,13 @@ describe('the demo site files', () => {
   })
 
   it('ships the very helper that is built from helper/', () => {
-    expect(readFileSync('demo-site/tapehermes.min.js', 'utf8')).toBe(readFileSync('helper/dist/tapehermes.min.js', 'utf8'))
+    expect(readFileSync('public-site/tapehermes.min.js', 'utf8')).toBe(readFileSync('helper/dist/tapehermes.min.js', 'utf8'))
   })
 })
 
 describe('TapeOut site rules (TapeKit handbook and gateway code) for the files that get published', () => {
   const PUBLISHED = ['index.html', 'styles.css', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
-  const text = (f: string) => readFileSync(`demo-site/${f}`, 'utf8')
+  const text = (f: string) => readFileSync(`public-site/${f}`, 'utf8')
 
   it('uses relative paths and no outside address in HTML or CSS (src, href, action, url(), @import, meta refresh)', () => {
     const html = text('index.html'), css = text('styles.css')
@@ -156,14 +156,14 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   })
 
   it('uses plain ASCII file names, no dot segments, and declares a content type for every file', () => {
-    const files = readdirSync('demo-site').filter((f) => statSync(`demo-site/${f}`).isFile())
+    const files = readdirSync('public-site').filter((f) => statSync(`public-site/${f}`).isFile())
     for (const f of files) { expect(f, f).toMatch(/^[A-Za-z0-9._-]+$/); expect(f.normalize('NFC')).toBe(f) }
     for (const f of PUBLISHED) expect(CONTENT_TYPES[`.${f.split('.').pop()}`], f).toBeTruthy()
   })
 
   it('keeps every file far below the 8.4 MB single-file limit, and the whole site small enough to publish cheaply', () => {
-    const total = PUBLISHED.reduce((n, f) => n + statSync(`demo-site/${f}`).size, 0)
-    for (const f of PUBLISHED) expect(statSync(`demo-site/${f}`).size, f).toBeLessThan(200_000)
+    const total = PUBLISHED.reduce((n, f) => n + statSync(`public-site/${f}`).size, 0)
+    for (const f of PUBLISHED) expect(statSync(`public-site/${f}`).size, f).toBeLessThan(200_000)
     expect(total).toBeLessThan(120_000)
   })
 
@@ -182,7 +182,7 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
 
 describe('what the demo shows is described honestly', () => {
   it('routes.json holds no secret value, only secret names', () => {
-    const j = readFileSync('demo-site/routes.json', 'utf8')
+    const j = readFileSync('public-site/routes.json', 'utf8')
     expect(j).not.toMatch(/sk-[A-Za-z0-9]{8,}/)
     expect(JSON.parse(j).secrets).toEqual(['NASA_API_KEY', 'USDA_API_KEY', 'OPENAI_API_KEY'])
   })

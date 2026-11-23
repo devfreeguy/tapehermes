@@ -1,6 +1,6 @@
 packages:
   - dashboard
-  - demo-site
+  - public-site
 allowBuilds:
   '@prisma/engines': false
   esbuild: false

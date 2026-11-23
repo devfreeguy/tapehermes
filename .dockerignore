@@ -19,11 +19,11 @@ test
 **/*.test.ts
 **/*.test.tsx
 helper
-# dashboard and demo-site: only package.json (the lockfile lists them as workspace members)
+# dashboard and public-site: only package.json (the lockfile lists them as workspace members)
 dashboard/**
 !dashboard/package.json
-demo-site/**
-!demo-site/package.json
+public-site/**
+!public-site/package.json
 **/.next
 **/*.log
 **/*.tsbuildinfo
