@@ -3,87 +3,127 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TapeHermes demo</title>
-<meta name="description" content="A TapeOut site that calls outside services without any key on the chain.">
+<title>TapeHermes: paid APIs for TapeOut sites</title>
+<meta name="description" content="Add a paid API to your TapeOut site. Your keys stay private, visitors pay per call in USDT on X Layer, and every answer is signed.">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<header class="wrap">
-  <h1>tape<span class="signal">hermes</span> demo</h1>
-  <p class="lead">This page lives on X Layer. It calls two outside services, and no API key is in any file you downloaded to see it.</p>
-  <p class="note" id="badge-note">Sites that use TapeHermes make outside calls, so they do not carry the &ldquo;100% on-chain&rdquo; badge.</p>
+
+<header class="wrap top">
+  <a class="brand" href="#top" id="top">tape<span class="signal">hermes</span></a>
+  <nav aria-label="Page">
+    <a href="#try">Try it</a>
+    <a href="#how">How it works</a>
+    <a href="#owners">For owners</a>
+  </nav>
 </header>
 
-<main class="wrap">
-  <section aria-labelledby="wallet-h">
-    <h2 id="wallet-h">1. Your wallet</h2>
-    <p class="hint">Only the paid route needs a wallet. Signing a payment is free; the payment itself is a small amount in US dollars, shown before you confirm.</p>
-    <div class="row">
-      <button type="button" id="connect">Connect wallet</button>
-      <span id="wallet-status" role="status"></span>
-    </div>
+<main>
+  <section class="wrap hero" aria-labelledby="hero-h">
+    <h1 id="hero-h">Paid APIs for TapeOut sites</h1>
+    <p class="lead">Keep your API keys private, set a price for each call, and get paid in USDT on X Layer. You run no server.</p>
+    <p class="actions"><a class="button" href="#try">Try it live</a> <a class="button quiet" href="#how">How it works</a></p>
+    <p class="note" id="badge-note">Sites that use TapeHermes make outside calls, so they do not carry the &ldquo;100% on-chain&rdquo; badge.</p>
   </section>
 
-  <section aria-labelledby="free-h">
-    <h2 id="free-h">2. Free route: look up an asteroid</h2>
-    <p class="hint">The site asks NASA on your behalf. The NASA key is kept by TapeHermes, never sent to you.</p>
-    <form id="free-form" class="row">
-      <label for="asteroid-id">Asteroid number</label>
-      <input id="asteroid-id" inputmode="numeric" maxlength="10" value="3542519" autocomplete="off">
-      <button type="submit">Look up</button>
-    </form>
-    <div id="free-out" class="out" aria-live="polite"></div>
+  <section class="wrap" id="how" aria-labelledby="how-h">
+    <h2 id="how-h">How it works</h2>
+    <ol class="steps">
+      <li><h3>Add your key</h3><p>Save the API key of any service you already use. It is stored encrypted and never placed on the chain.</p></li>
+      <li><h3>Set a price</h3><p>Pick the action, the price per call and the limits. Your visitors cannot change what you fixed.</p></li>
+      <li><h3>Get paid per call</h3><p>A visitor signs a small USDT payment, gets the answer, and the money goes straight to your wallet.</p></li>
+    </ol>
   </section>
 
-  <section aria-labelledby="paid-h">
-    <h2 id="paid-h">3. Paid route: look up a food</h2>
-    <p class="hint">The site asks the US food database on your behalf and returns the best match. The key is kept by TapeHermes, and the number of results is fixed by the site owner, so you cannot ask for more. Price: <strong id="food-price">shown from the manifest</strong>.</p>
-    <form id="paid-form">
-      <label for="food-input">A food (up to 60 characters)</label>
-      <input id="food-input" maxlength="60" value="cheddar cheese" autocomplete="off">
-      <div class="row"><button type="submit">Pay and look up</button><span id="food-count" class="hint"></span></div>
-    </form>
-    <div id="paid-out" class="out" aria-live="polite"></div>
-    <p class="hint">Food data: US Department of Agriculture, FoodData Central.</p>
+  <section class="wrap" id="try" aria-labelledby="try-h">
+    <h2 id="try-h">Try it live</h2>
+    <p class="lead">Two real actions run from this page. One is free and one costs a fraction of a cent.</p>
+
+    <article class="card" aria-labelledby="wallet-h">
+      <h3 id="wallet-h">1. Your wallet</h3>
+      <p class="hint">Only the paid action needs a wallet. Signing a payment is free; the payment itself is a small amount in US dollars, shown before you confirm.</p>
+      <div class="row">
+        <button type="button" id="connect">Connect wallet</button>
+        <span id="wallet-status" role="status"></span>
+      </div>
+    </article>
+
+    <article class="card" aria-labelledby="free-h">
+      <h3 id="free-h">2. Free: look up an asteroid</h3>
+      <p class="hint">The site asks NASA for you. The NASA key is kept by TapeHermes and never sent to you.</p>
+      <form id="free-form" class="row">
+        <label for="asteroid-id">Asteroid number</label>
+        <input id="asteroid-id" inputmode="numeric" maxlength="10" value="3542519" autocomplete="off">
+        <button type="submit">Look up</button>
+      </form>
+      <div id="free-out" class="out" aria-live="polite"></div>
+    </article>
+
+    <article class="card" aria-labelledby="paid-h">
+      <h3 id="paid-h">3. Paid: look up a food</h3>
+      <p class="hint">The site asks the US food database for you and returns the best match. The key is kept by TapeHermes, and the number of results is fixed by the owner. Price: <strong id="food-price">shown from the manifest</strong>.</p>
+      <form id="paid-form">
+        <label for="food-input">A food (up to 60 characters)</label>
+        <input id="food-input" maxlength="60" value="cheddar cheese" autocomplete="off">
+        <div class="row"><button type="submit">Pay and look up</button><span id="food-count" class="hint"></span></div>
+      </form>
+      <div id="paid-out" class="out" aria-live="polite"></div>
+      <p class="hint">Food data: US Department of Agriculture, FoodData Central.</p>
+    </article>
+
+    <article class="card" id="ai-section" aria-labelledby="ai-h" hidden>
+      <h3 id="ai-h">Paid: a short answer</h3>
+      <p class="hint">One short AI answer. The model, the instructions and the length are fixed by the owner, and you only write the question. Price: <strong id="ai-price">shown from the manifest</strong>.</p>
+      <form id="ai-form">
+        <label for="ai-input">Your question (up to 200 characters)</label>
+        <textarea id="ai-input" maxlength="200" rows="3">Why is the sky blue?</textarea>
+        <div class="row"><button type="submit">Pay and ask</button><span id="ai-count" class="hint"></span></div>
+      </form>
+      <div id="ai-out" class="out" aria-live="polite"></div>
+    </article>
   </section>
 
-  <section id="ai-section" aria-labelledby="ai-h" hidden>
-    <h2 id="ai-h">Paid route: a short answer</h2>
-    <p class="hint">One short AI answer. The model, the instructions and the length are fixed by the site owner, and you only write the question. Price: <strong id="ai-price">shown from the manifest</strong>.</p>
-    <form id="ai-form">
-      <label for="ai-input">Your question (up to 200 characters)</label>
-      <textarea id="ai-input" maxlength="200" rows="3">Why is the sky blue?</textarea>
-      <div class="row"><button type="submit">Pay and ask</button><span id="ai-count" class="hint"></span></div>
-    </form>
-    <div id="ai-out" class="out" aria-live="polite"></div>
+  <section class="wrap" id="check" aria-labelledby="check-h">
+    <h2 id="check-h">Check the answer yourself</h2>
+    <p class="lead">Every answer is signed by the site. This list is what your browser checked before it showed you the answer.</p>
+    <article class="card">
+      <ul id="checks" class="checks" aria-live="polite"><li class="muted">Make a call above to see the checks.</li></ul>
+      <details id="proof" hidden>
+        <summary>The signed answer, field by field</summary>
+        <dl id="proof-fields"></dl>
+      </details>
+      <div class="row">
+        <button type="button" id="tamper" class="quiet" disabled>Change one character and check again</button>
+        <button type="button" id="direct" class="quiet" disabled>Ask the service without the key</button>
+      </div>
+      <div id="side-out" class="out" aria-live="polite"></div>
+    </article>
   </section>
 
-  <section aria-labelledby="check-h">
-    <h2 id="check-h">4. Check the answer yourself</h2>
-    <p class="hint">Every answer is signed by the site. This list is what your browser checked before showing it.</p>
-    <ul id="checks" class="checks" aria-live="polite"><li class="muted">Make a call to see the checks.</li></ul>
-    <details id="proof" hidden>
-      <summary>The signed answer, field by field</summary>
-      <dl id="proof-fields"></dl>
-    </details>
-    <div class="row">
-      <button type="button" id="tamper" disabled>Change one character and check again</button>
-      <button type="button" id="direct" disabled>Ask the service without the key</button>
-    </div>
-    <div id="side-out" class="out" aria-live="polite"></div>
-  </section>
-
-  <section aria-labelledby="where-h">
+  <section class="wrap" id="where" aria-labelledby="where-h">
     <h2 id="where-h">Where the key is</h2>
     <ul class="plain">
       <li>The files of this site are on the chain. They hold no key, only this page and the helper that checks answers.</li>
-      <li>The keys are with TapeHermes, encrypted, and used only on the server for the two routes above.</li>
+      <li>The keys are with TapeHermes, encrypted, and used only on the server for the two actions above.</li>
       <li>Your answer is signed. If anyone changes it on the way, the check above fails.</li>
     </ul>
   </section>
+
+  <section class="wrap" id="owners" aria-labelledby="owners-h">
+    <h2 id="owners-h">Make one for your own site</h2>
+    <p class="lead">You need a TapeOut site on X Layer, a wallet that holds it, and the API keys you want to protect.</p>
+    <ol class="plain">
+      <li>Sign in at <strong class="mono">dashboard.tapehermes.xyz</strong> with the wallet that holds your site.</li>
+      <li>Add your keys, create your actions and set their prices.</li>
+      <li>Publish your API list on X Layer with one signature.</li>
+    </ol>
+  </section>
 </main>
 
-<footer class="wrap muted" id="source-line"></footer>
+<footer class="wrap muted">
+  <p id="source-line"></p>
+  <p>TapeHermes. Paid APIs for TapeOut sites on X Layer.</p>
+</footer>
 <script type="module" src="./main.js"></script>
 </body>
 </html>

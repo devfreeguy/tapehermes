@@ -141,7 +141,7 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
     expect(html).not.toMatch(/http-equiv=["']?refresh/i)
     expect(css).not.toMatch(/url\(\s*["']?(https?:)?\/\//i)
     expect(css).not.toMatch(/@import/i)
-    for (const m of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) expect(m[1], m[1]).toMatch(/^\.\//)
+    for (const m of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) expect(m[1], m[1]).toMatch(/^(\.\/|#)/) // a file of this site, or a place on this page
   })
 
   it('has no script from outside and no inline script, so the gateway CSP (scripts only from the chain) is met', () => {
@@ -165,6 +165,21 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
     const total = PUBLISHED.reduce((n, f) => n + statSync(`public-site/${f}`).size, 0)
     for (const f of PUBLISHED) expect(statSync(`public-site/${f}`).size, f).toBeLessThan(200_000)
     expect(total).toBeLessThan(120_000)
+  })
+
+  it('keeps the page and the stylesheet under 24,000 bytes each, so each one is a single publish transaction', () => {
+    for (const f of ['index.html', 'styles.css']) expect(statSync(`public-site/${f}`).size, f).toBeLessThan(24_000)
+  })
+
+  it('keeps every element the page code looks up (the design contract in public-site/design/BRIEF.md)', () => {
+    const html = text('index.html')
+    const ids = ['connect', 'wallet-status', 'free-form', 'asteroid-id', 'free-out', 'paid-form', 'food-input', 'food-count', 'food-price', 'paid-out',
+      'ai-section', 'ai-form', 'ai-input', 'ai-count', 'ai-price', 'ai-out', 'checks', 'proof', 'proof-fields', 'tamper', 'direct', 'side-out', 'source-line']
+    for (const id of ids) expect([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, id).toBe(1)
+    expect(html).toMatch(/id="ai-section"[^>]*\bhidden\b/)
+    expect(html).toMatch(/id="proof"[^>]*\bhidden\b/)
+    for (const id of ['tamper', 'direct']) expect(html).toMatch(new RegExp(`id="${id}"[^>]*\\bdisabled\\b`))
+    for (const form of ['free-form', 'paid-form', 'ai-form']) expect(html.match(new RegExp(`<form id="${form}"[\\s\\S]*?</form>`))?.[0], form).toMatch(/<button\b/)
   })
 
   it('says in plain words that the site has no "100% on-chain" badge, and has no em dashes or hidden characters', () => {
