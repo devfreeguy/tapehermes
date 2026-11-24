@@ -48,7 +48,7 @@ Style the `[hidden]` attribute so hidden things really are hidden (`[hidden] { d
 
 - Only these files: `index.html` and `styles.css`. No images, fonts or extra files.
 - `index.html` has exactly one script: `<script type="module" src="./main.js"></script>`. No other script, no inline script, no event attributes.
-- Every `src` and `href` is either `./file` or `#anchor`. No `http` or `https` address anywhere in the HTML or CSS: no Google Fonts, no CDN, no remote images, no `@import`, no `url(http...)`. The dashboard address is written as plain text, not a link.
+- Every `src` and `href` is either `./file` or `#anchor`. No `http` or `https` address anywhere in the HTML or CSS: no Google Fonts, no CDN, no remote images, no `@import`, no `url(http...)`. The one exception is a single clickable link to the dashboard, written exactly as `<a href="https://dashboard.tapehermes.xyz" target="_blank" rel="noopener noreferrer">dashboard.tapehermes.xyz</a>`.
 - No hex colors (`#fff` style). Use `oklch(...)`, `rgb(...)` or `hsl(...)`, as variables on `:root`.
 - No long dash character (the em dash) anywhere. Use a comma, a colon or a full stop.
 - No invisible or right-to-left characters.
@@ -84,7 +84,7 @@ The script creates these, so style them: .answer (answer box), .bad (error text)
 HARD RULES
 - Output only index.html and styles.css. No other files, no images, no web fonts.
 - index.html has exactly one script: `<script type="module" src="./main.js"></script>`. No other script, no inline script, no onclick attributes.
-- Every src and href is `./something` or `#anchor`. No http or https address anywhere in the HTML or CSS (no CDN, no Google Fonts, no remote images, no @import, no url(http...)). Write the dashboard address `dashboard.tapehermes.xyz` as plain text, not a link.
+- Every src and href is `./something` or `#anchor`. No http or https address anywhere in the HTML or CSS (no CDN, no Google Fonts, no remote images, no @import, no url(http...)). The one exception is a single clickable link to the dashboard, written exactly as <a href="https://dashboard.tapehermes.xyz" target="_blank" rel="noopener noreferrer">dashboard.tapehermes.xyz</a>.
 - No hex colors. Use oklch(), rgb() or hsl(), defined as variables on :root.
 - Do not use the long dash character (em dash) anywhere. Use commas, colons or full stops.
 - No invisible characters or right-to-left characters.

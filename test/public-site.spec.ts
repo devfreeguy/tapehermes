@@ -136,7 +136,10 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   const text = (f: string) => readFileSync(`public-site/${f}`, 'utf8')
 
   it('uses relative paths and no outside address in HTML or CSS (src, href, action, url(), @import, meta refresh)', () => {
-    const html = text('index.html') + text('playground.html'), css = text('styles.css') + text('playground.css')
+    // The one outside address allowed is a clickable link to the dashboard, which opens in a new tab and never loads anything.
+    const DASHBOARD_LINK = /<a href="https:\/\/dashboard\.tapehermes\.xyz" target="_blank" rel="noopener noreferrer">/g
+    expect(text('index.html').match(DASHBOARD_LINK), 'the dashboard link').toHaveLength(1)
+    const html = (text('index.html') + text('playground.html')).replace(DASHBOARD_LINK, '<a href="#top">'), css = text('styles.css') + text('playground.css')
     expect(html).not.toMatch(/(src|href|action|poster|srcset)=["']?(https?:)?\/\//i)
     expect(html).not.toMatch(/http-equiv=["']?refresh/i)
     expect(css).not.toMatch(/url\(\s*["']?(https?:)?\/\//i)
@@ -150,7 +153,9 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   })
 
   it('keeps external destinations in the entry script, outside HTML and CSS', () => {
-    const outside = PUBLISHED.filter((f) => f !== 'tapehermes.min.js' && /https?:\/\//.test(text(f)))
+    // The only other outside address is the clickable dashboard link in the page (checked in the relative-paths test above).
+    const withoutDashboardLink = (f: string) => text(f).replace('https://dashboard.tapehermes.xyz', '')
+    const outside = PUBLISHED.filter((f) => f !== 'tapehermes.min.js' && /https?:\/\//.test(withoutDashboardLink(f)))
     expect(outside).toEqual(['main.js'])
   })
 
