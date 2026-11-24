@@ -1,3 +1,5 @@
+'use client'
+
 import { useTranslator } from '@/lib/locale-context'
 import { Globe2, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
