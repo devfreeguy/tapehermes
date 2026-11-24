@@ -37,4 +37,10 @@ export const WALLET_STEPS = {
     cost: 'You pay a network fee in OKB. Your wallet shows the fee for each transaction before you approve it.',
     cannotDo: 'It cannot move tokens or change who holds the site. It only writes one file to your site.',
   },
+  publishSite: {
+    title: 'Publish your website',
+    whatHappens: 'Your wallet will ask you to approve several transactions, one after another. Each one saves part of your website to X Layer. Keep your wallet open until the last one is done.',
+    cost: 'You pay a network fee in OKB for each transaction. The page checks that your wallet holds enough for the whole upload before it starts, and your wallet shows each fee before you approve it.',
+    cannotDo: 'It cannot move tokens or change who holds the site. It only writes your website files. Anyone can read them, and they stay in the chain history.',
+  },
 } satisfies Record<string, WalletStepCopy>

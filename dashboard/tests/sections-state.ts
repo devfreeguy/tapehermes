@@ -22,7 +22,7 @@ const build = () => {
     switchOn: noop(),
     logs: { data: undefined as unknown, isPending: false, error: null as unknown },
     summary: { data: undefined as unknown, isPending: false, error: null as unknown },
-    register: noop(), setPayout: noop(), setStatus: noop(), signing: noop(), publish: noop(), signInMutation: noop(),
+    register: noop(), setPayout: noop(), setStatus: noop(), signing: noop(), publish: noop(), planFiles: noop(), publishFiles: noop(), signInMutation: noop(),
     secretActions: { save: noop(), rename: noop(), remove: noop() },
     routeActions: { create: noop(), update: noop(), remove: noop() },
   }

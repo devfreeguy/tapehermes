@@ -12,5 +12,6 @@ export const SITE_TABS = [
   { path: '/actions', label: SITE_TERMS.routes.label },
   { path: '/permission', label: SITE_TERMS.delegation.label },
   { path: '/api-list', label: SITE_TERMS.manifest.label },
+  { path: '/website', label: SITE_TERMS.website.label },
   { path: '/call-log', label: SITE_TERMS.logs.label },
 ] as const

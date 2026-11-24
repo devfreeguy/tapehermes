@@ -15,6 +15,10 @@ export const SITE_TERMS = {
     label: 'API List',
     description: 'Publish the list of actions apps can use, what each costs, and how to check your site’s replies. In code, this file is called a manifest.',
   },
+  website: {
+    label: 'Website',
+    description: 'Put your site’s pages on X Layer so people can open them. Choose the site bundle file, check what will change, then approve the transactions in your wallet.',
+  },
   logs: {
     label: 'Call Log',
     description: 'See what people asked your site to do, whether it worked, what they paid, and how long it took. The history keeps no visitor details.',

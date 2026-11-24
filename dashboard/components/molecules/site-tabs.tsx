@@ -2,7 +2,7 @@
 
 import { useTranslator } from '@/lib/locale-context'
 import { useQueryClient } from '@tanstack/react-query'
-import { KeyRound, LayoutGrid, ListChecks, Network, Plus, ScrollText, ShieldCheck } from 'lucide-react'
+import { Globe, KeyRound, LayoutGrid, ListChecks, Network, Plus, ScrollText, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import { useSiteSelection } from './site-selection-provider'
 import { TabScrollArea } from './tab-scroll-area'
 
-const tabIcons = [LayoutGrid, KeyRound, Network, ShieldCheck, ScrollText, ListChecks]
+const tabIcons = [LayoutGrid, KeyRound, Network, ShieldCheck, ScrollText, Globe, ListChecks]
 
 export function NewSiteNavLink({ iconOnly = false }: { iconOnly?: boolean }) {
   const t = useTranslator()

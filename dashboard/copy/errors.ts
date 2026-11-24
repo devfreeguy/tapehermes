@@ -52,6 +52,10 @@ const BY_CODE: Record<string, { title: string; message: string }> = {
   ALREADY_ACTIVE: { title: 'Your site is already switched on', message: 'Nothing to do. Reload the page to see the end date.' },
   NOT_PUBLISHABLE: { title: 'The API list is not ready to publish', message: 'Fix the points below, then try again.' },
   MANIFEST_INVALID: { title: 'The API list has a problem', message: 'Check your actions and prices, then try again.' },
+  INVALID_SITE_FILES: { title: 'The site files are not valid', message: 'Build the bundle again with pnpm site:build and choose the new file.' },
+  SITE_FILE_TOO_LARGE: { title: 'A site file is too large', message: 'Each file can hold up to 200,000 bytes.' },
+  SITE_FILES_TOO_LARGE: { title: 'The website is too large', message: 'All files together can hold up to 400,000 bytes.' },
+  NOT_ENOUGH_FOR_FEES: { title: 'Not enough OKB for the network fees', message: 'Add OKB to the holder wallet, or try again when the network fee is lower. Nothing was sent.' },
   NETWORK: { title: 'Cannot reach the server', message: 'Check your connection. If it keeps happening, the service may be down.' },
   BAD_ANSWER: { title: 'Unexpected answer', message: 'The server answered in a way this page does not understand. Reload the page.' },
 }

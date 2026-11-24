@@ -98,6 +98,21 @@ export const publishTx = z.object({
 })
 export type PublishTx = z.infer<typeof publishTx>
 
+export const siteBundle = z.object({
+  files: z.array(z.object({ path: z.string(), contentType: z.string(), content: z.string() })).min(1),
+})
+export type SiteBundle = z.infer<typeof siteBundle>
+
+export const siteFileState = z.enum(['new', 'changed', 'current'])
+export type SiteFileState = z.infer<typeof siteFileState>
+export const siteFilesPlan = z.object({
+  from: z.string(), chainId: z.number(),
+  files: z.array(z.object({ path: z.string(), contentType: z.string(), size: z.number(), sha256: z.string(), state: siteFileState, txCount: z.number() })),
+  txs: z.array(z.object({ to: hex, data: hex, value: z.string().optional(), label: z.string() })),
+  totalTxs: z.number(), note: z.string(),
+})
+export type SiteFilesPlan = z.infer<typeof siteFilesPlan>
+
 export const activation = z.object({
   activated: z.boolean(), paidUntil: iso.nullable(),
   fee: z.object({ perMonthWei: z.string(), perMonth: z.string(), symbol: z.string() }),

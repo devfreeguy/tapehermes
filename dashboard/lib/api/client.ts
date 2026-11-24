@@ -78,6 +78,9 @@ export function createApiClient(o: ApiClientOptions) {
       status: (name: string) => request('GET', `${site(name)}/manifest/status`, s.manifestStatus),
       publishTx: (name: string) => request('POST', `${site(name)}/manifest/publish-tx`, s.publishTx),
     },
+    files: {
+      plan: (name: string, bundle: s.SiteBundle) => request('POST', `${site(name)}/files/plan`, s.siteFilesPlan, bundle),
+    },
     activation: {
       status: (name: string) => request('GET', `${site(name)}/activation`, s.activation),
       tx: (name: string, months: number) => request('POST', `${site(name)}/activation/tx`, s.activationTx, { months }),
