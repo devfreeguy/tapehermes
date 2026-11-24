@@ -3,126 +3,163 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TapeHermes: paid APIs for TapeOut sites</title>
-<meta name="description" content="Add a paid API to your TapeOut site. Your keys stay private, visitors pay per call in USDT on X Layer, and every answer is signed.">
+<meta name="color-scheme" content="light dark">
+<title>TapeHermes | Charge per call on your TapeOut site</title>
+<meta name="description" content="Let visitors look up data or run an AI task on your TapeOut site. Set the price, keep your API keys private, and get paid in USDT.">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+<span id="top" aria-hidden="true"></span>
+<a class="skip-link" href="#content">Skip to content</a>
 
-<header class="wrap top">
-  <a class="brand" href="#top" id="top">tape<span class="signal">hermes</span></a>
-  <nav aria-label="Page">
-    <a href="#try">Try it</a>
-    <a href="#how">How it works</a>
+<header class="top">
+  <div class="wrap top-inner">
+  <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>TapeHermes</a>
+  <nav aria-label="On this page">
+    <a href="#check">How it works</a>
     <a href="#owners">For owners</a>
   </nav>
+  <div class="header-actions">
+    <button type="button" id="theme-toggle" class="quiet theme-toggle" aria-label="Switch color theme"><span aria-hidden="true">☼</span></button>
+    <a class="button quiet header-action" href="#try">Try it <span class="arrow" aria-hidden="true">↓</span></a>
+  </div>
+  </div>
 </header>
 
-<main>
-  <section class="wrap hero" aria-labelledby="hero-h">
-    <h1 id="hero-h">Paid APIs for TapeOut sites</h1>
-    <p class="lead">Keep your API keys private, set a price for each call, and get paid in USDT on X Layer. You run no server.</p>
-    <p class="actions"><a class="button" href="#try">Try it live</a> <a class="button quiet" href="#how">How it works</a></p>
-    <p class="note" id="badge-note">Sites that use TapeHermes make outside calls, so they do not carry the &ldquo;100% on-chain&rdquo; badge.</p>
-  </section>
-
-  <section class="wrap" id="how" aria-labelledby="how-h">
-    <h2 id="how-h">How it works</h2>
-    <ol class="steps">
-      <li><h3>Add your key</h3><p>Save the API key of any service you already use. It is stored encrypted and never placed on the chain.</p></li>
-      <li><h3>Set a price</h3><p>Pick the action, the price per call and the limits. Your visitors cannot change what you fixed.</p></li>
-      <li><h3>Get paid per call</h3><p>A visitor signs a small USDT payment, gets the answer, and the money goes straight to your wallet.</p></li>
-    </ol>
-  </section>
-
-  <section class="wrap" id="try" aria-labelledby="try-h">
-    <h2 id="try-h">Try it live</h2>
-    <p class="lead">Two real actions run from this page. One is free and one costs a fraction of a cent.</p>
-
-    <article class="card" aria-labelledby="wallet-h">
-      <h3 id="wallet-h">1. Your wallet</h3>
-      <p class="hint">Only the paid action needs a wallet. Signing a payment is free; the payment itself is a small amount in US dollars, shown before you confirm.</p>
-      <div class="row">
-        <button type="button" id="connect">Connect wallet</button>
-        <span id="wallet-status" role="status"></span>
+<main id="content" tabindex="-1">
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="hero-image" aria-hidden="true"></div>
+    <div class="wrap hero-copy">
+      <h1 id="hero-h">Charge for a lookup <span>or an AI summary.</span></h1>
+      <p class="lead">Connect a service to your TapeOut site and set the price. TapeHermes runs it with your private API key and sends the payment to your wallet.</p>
+      <div class="actions">
+        <a class="button" href="#try">Try a free lookup <span class="arrow" aria-hidden="true">↓</span></a>
+        <a class="button hero-secondary" href="#check">See how it works</a>
       </div>
-    </article>
-
-    <article class="card" aria-labelledby="free-h">
-      <h3 id="free-h">2. Free: look up an asteroid</h3>
-      <p class="hint">The site asks NASA for you. The NASA key is kept by TapeHermes and never sent to you.</p>
-      <form id="free-form" class="row">
-        <label for="asteroid-id">Asteroid number</label>
-        <input id="asteroid-id" inputmode="numeric" maxlength="10" value="3542519" autocomplete="off">
-        <button type="submit">Look up</button>
-      </form>
-      <div id="free-out" class="out" aria-live="polite"></div>
-    </article>
-
-    <article class="card" aria-labelledby="paid-h">
-      <h3 id="paid-h">3. Paid: look up a food</h3>
-      <p class="hint">The site asks the US food database for you and returns the best match. The key is kept by TapeHermes, and the number of results is fixed by the owner. Price: <strong id="food-price">shown from the manifest</strong>.</p>
-      <form id="paid-form">
-        <label for="food-input">A food (up to 60 characters)</label>
-        <input id="food-input" maxlength="60" value="cheddar cheese" autocomplete="off">
-        <div class="row"><button type="submit">Pay and look up</button><span id="food-count" class="hint"></span></div>
-      </form>
-      <div id="paid-out" class="out" aria-live="polite"></div>
-      <p class="hint">Food data: US Department of Agriculture, FoodData Central.</p>
-    </article>
-
-    <article class="card" id="ai-section" aria-labelledby="ai-h" hidden>
-      <h3 id="ai-h">Paid: a short answer</h3>
-      <p class="hint">One short AI answer. The model, the instructions and the length are fixed by the owner, and you only write the question. Price: <strong id="ai-price">shown from the manifest</strong>.</p>
-      <form id="ai-form">
-        <label for="ai-input">Your question (up to 200 characters)</label>
-        <textarea id="ai-input" maxlength="200" rows="3">Why is the sky blue?</textarea>
-        <div class="row"><button type="submit">Pay and ask</button><span id="ai-count" class="hint"></span></div>
-      </form>
-      <div id="ai-out" class="out" aria-live="polite"></div>
-    </article>
+    </div>
   </section>
 
-  <section class="wrap" id="check" aria-labelledby="check-h">
-    <h2 id="check-h">Check the answer yourself</h2>
-    <p class="lead">Every answer is signed by the site. This list is what your browser checked before it showed you the answer.</p>
-    <article class="card">
-      <ul id="checks" class="checks" aria-live="polite"><li class="muted">Make a call above to see the checks.</li></ul>
-      <details id="proof" hidden>
-        <summary>The signed answer, field by field</summary>
-        <dl id="proof-fields"></dl>
-      </details>
-      <div class="row">
-        <button type="button" id="tamper" class="quiet" disabled>Change one character and check again</button>
-        <button type="button" id="direct" class="quiet" disabled>Ask the service without the key</button>
+  <section class="wrap section playground" id="try" aria-labelledby="try-h">
+    <header class="section-head playground-intro">
+      <h2 id="try-h">Look up a real asteroid</h2>
+      <p>Start with asteroid 3542519. See how big it is and when it first passed near Earth.</p>
+      <p class="hint">The asteroid lookup needs no wallet.</p>
+      <a class="text-link" href="#check">See how the answer is checked <span class="arrow" aria-hidden="true">↓</span></a>
+    </header>
+    <div class="playground-body">
+      <div class="action-grid">
+        <article class="card demo-card free-card" aria-labelledby="free-h">
+          <div class="card-head"><img class="action-art" alt="" loading="lazy" srcset="data:image/webp;base64,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"><span class="tag mint">Free</span></div>
+          <h3 id="free-h">Asteroid lookup</h3>
+          <p class="hint">Data from NASA, retrieved with an API key that stays private.</p>
+          <form id="free-form">
+            <label for="asteroid-id">Asteroid number</label>
+            <div class="field-row">
+              <input id="asteroid-id" inputmode="numeric" maxlength="10" value="3542519" autocomplete="off">
+              <button type="submit">Look up</button>
+            </div>
+          </form>
+          <div id="free-out" class="out" aria-live="polite"></div>
+        </article>
+
+        <article class="card demo-card paid-card" aria-labelledby="paid-h">
+          <div class="card-head"><img class="action-art" alt="" loading="lazy" srcset="data:image/webp;base64,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"><strong id="food-price" class="tag violet">Checking price</strong></div>
+          <h3 id="paid-h">Search the USDA food database</h3>
+          <p class="hint">Search for a food by name. You’ll see the price here and approve it in your wallet.</p>
+          <details class="open-form">
+            <summary>Enter a food</summary>
+            <form id="paid-form">
+              <label for="food-input">Food name</label>
+              <input id="food-input" maxlength="60" value="cheddar cheese" autocomplete="off" aria-describedby="food-count">
+              <div class="row"><button type="submit">Pay and search</button><span id="food-count" class="hint"></span></div>
+            </form>
+            <div id="paid-out" class="out" aria-live="polite"></div>
+          </details>
+        </article>
+
+        <article class="card demo-card ai-card" id="ai-section" aria-labelledby="ai-h" hidden>
+          <div class="card-head"><strong id="ai-price" class="tag violet">Checking price</strong></div>
+          <h3 id="ai-h">Ask a question</h3>
+          <p class="hint">Get a short AI answer. The site owner sets the model and length.</p>
+          <details class="open-form">
+            <summary>Write a question</summary>
+            <form id="ai-form">
+              <label for="ai-input">Your question</label>
+              <textarea id="ai-input" maxlength="200" rows="3" aria-describedby="ai-count">Why is the sky blue?</textarea>
+              <div class="row"><button type="submit">Pay and ask</button><span id="ai-count" class="hint"></span></div>
+            </form>
+            <div id="ai-out" class="out" aria-live="polite"></div>
+          </details>
+        </article>
       </div>
-      <div id="side-out" class="out" aria-live="polite"></div>
-    </article>
+
+      <article class="wallet" aria-labelledby="wallet-h">
+        <div><h3 id="wallet-h">Pay with your wallet</h3><p class="hint">Paid searches use USDT on X Layer.</p></div>
+        <div class="wallet-action">
+          <button type="button" id="connect" class="quiet">Connect wallet</button>
+          <button type="button" id="switch-wallet" class="quiet" hidden>Switch account</button>
+          <span id="wallet-status" role="status"></span>
+        </div>
+      </article>
+    </div>
   </section>
 
-  <section class="wrap" id="where" aria-labelledby="where-h">
-    <h2 id="where-h">Where the key is</h2>
-    <ul class="plain">
-      <li>The files of this site are on the chain. They hold no key, only this page and the helper that checks answers.</li>
-      <li>The keys are with TapeHermes, encrypted, and used only on the server for the two actions above.</li>
-      <li>Your answer is signed. If anyone changes it on the way, the check above fails.</li>
-    </ul>
+  <section class="wrap section" id="check" aria-labelledby="check-h">
+    <header class="section-head">
+      <h2 id="check-h">Behind the lookup</h2>
+    </header>
+    <div class="trust-grid">
+      <article class="card trust-card">
+        <img class="trust-art" alt="" loading="lazy" srcset="data:image/webp;base64,UklGRrQDAABXRUJQVlA4IKgDAACwJACdASo2AZYAPt1qrlEopi4qqDN5WcAbiWluvcGt4ha6Ajgrsr2jrveFZsNmD9aS6FwLHumJrP2b6td8fb8QBGqYn/V2/ftpM5KP9ehZ8sDTllx9nHQAXTbeNRGyD+enPnbJx2eNZzNMX/kCMuTDLo4z9K/JnQ3oUcxgA78Guesug4vzrccXvgmVxw1yJL71SaEJZsCE8c/iwNuYQk2xDjk5A5IkkMP+AK48Q6PJfJdCEbKOoIp2+dgbXAFRRqj1hqTFXwoeYz1MXHRAj952fbuFeiRJhG40SIts5Wh/lCiQRt3BQ4LHi2tDMuhQXObwEvDObhgunHeCIFyE4BL34qliYoMPPK72y9SDjnilQ4xDYVbEDoJ6QyDYVuiVavgBVR8t3JJlnDiLnjuI0AD+eMTTIyWAkJuUE59c2NcZIFxgurYK4PP1Z+8vYPVoEZKKxuHys7jpaZIEyTmFPovEiGf/YmVg+OiejL22S30VCCvU6FP6Ejwot5bWfd9l6BY0Zhl80lDN+BvP6xIuHwTzjoI5DKrueoQdtFiJrjD07FVl76E+w+gPF/nGAG0CUnDm1LgG7qB0xb42ioPQiK6CKYCw7pADnTlIt2I1c10VD+CC03LdKYeXH7ep5rvyhC51pEUXb0INbJ2bo6ml/AzKxoKf1O6v57pIQLT2DXC6du58Fph2WttMuiUuHjU11ecVnArcZ4/mx3IebuR2UyePyvJZ/2j0RrKWgGRT9pom5eh34UsuC6SqNtOSJDNHtHwQarWjDcnFkxgixLyYqfnVUHdAdVeeMGmXmIsf8D3/8LJhSq9ynXtCEml92IwNtHxrHYTkd/sAi23LU1INMlZfIyorw/v9skmLfBdfBpedPKiZaYK6tzxxfRagiWsgzQRRYP+51Ud59SV1lnIanUhzwJ9TM5rzlm4zZCstiSUMfts5jTrvVV08lOKcRGF9gncCp94hE/6s+AdQ7xecAqIrZV0IL0lKNzBnPxJ4qeiWFoj76juCFLnT5w+QcDkpTcc5K4VZihi7Fz5lt/dZ4J+OgfynjsJ08u+aBZ9VWV3BVxucjE5ghv65TsrtgkWm/H5xBPnbku0exnndox8eSPkhMgRghVGJcQstUg4ESFWNGp7gipwDO1EOtTLp1sf6z8TsgLjn0NUsYEcm+qVmhuLiigiBQ4MHJDvXQrLCgzVuYWTSzERUIUtvqxKvsNzVSAJAh4RA2Hi67Xwl1lF8+J5oEObBcegAAAA=">
+        <div class="trust-copy">
+          <h3>Did the answer change?</h3>
+          <p>Your browser checks the signature on the result. Change one character and watch the check fail.</p>
+        </div>
+        <div class="proof-card">
+          <ul id="checks" class="checks" aria-live="polite"><li class="empty"><a class="text-link" href="#try">Run a lookup</a> to see the results here.</li></ul>
+          <details id="proof" hidden>
+            <summary>See what the site signed</summary>
+            <dl id="proof-fields"></dl>
+            <p id="source-line" class="muted"></p>
+          </details>
+          <div class="row">
+            <button type="button" id="tamper" class="quiet" disabled>Change one character</button>
+            <button type="button" id="direct" class="quiet" disabled>Try NASA without the key</button>
+          </div>
+          <div id="side-out" class="out" aria-live="polite"></div>
+        </div>
+      </article>
+
+      <article class="card trust-card" id="how">
+        <img class="trust-art" alt="" loading="lazy" srcset="data:image/webp;base64,UklGRtoEAABXRUJQVlA4IM4EAABQLQCdASo2AZYAPt1qr1Kopa6rpBFJydAbiWlu1V5mHAhK6coSPK00VjV0fpqMyqMHag3EAUrg+r5HfgzOkbzkUe9pmZmeOO4/AsONIWDRScChgUcvQwbFHj/mf7bCuf1xkasbWzhEyMb9/Ucc8xJVeqLSi1NMGX2QZrRrw0sljA99tuXlCVj1WfQkTLlr06oXVLkpXQndcTdhVgLVQO5aN/mCib1N25E4KnEyDdl4UKODW8LQqpZrV4oCrMN11tjkAwkmeT/bHG0CqrO/f7kAVKP1YEp3I+8Q6QHTB4mzOD8cEU04ibXGJ1naQ0U9C3NQRo54MeeQyx/EWhERKqwReiTG2CPxV+BDTpIxDeO39INV/6HyFN3AJzZJIjf+Ih1MF3uFhI+lUM/qazrxZUGvYoUOd/NwhSEUmQRRBK4R2Ey2Lbts7dWI/TiODbZHxpjbxKNP+A7JrDyPavp2LeMInmRORfJjObeLSwXWM3QtcdzOAAD+75ijO/XmSFTQ9ht3Q7mhfUTiq3dF7RNCFrN0Km1b7tZQBQqBfW/EIxOmM4Hl3acz1Y05UQxvAaAMHCipjREV7GuE8GFrY2vQAPSlDtdbwg6soPbLcKjzzhJuVoJftt3bTyueJc0IFqy6DIOEsicyc5Pjgyx7fr7TSOmuBhi8MuQC7vuKu8QCiiT8eIyMkljb//MUCh92kYKSZpjwlF1wuHrxm5AdKBAhfAG4HEeV/gzydMy/zoASvfsZPEbIzShq3SW0kHWk0Az5Rtc/vOq4HX9VguI4XM1I3emAFQtst0XZdEQtJzYvb8asoHlo6YhdQDSxWwPynjzZt874t5GkC+gwiaVbLHPJDbcIrdU72KjvAw1pySvqft5EnZWiGVhno2zttK3cG1b5PgZ3/a51gVj2bhbmJEtvqULFQmrObgepU4DeJK1kw2dZyOiIi7FS/lBZ9uA46HQ+nDseFS9GlZjGCoKmLK9akhqhwMzYkzdz22Z1X8Xqnpl3evTl/sn8Uie9Nt8KbQpaXTJAcBdr30oUrizqtkWej+H9AdrWzWMH0GBaLdGqmd7rVAZHAYPiDHesiUT/wSfAT1q56snQmpxgD9R7h3sv+DhUe4edJK6yULQGmw7+Tuo2lfdpaU5qGEP/Hpw8C4NxKKOIyBE7BjJ2avm3mqTA7pVdWoWzDuAsksntlll96NchParZ+eyJ6PSNJOg6Yv73Q3MPs9A5lPknDPpIoktzw3UnquaU3VRE1lIy2IrcnpIpnJ/aRFskMwPa9w8HMjjRBuDrr8GJ38VtpV6DslEL6KNIIO9wUVCFN1KTfUcd1fbFi6tpM9iGeVZF0cLt22w1VlUFL6W5QeZljrv1qAuNrc/tnusq2vPkO307lacOBO9xuB6KvuCegkZzo4NHmls2yWtPjz9UMq/qBoJlahkK17CL3t3JtOScj+mkgaN/pWFDrKYpZLjXEA4sZhnP3S7fiZtNZGJs1WIlanj1xSGii0CL5uOnadu0jOuhz4gCCqqYiMcmOYYK1idOMfXmIGlgmxuCU6yhtRJqbh+yXM16/fgiiJrPOtETegOj302XbgyMwLUc7ybWoClP/UwIxvZ6t+uoI6U4DvlIDJmto0ikGzThW16gH5mAjqsDvELQQAA=">
+        <div class="trust-copy" id="where">
+          <h3>Your key stays private</h3>
+          <p>TapeHermes sends its saved key to NASA and returns the data. Visitors see the result without ever seeing the key.</p>
+        </div>
+        <p class="key-note" id="badge-note">Sites that use TapeHermes make outside calls, so they do not carry the &ldquo;100% on-chain&rdquo; badge.</p>
+      </article>
+    </div>
   </section>
 
-  <section class="wrap" id="owners" aria-labelledby="owners-h">
-    <h2 id="owners-h">Make one for your own site</h2>
-    <p class="lead">You need a TapeOut site on X Layer, a wallet that holds it, and the API keys you want to protect.</p>
-    <ol class="plain">
-      <li>Sign in at <strong class="mono">dashboard.tapehermes.xyz</strong> with the wallet that holds your site.</li>
-      <li>Add your keys, create your actions and set their prices.</li>
-      <li>Publish your API list on X Layer with one signature.</li>
-    </ol>
+  <section class="wrap section" id="owners" aria-labelledby="owners-h">
+    <div class="card owners">
+      <header class="section-head">
+        <h2 id="owners-h">Set up your own paid action</h2>
+        <p>Open the dashboard with the wallet that owns your TapeOut site.</p>
+        <p class="owner-address mono">dashboard.tapehermes.xyz</p>
+      </header>
+      <ol class="owner-steps">
+        <li>Add the key for the service you want to use.</li>
+        <li>Create an action and set its price, or make it free.</li>
+        <li>Give TapeHermes permission to sign replies, then publish your API list on X Layer.</li>
+      </ol>
+    </div>
   </section>
 </main>
 
-<footer class="wrap muted">
-  <p id="source-line"></p>
-  <p>TapeHermes. Paid APIs for TapeOut sites on X Layer.</p>
+<footer class="wrap footer">
+  <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>TapeHermes</a>
+  <a class="back" href="#top">Back to top <span aria-hidden="true">↑</span></a>
 </footer>
 <script type="module" src="./main.js"></script>
 </body>
