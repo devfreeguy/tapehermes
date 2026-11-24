@@ -7,7 +7,7 @@ import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const DIR = fileURLToPath(new URL('.', import.meta.url))
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' }
+export const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' }
 /** Exactly the files that get published. Nothing else in this folder is ever served. */
 export const SITE_FILES = ['index.html', 'playground.html', 'styles.css', 'playground.css', 'locale.js', 'trace.js', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
 export const DEFAULT_API = 'https://api.tapehermes.xyz/sites/26.2.2.tape'

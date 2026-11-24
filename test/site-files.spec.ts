@@ -157,3 +157,15 @@ describe('POST /api/sites/:site/files/plan', () => {
     expect((await t.api.call('POST', `/api/sites/${SITE}/files/plan`, { body: { files: FILES } })).status).toBe(401)
   })
 })
+
+describe('the real public site bundle (public-site/bundle.mjs)', () => {
+  it('passes the same validation the server applies, with every page and file, and needs a small number of transactions', async () => {
+    const { pathToFileURL } = await import('node:url')
+    const { resolve } = await import('node:path')
+    const { makeBundle } = await import(pathToFileURL(resolve('public-site/bundle.mjs')).href)
+    const files = parseSiteBundle(makeBundle())
+    expect(files.map((f) => f.path)).toEqual(expect.arrayContaining(['index.html', 'playground.html', 'styles.css', 'locale.js', 'tapehermes.min.js']))
+    const txs = files.reduce((n, f) => n + buildFileTxs(196, CONTAINER, f.path, f.contentType, f.bytes).txs.length, 0)
+    expect(txs).toBeLessThanOrEqual(15)
+  })
+})
