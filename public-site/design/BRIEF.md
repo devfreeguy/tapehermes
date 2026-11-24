@@ -25,7 +25,9 @@ The code (`app.js`) finds these elements by id. Keep every one, exactly once, wi
 
 | id | what it is |
 |---|---|
-| `connect` | button: connect wallet |
+| `connect` | button: connect wallet (the code turns it into "Disconnect wallet" after connecting) |
+| `switch-wallet` | button, keeps the `hidden` attribute (shown after connecting) |
+| `theme-toggle` | button with one `<span>` inside (the code writes the sun or moon symbol into it) |
 | `wallet-status` | any element: shows the wallet result |
 | `free-form` | `<form>` with one submit button inside |
 | `asteroid-id` | `<input>` inside `free-form` |

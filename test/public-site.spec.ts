@@ -173,7 +173,7 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
 
   it('keeps every element the page code looks up (the design contract in public-site/design/BRIEF.md)', () => {
     const html = text('index.html')
-    const ids = ['connect', 'wallet-status', 'free-form', 'asteroid-id', 'free-out', 'paid-form', 'food-input', 'food-count', 'food-price', 'paid-out',
+    const ids = ['connect', 'switch-wallet', 'theme-toggle', 'wallet-status', 'free-form', 'asteroid-id', 'free-out', 'paid-form', 'food-input', 'food-count', 'food-price', 'paid-out',
       'ai-section', 'ai-form', 'ai-input', 'ai-count', 'ai-price', 'ai-out', 'checks', 'proof', 'proof-fields', 'tamper', 'direct', 'side-out', 'source-line']
     for (const id of ids) expect([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, id).toBe(1)
     expect(html).toMatch(/id="ai-section"[^>]*\bhidden\b/)
