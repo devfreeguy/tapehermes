@@ -17,10 +17,21 @@ export function devSettings(loc) {
 const el = (doc, tag, text, cls) => { const e = doc.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e }
 const set = (node, ...kids) => { node.replaceChildren(...kids); return node }
 const MARK = { pass: 'Pass', fail: 'Fail', warn: 'Check', info: 'Info' }
+const accountPermission = [{ eth_accounts: {} }]
+const unsupported = (error) => [-32601, 4200].includes(Number(error?.code))
 
 export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
   const $ = (id) => doc.getElementById(id)
   let last = null // { result, verdict } of the latest good call
+  let walletAccount = null
+  const walletButton = $('connect')
+  const switchWalletButton = $('switch-wallet')
+  const walletStatus = $('wallet-status')
+
+  function setWalletBusy(busy) {
+    walletButton.disabled = busy
+    switchWalletButton.disabled = busy
+  }
 
   function renderChecks(rows) {
     set($('checks'), ...rows.map((r) => {
@@ -52,23 +63,72 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
   function fail(out, e) { set($(out), el(doc, 'p', explainFailure(e), 'bad')) }
 
   async function run(out, button, method, params, draw) {
+    const usesWallet = method !== 'asteroid'
+    if (usesWallet) setWalletBusy(true)
     button.disabled = true
     set($(out), el(doc, 'p', 'Working...', 'muted'))
     try {
       const result = await hermes.call(method, params)
       set($(out), draw(result.result))
       await show(result)
-    } catch (e) { fail(out, e) } finally { button.disabled = false }
+    } catch (e) { fail(out, e) } finally {
+      button.disabled = false
+      if (usesWallet) setWalletBusy(false)
+    }
   }
 
   // --- wallet
-  $('connect').addEventListener('click', async () => {
-    if (!ethereum) { $('wallet-status').textContent = 'No wallet was found in this browser. Install a wallet extension to use the paid route.'; return }
+  function setWallet(account) {
+    walletAccount = typeof account === 'string' && account ? account : null
+    walletButton.textContent = walletAccount ? 'Disconnect wallet' : 'Connect wallet'
+    switchWalletButton.hidden = !walletAccount
+    walletStatus.textContent = walletAccount
+      ? `Connected ${walletAccount.slice(0, 8)}...${walletAccount.slice(-6)}`
+      : 'Wallet disconnected.'
+  }
+
+  async function chooseAccount(switching = false) {
+    if (!ethereum) { walletStatus.textContent = 'No wallet was found in this browser. Install a wallet extension to use the paid actions.'; return }
+    setWalletBusy(true)
     try {
-      const [a] = await ethereum.request({ method: 'eth_requestAccounts' })
-      $('wallet-status').textContent = `Connected ${a.slice(0, 8)}...${a.slice(-6)}`
-    } catch { $('wallet-status').textContent = 'The wallet did not connect.' }
+      let method = 'eth_accounts'
+      try {
+        await ethereum.request({ method: 'wallet_requestPermissions', params: accountPermission })
+      } catch (error) {
+        if (!unsupported(error)) throw error
+        if (switching) {
+          walletStatus.textContent = 'Choose another account in your wallet to switch.'
+          return
+        }
+        method = 'eth_requestAccounts'
+      }
+      const [account] = await ethereum.request({ method })
+      if (!account) throw new Error('No account was returned')
+      setWallet(account)
+    } catch (error) {
+      if (walletAccount) {
+        setWallet(walletAccount)
+      } else if (Number(error?.code) === -32002) {
+        walletStatus.textContent = 'Open your wallet to finish the pending connection.'
+      } else {
+        walletStatus.textContent = 'The wallet did not connect.'
+      }
+    } finally { setWalletBusy(false) }
+  }
+
+  walletButton.addEventListener('click', async () => {
+    if (!walletAccount) { await chooseAccount(); return }
+    setWalletBusy(true)
+    setWallet(null)
+    try {
+      await ethereum.request({ method: 'wallet_revokePermissions', params: accountPermission })
+    } catch {
+      walletStatus.textContent = 'Disconnected here. You can also remove this site’s access in your wallet.'
+    } finally { setWalletBusy(false) }
   })
+  switchWalletButton.addEventListener('click', () => chooseAccount(true))
+  ethereum?.on?.('accountsChanged', (accounts) => { if (walletAccount) setWallet(accounts[0]) })
+  ethereum?.on?.('disconnect', () => { if (walletAccount) setWallet(null) })
 
   // --- free route
   $('free-form').addEventListener('submit', (ev) => {
@@ -91,6 +151,8 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
       ev.preventDefault()
       const text = box.value.trim()
       if (!text) { set($(out), el(doc, 'p', empty, 'bad')); return }
+      if (!walletAccount) { set($(out), el(doc, 'p', 'Connect your wallet before paying.', 'muted')); return }
+      if (walletButton.disabled) { set($(out), el(doc, 'p', 'Wait for the current wallet request to finish.', 'muted')); return }
       run(out, ev.submitter ?? $(form).querySelector(button), method, { [method === 'ask' ? 'input' : 'query']: text }, draw)
     })
     return (m) => { const p = m.tapehermes && m.tapehermes.price && m.tapehermes.price[method]; $(price).textContent = p ? `$${p} per request` : 'not set' }

@@ -54,6 +54,79 @@ describe('price and wallet', () => {
     setup(fakeHermes(), { request: vi.fn(async () => { throw new Error('rejected') }) }); click('connect'); await flush()
     expect(text('wallet-status')).toBe('The wallet did not connect.')
   })
+
+  it('disconnects from the demo and requires a new connection before paying', async () => {
+    const { hermes } = setup()
+    click('connect'); await flush()
+    expect(text('connect')).toBe('Disconnect wallet')
+    click('connect')
+    await flush()
+    expect(text('connect')).toBe('Connect wallet')
+    expect(text('wallet-status')).toBe('Wallet disconnected.')
+    submit('paid-form'); await flush()
+    expect(text('paid-out')).toBe('Connect your wallet before paying.')
+    expect(hermes.call).not.toHaveBeenCalled()
+    click('connect'); await flush()
+    submit('paid-form'); await flush()
+    expect(hermes.call).toHaveBeenCalledWith('food', { query: 'cheddar cheese' })
+  })
+
+  it('asks for a fresh account choice after disconnect and accepts a different wallet', async () => {
+    const permission = { eth_accounts: {} }
+    let account = SIGNER
+    ethereum.request.mockImplementation(async ({ method }) => {
+      if (method === 'eth_accounts') return [account]
+    })
+    setup()
+    click('connect'); await flush()
+    click('connect'); await flush()
+    account = '0x' + 'cd'.repeat(20)
+    click('connect'); await flush()
+    expect(ethereum.request.mock.calls.map(([rpc]) => rpc)).toEqual([
+      { method: 'wallet_requestPermissions', params: [permission] },
+      { method: 'eth_accounts' },
+      { method: 'wallet_revokePermissions', params: [permission] },
+      { method: 'wallet_requestPermissions', params: [permission] },
+      { method: 'eth_accounts' },
+    ])
+    expect(text('wallet-status')).toBe('Connected 0xcdcdcd...cdcdcd')
+  })
+
+  it('keeps the current account if the switch is canceled and never silently reconnects', async () => {
+    setup()
+    click('connect'); await flush()
+    ethereum.request.mockClear()
+    ethereum.request.mockRejectedValueOnce({ code: 4001 })
+    click('switch-wallet'); await flush()
+    expect(ethereum.request).toHaveBeenCalledTimes(1)
+    expect(text('wallet-status')).toMatch(/^Connected 0xabab/)
+    expect(text('connect')).toBe('Disconnect wallet')
+  })
+
+  it('lets wallets without permission methods connect and gives explicit switching instructions', async () => {
+    ethereum.request.mockImplementation(async ({ method }) => {
+      if (method !== 'eth_requestAccounts') throw { code: 4200 }
+      return [SIGNER]
+    })
+    setup()
+    click('connect'); await flush()
+    click('switch-wallet'); await flush()
+    expect(text('wallet-status')).toBe('Choose another account in your wallet to switch.')
+    click('connect'); await flush()
+    expect(text('wallet-status')).toContain('remove this site’s access')
+  })
+
+  it('updates the connected account and clears it when the wallet removes access', async () => {
+    const events = {}
+    setup(fakeHermes(), { ...ethereum, on: (event, callback) => { events[event] = callback } })
+    click('connect'); await flush()
+    events.accountsChanged(['0x' + 'cd'.repeat(20)])
+    expect(text('wallet-status')).toBe('Connected 0xcdcdcd...cdcdcd')
+    events.accountsChanged([])
+    expect(text('connect')).toBe('Connect wallet')
+    events.accountsChanged(['0x' + 'ef'.repeat(20)])
+    expect(text('connect')).toBe('Connect wallet')
+  })
 })
 
 describe('free route', () => {
@@ -84,6 +157,7 @@ describe('paid route: food lookup', () => {
     document.getElementById('food-input').value = '   '; submit('paid-form'); await flush()
     expect(text('paid-out')).toContain('Write a food first')
     expect(hermes.call).not.toHaveBeenCalled()
+    click('connect'); await flush()
     document.getElementById('food-input').value = 'cheddar cheese'; submit('paid-form'); await flush(); await flush()
     expect(hermes.call).toHaveBeenCalledWith('food', { query: 'cheddar cheese' })
     expect(text('paid-out')).toContain('CHEDDAR CHEESE')
@@ -95,6 +169,7 @@ describe('paid route: food lookup', () => {
     const evil = '<img src=x onerror="window.pwned=1"><script>window.pwned=2</script>'
     const h = fakeHermes({ call: vi.fn(async () => ({ result: { description: evil, dataType: 'x', brand: '', matches: 1 }, paid: true, price: '0.002', transaction: '0x' + '12'.repeat(32), trust, proof: proof({ description: evil }) })) })
     setup(h)
+    click('connect'); await flush()
     submit('paid-form'); await flush(); await flush()
     expect(document.querySelector('#paid-out img')).toBeNull()
     expect(document.querySelector('#paid-out script')).toBeNull()
@@ -104,6 +179,7 @@ describe('paid route: food lookup', () => {
   it('explains a failed payment in plain words and lets the visitor try again', async () => {
     const h = fakeHermes({ call: vi.fn(async () => { throw Object.assign(new Error('raw text'), { code: 'PAYMENT_SERVICE_UNAVAILABLE' }) }) })
     setup(h)
+    click('connect'); await flush()
     submit('paid-form'); await flush(); await flush()
     expect(text('paid-out')).toContain('Nothing was charged')
     expect(text('paid-out')).not.toContain('raw text')
@@ -121,6 +197,7 @@ describe('the AI route stays off until the manifest offers it', () => {
     setup(h); await flush()
     expect(document.getElementById('ai-section').hidden).toBe(false)
     expect(text('ai-price')).toBe('$0.01 per request')
+    click('connect'); await flush()
     document.getElementById('ai-input').value = 'Why is the sky blue?'; submit('ai-form'); await flush(); await flush()
     expect(h.call).toHaveBeenCalledWith('ask', { input: 'Why is the sky blue?' })
     expect(text('ai-out')).toContain('Because of scattering.')
