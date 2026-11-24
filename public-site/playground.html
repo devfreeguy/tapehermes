@@ -1,84 +1,91 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>API Playground | TapeHermes</title>
+<title data-en="API Playground | TapeHermes">API 试用台｜TapeHermes</title>
 <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./playground.css">
 </head>
 <body class="workbench">
-<a class="skip-link" href="#content">Skip to content</a>
+<a class="skip-link" href="#content" data-en="Skip to content">跳到主要内容</a>
 <header class="top">
   <div class="wrap top-inner">
   <a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true"></span>TapeHermes</a>
   <div class="row">
-    <a class="button quiet" href="./index.html">Home</a>
-    <button type="button" id="theme-toggle" class="quiet theme-toggle" aria-label="Switch color theme"><span aria-hidden="true">☼</span></button>
+    <a class="button quiet" href="./index.html" data-en="Home">首页</a>
+    <details class="language-switch" id="language-switch">
+      <summary class="button quiet" aria-label="语言" data-en-label="Language"><span aria-hidden="true">文</span><span class="language-chevron" aria-hidden="true"></span></summary>
+      <div class="language-options">
+        <button type="button" data-language="zh-CN" lang="zh-CN" aria-pressed="true">简体中文</button>
+        <button type="button" data-language="en" lang="en" aria-pressed="false">English</button>
+      </div>
+    </details>
+    <button type="button" id="theme-toggle" class="quiet theme-toggle" aria-label="切换主题"><span aria-hidden="true">☼</span></button>
   </div>
   </div>
 </header>
 <main class="wrap workbench-main" id="content" tabindex="-1">
   <header class="workbench-intro">
-    <h1>API Playground</h1>
-    <p>Run an action, inspect what your browser sends and receives, and see how it checks the signed reply.</p>
-    <p id="dev-notice" class="hint" hidden>Local development endpoint. Payment receipts here may be test data.</p>
+    <h1 data-en="API Playground">API 试用台</h1>
+    <p data-en="Run an action, inspect what your browser sends and receives, and see how it checks the signed reply.">运行一个操作，查看浏览器发送的请求和收到的响应，以及签名验证结果。</p>
+    <p id="dev-notice" class="hint" hidden data-en="Local development endpoint. Payment receipts here may be test data.">当前连接的是本地开发配置指定的接口，付款回执可能是测试数据。</p>
   </header>
   <div class="workbench-grid">
     <section id="try" aria-labelledby="actions-h">
       <div class="activity-head">
-        <h2 id="actions-h">Run an action</h2>
-        <a class="text-link activity-jump" href="#activity-panel">View activity</a>
+        <h2 id="actions-h" data-en="Run an action">运行操作</h2>
+        <a class="text-link activity-jump" href="#activity-panel" data-en="View activity">查看请求记录</a>
       </div>
     <div class="playground-body">
       <article class="wallet" aria-labelledby="wallet-h">
-        <div><h3 id="wallet-h">Pay with your wallet</h3><p class="hint">Paid searches use USDT on X Layer.</p></div>
+        <div><h3 id="wallet-h" data-en="Pay with your wallet">使用钱包付款</h3><p class="hint" data-en="Paid searches use USDT on X Layer.">付费操作使用 X Layer 上的 USDT。</p></div>
         <div class="wallet-action">
-          <button type="button" id="connect" class="quiet">Connect wallet</button>
-          <button type="button" id="switch-wallet" class="quiet" hidden>Switch account</button>
+          <button type="button" id="connect" class="quiet" data-en="Connect wallet">连接钱包</button>
+          <button type="button" id="switch-wallet" class="quiet" hidden data-en="Switch account">切换账户</button>
           <span id="wallet-status" role="status"></span>
         </div>
       </article>
       <div class="action-grid">
         <article class="card demo-card free-card" aria-labelledby="free-h">
-          <div class="action-price"><span class="tag mint">Free</span></div>
-          <h3 id="free-h">Asteroid lookup</h3>
-          <p class="hint">Data from NASA, retrieved with an API key that stays private.</p>
+          <div class="action-price"><span class="tag mint" data-en="Free">免费</span></div>
+          <h3 id="free-h" data-en="Asteroid lookup">查询小行星</h3>
+          <p class="hint" data-en="Data from NASA, retrieved with an API key that stays private.">数据来自 NASA，查询所用的 API 密钥不会公开。</p>
           <form id="free-form">
-            <label for="asteroid-id">Asteroid number</label>
+            <label for="asteroid-id" data-en="Asteroid number">小行星编号</label>
             <div class="field-row">
               <input id="asteroid-id" inputmode="numeric" maxlength="10" value="3542519" autocomplete="off">
-              <button type="submit">Look up</button>
+              <button type="submit" data-en="Look up">查询</button>
             </div>
           </form>
           <div id="free-out" class="out" aria-live="polite"></div>
         </article>
 
         <article class="card demo-card paid-card" aria-labelledby="paid-h">
-          <div class="action-price"><strong id="food-price" class="tag violet">Checking price</strong></div>
-          <h3 id="paid-h">Search the USDA food database</h3>
-          <p class="hint">Search for a food by name. You’ll see the price here and approve it in your wallet.</p>
+          <div class="action-price"><strong id="food-price" class="tag violet" data-en="Checking price">正在读取价格</strong></div>
+          <h3 id="paid-h" data-en="Search the USDA food database">查询 USDA 食品数据库</h3>
+          <p class="hint" data-en="Search for a food by name. You’ll see the price here and approve it in your wallet.">输入食品名称进行查询。请先查看价格，再在钱包里确认付款。</p>
           <details class="open-form">
-            <summary>Enter a food</summary>
+            <summary data-en="Enter a food">输入食品名称</summary>
             <form id="paid-form">
-              <label for="food-input">Food name</label>
+              <label for="food-input" data-en="Food name">食品名称</label>
               <input id="food-input" maxlength="60" value="cheddar cheese" autocomplete="off" aria-describedby="food-count">
-              <div class="row"><button type="submit">Pay and search</button><span id="food-count" class="hint"></span></div>
+              <div class="row"><button type="submit" data-en="Pay and search">付款并查询</button><span id="food-count" class="hint"></span></div>
             </form>
             <div id="paid-out" class="out" aria-live="polite"></div>
           </details>
         </article>
 
         <article class="card demo-card ai-card" id="ai-section" aria-labelledby="ai-h" hidden>
-          <div class="action-price"><strong id="ai-price" class="tag violet">Checking price</strong></div>
-          <h3 id="ai-h">Ask a question</h3>
-          <p class="hint">Get a short AI answer. The site owner sets the model and length.</p>
+          <div class="action-price"><strong id="ai-price" class="tag violet" data-en="Checking price">正在读取价格</strong></div>
+          <h3 id="ai-h" data-en="Ask a question">向 AI 提问</h3>
+          <p class="hint" data-en="Get a short AI answer. The site owner sets the model and length.">获取简短的 AI 回答。模型和回答长度由站点所有者设置。</p>
           <details class="open-form">
-            <summary>Write a question</summary>
+            <summary data-en="Write a question">输入问题</summary>
             <form id="ai-form">
-              <label for="ai-input">Your question</label>
+              <label for="ai-input" data-en="Your question">你的问题</label>
               <textarea id="ai-input" maxlength="200" rows="3" aria-describedby="ai-count">Why is the sky blue?</textarea>
-              <div class="row"><button type="submit">Pay and ask</button><span id="ai-count" class="hint"></span></div>
+              <div class="row"><button type="submit" data-en="Pay and ask">付款并提问</button><span id="ai-count" class="hint"></span></div>
             </form>
             <div id="ai-out" class="out" aria-live="polite"></div>
           </details>
@@ -89,23 +96,23 @@
     <div class="inspection">
       <section class="card inspection-card" id="activity-panel" aria-labelledby="activity-h">
         <div class="activity-head">
-          <h2 id="activity-h">Activity</h2>
-          <p id="run-status" role="status">Waiting for an action</p>
+          <h2 id="activity-h" data-en="Activity">请求记录</h2>
+          <p id="run-status" role="status" data-en="Waiting for an action">等待运行操作</p>
         </div>
         <ol id="activity" class="activity"></ol>
       </section>
       <section class="card inspection-card" aria-labelledby="verification-h">
-        <h2 id="verification-h">Response verification</h2>
+        <h2 id="verification-h" data-en="Response verification">响应验证</h2>
         <div class="proof-card">
-          <ul id="checks" class="checks" aria-live="polite"><li class="empty"><a class="text-link" href="#try">Run a lookup</a> to see the results here.</li></ul>
+          <ul id="checks" class="checks" aria-live="polite"><li class="empty"><a class="text-link" href="#try" data-en="Run a lookup">运行一次查询</a><span data-en=" to see the results here.">后，即可在这里查看验证结果。</span></li></ul>
           <details id="proof" hidden>
-            <summary>See what the site signed</summary>
+            <summary data-en="See what the site signed">查看站点签名详情</summary>
             <dl id="proof-fields"></dl>
             <p id="source-line" class="muted"></p>
           </details>
           <div class="row">
-            <button type="button" id="tamper" class="quiet" disabled>Change one character</button>
-            <button type="button" id="direct" class="quiet" disabled>Try NASA without the key</button>
+            <button type="button" id="tamper" class="quiet" disabled data-en="Change one character">改动一个字符</button>
+            <button type="button" id="direct" class="quiet" disabled data-en="Try NASA without the key">不带密钥请求 NASA</button>
           </div>
           <div id="side-out" class="out" aria-live="polite"></div>
         </div>

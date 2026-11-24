@@ -8,7 +8,9 @@ const short = (a) => (a && a.length > 14 ? `${a.slice(0, 8)}...${a.slice(-6)}` :
  * @param {{trust:object, signer:string, price:string, paid:boolean, transaction:string|null}} result  what hermes.call returned
  * @param {{ok:boolean, signer:string|null, expected:string}} verdict  what hermes.verify says about the answer as it is NOW
  */
-export function buildChecks(result, verdict) {
+const interpolate = (text, ...values) => text.replace(/\{(\d+)\}/g, (_, index) => values[index])
+
+export function buildChecks(result, verdict, tMessage = interpolate) {
   const t = result.trust
   const dev = t.source.startsWith('endpoint')
   const rows = []
@@ -22,27 +24,27 @@ export function buildChecks(result, verdict) {
   rows.push({
     id: 'delegation', label: 'The site holder allowed this signer',
     status: t.delegation === 'signature-valid' ? 'pass' : 'warn',
-    detail: t.delegation === 'signature-valid' ? `Signed by the holder, valid until ${t.expiresAt ? new Date(t.expiresAt).toUTCString() : 'a set date'}.` : 'No holder signature is checked on a development manifest.',
+    detail: t.delegation === 'signature-valid' ? tMessage('Signed by the holder, valid until {0}.', t.expiresAt ? new Date(t.expiresAt).toUTCString() : 'a set date') : 'No holder signature is checked on a development manifest.',
   })
   rows.push({
     id: 'holder', label: 'The signer is the current holder',
     status: t.holderCheck === 'verified' ? 'pass' : 'warn',
-    detail: t.holderCheck === 'verified' ? `Confirmed on X Layer: ${short(t.holder)}.` : t.holderCheck === 'unchecked' ? 'Could not be read from the chain in this browser.' : 'Not applicable to a development manifest.',
+    detail: t.holderCheck === 'verified' ? tMessage('Confirmed on X Layer: {0}.', short(t.holder)) : t.holderCheck === 'unchecked' ? 'Could not be read from the chain in this browser.' : 'Not applicable to a development manifest.',
   })
   rows.push({
     id: 'signature', label: 'The answer is signed by that signer',
     status: verdict.ok ? 'pass' : 'fail',
-    detail: verdict.ok ? `Recovered ${short(verdict.signer)}, which matches the manifest signer.` : `The signature gives ${short(verdict.signer) || 'no valid signer'}, not ${short(verdict.expected)}. Do not trust this answer.`,
+    detail: verdict.ok ? tMessage('Recovered {0}, which matches the manifest signer.', short(verdict.signer)) : tMessage('The signature gives {0}, not {1}. Do not trust this answer.', short(verdict.signer) || 'no valid signer', short(verdict.expected)),
   })
   rows.push({
     id: 'price', label: 'The price matches the manifest',
     status: result.paid ? 'pass' : 'info',
-    detail: result.paid ? `You paid ${result.price} USD, exactly the price in the manifest.` : 'This route is free.',
+    detail: result.paid ? tMessage('You paid {0} USD, exactly the price in the manifest.', result.price) : 'This route is free.',
   })
   rows.push({
     id: 'payment', label: 'Payment',
     status: result.paid ? (result.transaction ? 'pass' : 'warn') : 'info',
-    detail: result.paid ? (result.transaction ? `Settled in transaction ${short(result.transaction)}.` : 'Paid, but no transaction hash came back.') : 'Nothing was charged.',
+    detail: result.paid ? (result.transaction ? tMessage('Settled in transaction {0}.', short(result.transaction)) : 'Paid, but no transaction hash came back.') : 'Nothing was charged.',
   })
   return rows
 }
@@ -60,7 +62,7 @@ export function tamper(proof) {
 }
 
 /** Plain words for a failed call, by the helper's error code. */
-export function explainFailure(e) {
+export function explainFailure(e, localized) {
   const words = {
     NO_WALLET: 'No wallet was found in this browser. Install a wallet extension to use the paid route.',
     WRONG_CHAIN: 'Switch your wallet to the payment network and try again.',
@@ -76,5 +78,11 @@ export function explainFailure(e) {
     RATE_LIMITED: 'Too many requests. Wait a moment and try again.',
     BAD_REQUEST: 'The site refused this input.',
   }
-  return words[e && e.code] || (e && e.message) || 'Something went wrong. Try again.'
+  if (Object.hasOwn(words, e?.code)) return words[e.code]
+  const fallback = 'Something went wrong. Try again.'
+  if (localized) return {
+    ...(e?.code ? localized('Something went wrong ({0}). Try again.', { literal: e.code }) : localized(fallback)),
+    english: e?.message || fallback,
+  }
+  return e?.message || fallback
 }

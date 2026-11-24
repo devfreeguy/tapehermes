@@ -117,7 +117,7 @@ describe('the AI route, once the owner turns it on (DEMO_ENABLE_AI)', () => {
 
 describe('the demo site files', () => {
   it('serves each file with the content type a TapeOut site must declare, and nothing that is not part of the site', async () => {
-    for (const [file, type] of [['index.html', CONTENT_TYPES['.html']], ['playground.html', CONTENT_TYPES['.html']], ['playground.css', CONTENT_TYPES['.css']], ['trace.js', CONTENT_TYPES['.js']], ['styles.css', CONTENT_TYPES['.css']], ['app.js', CONTENT_TYPES['.js']], ['main.js', CONTENT_TYPES['.js']], ['checks.js', CONTENT_TYPES['.js']], ['tapehermes.min.js', CONTENT_TYPES['.js']]]) {
+    for (const [file, type] of [['index.html', CONTENT_TYPES['.html']], ['playground.html', CONTENT_TYPES['.html']], ['playground.css', CONTENT_TYPES['.css']], ['trace.js', CONTENT_TYPES['.js']], ['locale.js', CONTENT_TYPES['.js']], ['styles.css', CONTENT_TYPES['.css']], ['app.js', CONTENT_TYPES['.js']], ['main.js', CONTENT_TYPES['.js']], ['checks.js', CONTENT_TYPES['.js']], ['tapehermes.min.js', CONTENT_TYPES['.js']]]) {
       const r = await fetch(`${demo.siteUrl}/${file}`)
       expect(r.status, file).toBe(200)
       expect(r.headers.get('content-type'), file).toBe(type)
@@ -132,7 +132,7 @@ describe('the demo site files', () => {
 })
 
 describe('TapeOut site rules (TapeKit handbook and gateway code) for the files that get published', () => {
-  const PUBLISHED = ['index.html', 'playground.html', 'styles.css', 'playground.css', 'trace.js', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
+  const PUBLISHED = ['index.html', 'playground.html', 'styles.css', 'playground.css', 'locale.js', 'trace.js', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
   const text = (f: string) => readFileSync(`public-site/${f}`, 'utf8')
 
   it('uses relative paths and no outside address in HTML or CSS (src, href, action, url(), @import, meta refresh)', () => {
@@ -168,7 +168,8 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   it('keeps every file far below the 8.4 MB single-file limit, and the whole site small enough to publish cheaply', () => {
     const total = PUBLISHED.reduce((n, f) => n + statSync(`public-site/${f}`).size, 0)
     for (const f of PUBLISHED) expect(statSync(`public-site/${f}`).size, f).toBeLessThan(200_000)
-    expect(total).toBeLessThan(120_000)
+    // Include both sets of interface copy in the bilingual site budget.
+    expect(total).toBeLessThan(140_000)
   })
 
   it('keeps the page and the stylesheet under 24,000 bytes each, so each one is a single publish transaction', () => {
@@ -189,7 +190,8 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   })
 
   it('says in plain words that the site has no "100% on-chain" badge, and has no em dashes or hidden characters', () => {
-    expect(text('index.html')).toContain('do not carry the &ldquo;100% on-chain&rdquo; badge')
+    expect(text('index.html')).toContain('do not carry the “100% on-chain” badge')
+    expect(text('index.html')).toContain('不会显示「100% 链上」标识')
     for (const f of PUBLISHED.filter((p) => p !== 'tapehermes.min.js')) {
       expect(text(f), f).not.toContain('—')
       expect(text(f), f).not.toMatch(/[‪-‮⁦-⁩​-‏]/) // no bidirectional or zero-width characters

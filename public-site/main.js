@@ -1,3 +1,6 @@
+import { createLocale } from './locale.js'
+
+const { copy } = createLocale(document, window)
 // Entry point: wires the real helper, the real wallet and the real page together. Logic lives in app.js so it can be tested.
 const social = document.getElementById('social-link')
 if (social) social.href = 'https://x.com/TapeHermes'
@@ -30,8 +33,8 @@ function renderTheme() {
   const dark = activeTheme() === 'dark'
   const label = `Switch to ${dark ? 'light' : 'dark'} mode`
   themeToggle.firstElementChild.textContent = dark ? '☾' : '☼'
-  themeToggle.setAttribute('aria-label', label)
-  themeToggle.title = label
+  copy(themeToggle, label, 'aria-label')
+  copy(themeToggle, label, 'title')
 }
 
 themeToggle.addEventListener('click', () => {
@@ -54,13 +57,14 @@ if (document.getElementById('activity')) {
     ethereum: window.ethereum,
     fetchImpl: (...args) => fetch(...args),
     local,
+    copy,
     explorerUrl(network, hash) {
       if (network === 'eip155:196') return `https://www.oklink.com/xlayer/tx/${hash}`
       if (network === 'eip155:1952') return `https://www.oklink.com/x-layer-testnet/tx/${hash}`
     },
   })
   const hermes = createHermes({ ...settings, maxPriceUsd: '0.05', fetch: trace.fetch, ethereum: trace.wallet })
-  mount({ doc: document, hermes, ethereum: window.ethereum, fetchImpl: trace.fetch, trace,
+  mount({ doc: document, hermes, ethereum: window.ethereum, fetchImpl: trace.fetch, trace, copy,
     directUrl: 'https://api.nasa.gov/neo/rest/v1/neo/',
   })
 }

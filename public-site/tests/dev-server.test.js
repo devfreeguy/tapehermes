@@ -17,8 +17,8 @@ describe('the local preview server', () => {
     const r = await fetch(`${base}/playground.html`)
     expect(r.status).toBe(200)
     expect(new URL(r.url).searchParams.get('dev')).toBe('https://api.example.test/sites/x.tape')
-    expect(await r.text()).toContain('<h1>API Playground</h1>')
-    for (const asset of ['playground.css', 'trace.js']) {
+    expect(await r.text()).toContain('<h1 data-en="API Playground">API 试用台</h1>')
+    for (const asset of ['playground.css', 'trace.js', 'locale.js']) {
       expect((await fetch(`${base}/${asset}`)).status).toBe(200)
     }
   })

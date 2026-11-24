@@ -1,3 +1,5 @@
+import { englishCopy, message } from './locale.js'
+
 const json = (value) => {
   try { return JSON.parse(value) } catch { return undefined }
 }
@@ -6,7 +8,7 @@ const payment = (value) => {
   try { return json(atob(value)) } catch { return undefined }
 }
 
-export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl }) {
+export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl, copy = englishCopy }) {
   const activity = doc.getElementById('activity')
   const status = doc.getElementById('run-status')
 
@@ -14,13 +16,13 @@ export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl }) {
     const row = doc.createElement('li')
     const heading = doc.createElement('strong')
     const detail = doc.createElement('span')
-    heading.textContent = title
-    detail.textContent = 'Pending'
+    copy(heading, title)
+    copy(detail, 'Pending')
     row.append(heading, detail)
     activity.append(row)
     return {
-      finish(message, state = 'ok') {
-        detail.textContent = message
+      finish(value, state = 'ok') {
+        copy(detail, value)
         row.dataset.state = state
       },
       data(label, value) {
@@ -28,10 +30,10 @@ export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl }) {
         const disclosure = doc.createElement('details')
         const summary = doc.createElement('summary')
         const code = doc.createElement('pre')
-        summary.textContent = label
+        copy(summary, label)
         code.textContent = JSON.stringify(value, null, 2)
         code.tabIndex = 0
-        code.setAttribute('aria-label', label)
+        copy(code, label, 'aria-label')
         disclosure.append(summary, code)
         row.append(disclosure)
       },
@@ -40,14 +42,14 @@ export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl }) {
         const hash = receipt.transaction
         const link = !local && /^0x[0-9a-f]{64}$/i.test(hash) && explorerUrl(receipt.network, hash)
         const label = doc.createElement('div')
-        label.textContent = local ? 'Development receipt' : 'Transaction hash'
+        copy(label, local ? 'Development receipt' : 'Transaction hash')
         const target = doc.createElement(link ? 'a' : 'code')
         target.textContent = hash
         if (link) {
           target.href = link
           target.target = '_blank'
           target.rel = 'noopener noreferrer'
-          target.setAttribute('aria-label', 'View transaction on X Layer explorer (opens in a new tab)')
+          copy(target, 'View transaction on X Layer explorer (opens in a new tab)', 'aria-label')
         }
         row.append(label, target)
       },
@@ -84,7 +86,7 @@ export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl }) {
   }
 
   async function request(input) {
-    const row = step(`Wallet · ${input.method}`)
+    const row = step(message('Wallet · {0}', input.method))
     try {
       const value = await ethereum.request(input)
       row.finish(input.method === 'eth_signTypedData_v4' ? 'Payment authorization signed' : 'Wallet responded')
@@ -98,8 +100,8 @@ export function createTrace({ doc, fetchImpl, ethereum, local, explorerUrl }) {
   return {
     fetch: tracedFetch,
     wallet: ethereum && { request },
-    begin(label) { activity.replaceChildren(); status.textContent = label },
-    finish(label) { status.textContent = label },
+    begin(label) { activity.replaceChildren(); copy(status, label) },
+    finish(label) { copy(status, label) },
     note(title, detail, state) { step(title).finish(detail, state) },
   }
 }

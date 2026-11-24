@@ -129,7 +129,7 @@ What this proves: on a real TapeOut site, `createHermes()` with no options fetch
 **Blocked:** publishing the site's own files (`public-site/*`) to chain 196 is **not built**. Only the manifest publish transaction exists. The SDK has no generic site-file publisher, and the HashPort console for X Layer is unverified. So I cannot give you an exact publish command for the demo files, and I will not guess.
 
 Two ways to unblock, your choice:
-- (a) You publish the public-site files (list: `index.html`, `playground.html`, `styles.css`, `playground.css`, `app.js`, `main.js`, `checks.js`, `trace.js`, `tapehermes.min.js`) with whatever TapeKit or HashPort tool you normally use for your site, after `pnpm site:build`. Tell me which tool and I will check the file rules against it.
+- (a) You publish the public-site files (list: `index.html`, `playground.html`, `styles.css`, `playground.css`, `app.js`, `main.js`, `checks.js`, `trace.js`, `locale.js`, `tapehermes.min.js`) with whatever TapeKit or HashPort tool you normally use for your site, after `pnpm site:build`. Tell me which tool and I will check the file rules against it.
 - (b) I build a file publisher in a later phase.
 
 Once the files are on your site (check 7 already done for the same site), open the site's gateway address in the browser and check:

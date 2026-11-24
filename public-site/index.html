@@ -1,27 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>TapeHermes | Charge per call on your TapeOut site</title>
-<meta name="description" content="Let visitors look up data or run an AI task on your TapeOut site. Set the price, keep your API keys private, and get paid in USDT.">
+<title data-en="TapeHermes | Charge per call on your TapeOut site">TapeHermes｜为 TapeOut 站点的 API 调用按次收费</title>
+<meta name="description" content="让访客在你的 TapeOut 站点查询数据或运行 AI 任务。你可以设置价格、保护 API 密钥，并收取 USDT。" data-en-content="Let visitors look up data or run an AI task on your TapeOut site. Set the price, keep your API keys private, and get paid in USDT.">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <span id="top" aria-hidden="true"></span>
-<a class="skip-link" href="#content">Skip to content</a>
+<a class="skip-link" href="#content" data-en="Skip to content">跳到主要内容</a>
 
 <header class="top">
   <div class="wrap top-inner">
   <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>TapeHermes</a>
-  <nav aria-label="On this page">
-    <a href="#check">How it works</a>
-    <a href="#owners">For owners</a>
+  <nav aria-label="本页导航" data-en-label="On this page">
+    <a href="#check" data-en="How it works">工作原理</a>
+    <a href="#owners" data-en="For owners">站点管理</a>
   </nav>
   <div class="header-actions">
-    <button type="button" id="theme-toggle" class="quiet theme-toggle" aria-label="Switch color theme"><span aria-hidden="true">☼</span></button>
-    <a class="button quiet header-action" href="./playground.html" target="_blank" rel="noopener" data-playground>Playground <span class="arrow" aria-hidden="true">↗</span></a>
+    <details class="language-switch" id="language-switch">
+      <summary class="button quiet" aria-label="语言" data-en-label="Language"><span aria-hidden="true">文</span><span class="language-chevron" aria-hidden="true"></span></summary>
+      <div class="language-options">
+        <button type="button" data-language="zh-CN" lang="zh-CN" aria-pressed="true">简体中文</button>
+        <button type="button" data-language="en" lang="en" aria-pressed="false">English</button>
+      </div>
+    </details>
+    <button type="button" id="theme-toggle" class="quiet theme-toggle" aria-label="切换主题"><span aria-hidden="true">☼</span></button>
+    <a class="button quiet header-action" href="./playground.html" target="_blank" rel="noopener" data-playground><span data-en="Playground">API 试用</span> <span class="arrow" aria-hidden="true">↗</span></a>
   </div>
   </div>
 </header>
@@ -30,11 +37,11 @@
   <section class="hero" aria-labelledby="hero-h">
     <div class="hero-image" aria-hidden="true"></div>
     <div class="wrap hero-copy">
-      <h1 id="hero-h">Charge for a lookup <span>or an AI summary.</span></h1>
-      <p class="lead">Connect a service to your TapeOut site and set the price. TapeHermes runs it with your private API key and sends the payment to your wallet.</p>
+      <h1 id="hero-h"><span data-en="Charge for a lookup">让数据查询</span> <span data-en="or an AI summary.">和 AI 摘要按次收费</span></h1>
+      <p class="lead" data-en="Connect a service to your TapeOut site and set the price. TapeHermes runs it with your private API key and sends the payment to your wallet.">将服务接入你的 TapeOut 站点并设置价格。TapeHermes 使用你保存的 API 密钥调用服务，款项直接进入你的钱包。</p>
       <div class="actions">
-        <a class="button" href="./playground.html" target="_blank" rel="noopener" data-playground>Open playground <span class="arrow" aria-hidden="true">↗</span></a>
-        <a class="button hero-secondary" href="#check">See how it works</a>
+        <a class="button" href="./playground.html" target="_blank" rel="noopener" data-playground><span data-en="Open playground">打开 API 试用台</span> <span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="button hero-secondary" href="#check" data-en="See how it works">了解工作原理</a>
       </div>
     </div>
   </section>
@@ -42,25 +49,25 @@
 
   <section class="wrap section" id="check" aria-labelledby="check-h">
     <header class="section-head">
-      <h2 id="check-h">Behind the lookup</h2>
+      <h2 id="check-h" data-en="Behind the lookup">一次查询是怎么完成的？</h2>
     </header>
     <div class="trust-grid">
       <article class="card trust-card">
         <img class="trust-art" alt="" loading="lazy" srcset="data:image/webp;base64,UklGRrQDAABXRUJQVlA4IKgDAACwJACdASo2AZYAPt1qrlEopi4qqDN5WcAbiWluvcGt4ha6Ajgrsr2jrveFZsNmD9aS6FwLHumJrP2b6td8fb8QBGqYn/V2/ftpM5KP9ehZ8sDTllx9nHQAXTbeNRGyD+enPnbJx2eNZzNMX/kCMuTDLo4z9K/JnQ3oUcxgA78Guesug4vzrccXvgmVxw1yJL71SaEJZsCE8c/iwNuYQk2xDjk5A5IkkMP+AK48Q6PJfJdCEbKOoIp2+dgbXAFRRqj1hqTFXwoeYz1MXHRAj952fbuFeiRJhG40SIts5Wh/lCiQRt3BQ4LHi2tDMuhQXObwEvDObhgunHeCIFyE4BL34qliYoMPPK72y9SDjnilQ4xDYVbEDoJ6QyDYVuiVavgBVR8t3JJlnDiLnjuI0AD+eMTTIyWAkJuUE59c2NcZIFxgurYK4PP1Z+8vYPVoEZKKxuHys7jpaZIEyTmFPovEiGf/YmVg+OiejL22S30VCCvU6FP6Ejwot5bWfd9l6BY0Zhl80lDN+BvP6xIuHwTzjoI5DKrueoQdtFiJrjD07FVl76E+w+gPF/nGAG0CUnDm1LgG7qB0xb42ioPQiK6CKYCw7pADnTlIt2I1c10VD+CC03LdKYeXH7ep5rvyhC51pEUXb0INbJ2bo6ml/AzKxoKf1O6v57pIQLT2DXC6du58Fph2WttMuiUuHjU11ecVnArcZ4/mx3IebuR2UyePyvJZ/2j0RrKWgGRT9pom5eh34UsuC6SqNtOSJDNHtHwQarWjDcnFkxgixLyYqfnVUHdAdVeeMGmXmIsf8D3/8LJhSq9ynXtCEml92IwNtHxrHYTkd/sAi23LU1INMlZfIyorw/v9skmLfBdfBpedPKiZaYK6tzxxfRagiWsgzQRRYP+51Ud59SV1lnIanUhzwJ9TM5rzlm4zZCstiSUMfts5jTrvVV08lOKcRGF9gncCp94hE/6s+AdQ7xecAqIrZV0IL0lKNzBnPxJ4qeiWFoj76juCFLnT5w+QcDkpTcc5K4VZihi7Fz5lt/dZ4J+OgfynjsJ08u+aBZ9VWV3BVxucjE5ghv65TsrtgkWm/H5xBPnbku0exnndox8eSPkhMgRghVGJcQstUg4ESFWNGp7gipwDO1EOtTLp1sf6z8TsgLjn0NUsYEcm+qVmhuLiigiBQ4MHJDvXQrLCgzVuYWTSzERUIUtvqxKvsNzVSAJAh4RA2Hi67Xwl1lF8+J5oEObBcegAAAA=">
         <div class="trust-copy">
-          <h3>Did the answer change?</h3>
-          <p>Your browser checks the signature on the result. Change one character and watch the check fail.</p>
+          <h3 data-en="Did the answer change?">返回结果被改过吗？</h3>
+          <p data-en="Your browser checks the signature on the result. Change one character and watch the check fail.">浏览器会验证结果上的签名。试着改动一个字符，看看验证如何失败。</p>
         </div>
-        <a class="button quiet" href="./playground.html" target="_blank" rel="noopener" data-playground>Inspect a response <span aria-hidden="true">↗</span></a>
+        <a class="button quiet" href="./playground.html" target="_blank" rel="noopener" data-playground><span data-en="Inspect a response">查看响应详情</span> <span aria-hidden="true">↗</span></a>
       </article>
 
       <article class="card trust-card" id="how">
         <img class="trust-art" alt="" loading="lazy" srcset="data:image/webp;base64,UklGRtoEAABXRUJQVlA4IM4EAABQLQCdASo2AZYAPt1qr1Kopa6rpBFJydAbiWlu1V5mHAhK6coSPK00VjV0fpqMyqMHag3EAUrg+r5HfgzOkbzkUe9pmZmeOO4/AsONIWDRScChgUcvQwbFHj/mf7bCuf1xkasbWzhEyMb9/Ucc8xJVeqLSi1NMGX2QZrRrw0sljA99tuXlCVj1WfQkTLlr06oXVLkpXQndcTdhVgLVQO5aN/mCib1N25E4KnEyDdl4UKODW8LQqpZrV4oCrMN11tjkAwkmeT/bHG0CqrO/f7kAVKP1YEp3I+8Q6QHTB4mzOD8cEU04ibXGJ1naQ0U9C3NQRo54MeeQyx/EWhERKqwReiTG2CPxV+BDTpIxDeO39INV/6HyFN3AJzZJIjf+Ih1MF3uFhI+lUM/qazrxZUGvYoUOd/NwhSEUmQRRBK4R2Ey2Lbts7dWI/TiODbZHxpjbxKNP+A7JrDyPavp2LeMInmRORfJjObeLSwXWM3QtcdzOAAD+75ijO/XmSFTQ9ht3Q7mhfUTiq3dF7RNCFrN0Km1b7tZQBQqBfW/EIxOmM4Hl3acz1Y05UQxvAaAMHCipjREV7GuE8GFrY2vQAPSlDtdbwg6soPbLcKjzzhJuVoJftt3bTyueJc0IFqy6DIOEsicyc5Pjgyx7fr7TSOmuBhi8MuQC7vuKu8QCiiT8eIyMkljb//MUCh92kYKSZpjwlF1wuHrxm5AdKBAhfAG4HEeV/gzydMy/zoASvfsZPEbIzShq3SW0kHWk0Az5Rtc/vOq4HX9VguI4XM1I3emAFQtst0XZdEQtJzYvb8asoHlo6YhdQDSxWwPynjzZt874t5GkC+gwiaVbLHPJDbcIrdU72KjvAw1pySvqft5EnZWiGVhno2zttK3cG1b5PgZ3/a51gVj2bhbmJEtvqULFQmrObgepU4DeJK1kw2dZyOiIi7FS/lBZ9uA46HQ+nDseFS9GlZjGCoKmLK9akhqhwMzYkzdz22Z1X8Xqnpl3evTl/sn8Uie9Nt8KbQpaXTJAcBdr30oUrizqtkWej+H9AdrWzWMH0GBaLdGqmd7rVAZHAYPiDHesiUT/wSfAT1q56snQmpxgD9R7h3sv+DhUe4edJK6yULQGmw7+Tuo2lfdpaU5qGEP/Hpw8C4NxKKOIyBE7BjJ2avm3mqTA7pVdWoWzDuAsksntlll96NchParZ+eyJ6PSNJOg6Yv73Q3MPs9A5lPknDPpIoktzw3UnquaU3VRE1lIy2IrcnpIpnJ/aRFskMwPa9w8HMjjRBuDrr8GJ38VtpV6DslEL6KNIIO9wUVCFN1KTfUcd1fbFi6tpM9iGeVZF0cLt22w1VlUFL6W5QeZljrv1qAuNrc/tnusq2vPkO307lacOBO9xuB6KvuCegkZzo4NHmls2yWtPjz9UMq/qBoJlahkK17CL3t3JtOScj+mkgaN/pWFDrKYpZLjXEA4sZhnP3S7fiZtNZGJs1WIlanj1xSGii0CL5uOnadu0jOuhz4gCCqqYiMcmOYYK1idOMfXmIGlgmxuCU6yhtRJqbh+yXM16/fgiiJrPOtETegOj302XbgyMwLUc7ybWoClP/UwIxvZ6t+uoI6U4DvlIDJmto0ikGzThW16gH5mAjqsDvELQQAA=">
         <div class="trust-copy" id="where">
-          <h3>Your key stays private</h3>
-          <p>TapeHermes sends its saved key to NASA and returns the data. Visitors see the result without ever seeing the key.</p>
+          <h3 data-en="Your key stays private">API 密钥不会公开</h3>
+          <p data-en="TapeHermes sends its saved key to NASA and returns the data. Visitors see the result without ever seeing the key.">TapeHermes 使用保存的密钥向 NASA 请求数据。访客只能看到查询结果。</p>
         </div>
-        <p class="key-note" id="badge-note">Sites that use TapeHermes make outside calls, so they do not carry the &ldquo;100% on-chain&rdquo; badge.</p>
+        <p class="key-note" id="badge-note" data-en="Sites that use TapeHermes make outside calls, so they do not carry the “100% on-chain” badge.">使用 TapeHermes 的站点会调用外部服务，因此不会显示「100% 链上」标识。</p>
       </article>
     </div>
   </section>
@@ -68,14 +75,14 @@
   <section class="wrap section" id="owners" aria-labelledby="owners-h">
     <div class="card owners">
       <header class="section-head">
-        <h2 id="owners-h">Set up your own paid action</h2>
-        <p>Open the dashboard with the wallet that owns your TapeOut site.</p>
+        <h2 id="owners-h" data-en="Set up your own paid action">创建自己的付费操作</h2>
+        <p data-en="Open the dashboard with the wallet that owns your TapeOut site.">使用拥有 TapeOut 站点的钱包登录控制台。</p>
         <p class="owner-address mono"><a href="https://dashboard.tapehermes.xyz" target="_blank" rel="noopener noreferrer">dashboard.tapehermes.xyz</a></p>
       </header>
       <ol class="owner-steps">
-        <li>Add the key for the service you want to use.</li>
-        <li>Create an action and set its price, or make it free.</li>
-        <li>Give TapeHermes permission to sign replies, then publish your API list on X Layer.</li>
+        <li data-en="Add the key for the service you want to use.">添加你要调用的服务的 API 密钥。</li>
+        <li data-en="Create an action and set its price, or make it free.">创建一个操作，设置价格或设为免费。</li>
+        <li data-en="Give TapeHermes permission to sign replies, then publish your API list on X Layer.">授权 TapeHermes 为响应签名，然后在 X Layer 上发布 API 清单。</li>
       </ol>
     </div>
   </section>
@@ -83,8 +90,8 @@
 
 <footer class="wrap footer">
   <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>TapeHermes</a>
-  <a class="back" id="social-link" rel="noopener noreferrer">TapeHermes on X <span aria-hidden="true">↗</span></a>
-  <a class="back" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+  <a class="back" id="social-link" rel="noopener noreferrer"><span data-en="TapeHermes on X">在 X 上关注 TapeHermes</span> <span aria-hidden="true">↗</span></a>
+  <a class="back" href="#top"><span data-en="Back to top">返回顶部</span> <span aria-hidden="true">↑</span></a>
 </footer>
 <script type="module" src="./main.js"></script>
 </body>
