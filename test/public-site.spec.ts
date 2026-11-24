@@ -117,7 +117,7 @@ describe('the AI route, once the owner turns it on (DEMO_ENABLE_AI)', () => {
 
 describe('the demo site files', () => {
   it('serves each file with the content type a TapeOut site must declare, and nothing that is not part of the site', async () => {
-    for (const [file, type] of [['index.html', CONTENT_TYPES['.html']], ['styles.css', CONTENT_TYPES['.css']], ['app.js', CONTENT_TYPES['.js']], ['main.js', CONTENT_TYPES['.js']], ['checks.js', CONTENT_TYPES['.js']], ['tapehermes.min.js', CONTENT_TYPES['.js']]]) {
+    for (const [file, type] of [['index.html', CONTENT_TYPES['.html']], ['playground.html', CONTENT_TYPES['.html']], ['playground.css', CONTENT_TYPES['.css']], ['trace.js', CONTENT_TYPES['.js']], ['styles.css', CONTENT_TYPES['.css']], ['app.js', CONTENT_TYPES['.js']], ['main.js', CONTENT_TYPES['.js']], ['checks.js', CONTENT_TYPES['.js']], ['tapehermes.min.js', CONTENT_TYPES['.js']]]) {
       const r = await fetch(`${demo.siteUrl}/${file}`)
       expect(r.status, file).toBe(200)
       expect(r.headers.get('content-type'), file).toBe(type)
@@ -132,11 +132,11 @@ describe('the demo site files', () => {
 })
 
 describe('TapeOut site rules (TapeKit handbook and gateway code) for the files that get published', () => {
-  const PUBLISHED = ['index.html', 'styles.css', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
+  const PUBLISHED = ['index.html', 'playground.html', 'styles.css', 'playground.css', 'trace.js', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
   const text = (f: string) => readFileSync(`public-site/${f}`, 'utf8')
 
   it('uses relative paths and no outside address in HTML or CSS (src, href, action, url(), @import, meta refresh)', () => {
-    const html = text('index.html'), css = text('styles.css')
+    const html = text('index.html') + text('playground.html'), css = text('styles.css') + text('playground.css')
     expect(html).not.toMatch(/(src|href|action|poster|srcset)=["']?(https?:)?\/\//i)
     expect(html).not.toMatch(/http-equiv=["']?refresh/i)
     expect(css).not.toMatch(/url\(\s*["']?(https?:)?\/\//i)
@@ -145,12 +145,11 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   })
 
   it('has no script from outside and no inline script, so the gateway CSP (scripts only from the chain) is met', () => {
-    const html = text('index.html')
-    expect([...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1].trim())).toEqual(['type="module" src="./main.js"'])
+    for (const html of ['index.html', 'playground.html'].map(text)) expect([...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1].trim())).toEqual(['type="module" src="./main.js"'])
     for (const f of PUBLISHED.filter((p) => p.endsWith('.js') && p !== 'tapehermes.min.js')) expect(text(f), f).not.toMatch(/\beval\(|new Function|importScripts|import\(\s*["']https?:/)
   })
 
-  it('names the outside service in code in one place only (the optional direct call), nowhere in HTML or CSS', () => {
+  it('keeps external destinations in the entry script, outside HTML and CSS', () => {
     const outside = PUBLISHED.filter((f) => f !== 'tapehermes.min.js' && /https?:\/\//.test(text(f)))
     expect(outside).toEqual(['main.js'])
   })
@@ -168,11 +167,13 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   })
 
   it('keeps the page and the stylesheet under 24,000 bytes each, so each one is a single publish transaction', () => {
-    for (const f of ['index.html', 'styles.css']) expect(statSync(`public-site/${f}`).size, f).toBeLessThan(24_000)
+    for (const f of ['index.html', 'playground.html', 'styles.css', 'playground.css']) expect(statSync(`public-site/${f}`).size, f).toBeLessThan(24_000)
   })
 
   it('keeps every element the page code looks up (the design contract in public-site/design/BRIEF.md)', () => {
-    const html = text('index.html')
+    const html = text('playground.html')
+    expect(text('index.html')).not.toContain('id="free-form"')
+    expect(text('index.html')).toMatch(/href=".\/playground.html" target="_blank"/)
     const ids = ['connect', 'switch-wallet', 'theme-toggle', 'wallet-status', 'free-form', 'asteroid-id', 'free-out', 'paid-form', 'food-input', 'food-count', 'food-price', 'paid-out',
       'ai-section', 'ai-form', 'ai-input', 'ai-count', 'ai-price', 'ai-out', 'checks', 'proof', 'proof-fields', 'tamper', 'direct', 'side-out', 'source-line']
     for (const id of ids) expect([...html.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length, id).toBe(1)
@@ -191,7 +192,7 @@ describe('TapeOut site rules (TapeKit handbook and gateway code) for the files t
   })
 
   it('uses no hex colors', () => {
-    for (const f of ['styles.css', 'index.html']) expect(text(f), f).not.toMatch(/#[0-9a-fA-F]{3,8}\b(?![\w-])/)
+    for (const f of ['styles.css', 'playground.css', 'index.html', 'playground.html']) expect(text(f), f).not.toMatch(/#[0-9a-fA-F]{3,8}\b(?![\w-])/)
   })
 })
 

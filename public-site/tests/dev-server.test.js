@@ -13,6 +13,16 @@ describe('the local preview server', () => {
     expect(r.headers.get('location')).toBe(`/?dev=${encodeURIComponent('https://api.example.test/sites/x.tape')}`)
   })
 
+  it('opens the standalone playground with the API list source set', async () => {
+    const r = await fetch(`${base}/playground.html`)
+    expect(r.status).toBe(200)
+    expect(new URL(r.url).searchParams.get('dev')).toBe('https://api.example.test/sites/x.tape')
+    expect(await r.text()).toContain('<h1>API Playground</h1>')
+    for (const asset of ['playground.css', 'trace.js']) {
+      expect((await fetch(`${base}/${asset}`)).status).toBe(200)
+    }
+  })
+
   it('serves every published file with a type the browser will run', async () => {
     for (const f of SITE_FILES) {
       const r = await fetch(`${base}/${f === 'index.html' ? '?x=1' : f}`)

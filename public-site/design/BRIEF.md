@@ -1,33 +1,25 @@
 # Public site: design brief
 
-This folder is `public-site/`. Only `index.html` and `styles.css` are for the designer. The other files (`app.js`, `checks.js`, `main.js`, `tapehermes.min.js`) are the working code and stay as they are. This `design/` folder and `routes.json` and `tests/` are never published.
+The public site has a landing page in `index.html` and a standalone API playground in `playground.html`. Both share `styles.css`. Playground-specific styles live in `playground.css`, and its activity timeline is rendered by `trace.js`. The `design/` and `tests/` folders and `routes.json` are never published.
 
 The site is stored on the X Layer chain as plain files at `26.2.2.tape`. Every file costs a wallet approval to upload, and every byte costs gas. That is why the rules below are strict.
 
 ## Decisions already made
 
-- ONE page: `index.html`. No sub-pages (each extra page is another upload and none is needed).
-- Audience: judges and first-time visitors who give the page under a minute. The live playground comes first; the owner steps come lower.
-- Sections, in this order, each with an anchor id:
-  1. Header with the brand and links to `#try`, `#how`, `#owners`
-  2. Hero: what TapeHermes is, one sentence, two buttons (`#try`, `#how`), and the badge note
-  3. `#how`: three steps (Add your key, Set a price, Get paid per call)
-  4. `#try`: the playground (wallet, free asteroid action, paid food action, hidden AI action)
-  5. `#check`: "Check the answer yourself" (the checks list, the signed answer, two buttons)
-  6. `#where`: where the key is (three plain points)
-  7. `#owners`: how an owner makes one (three steps; the dashboard address is plain text)
-  8. Footer
-- Look: dark, calm, "Tape" feel like the dashboard (near black background, one bright green accent, rounded cards, pill-shaped main buttons). System fonts only.
+- The landing page explains TapeHermes and links to the playground in a new tab.
+- The playground provides wallet controls, an action picker, a chronological activity panel, and response verification. It uses the site's published manifest to discover actions and prices.
+- Keep the mint accent, light and dark themes, system fonts, and shared pill buttons.
 
 ## The contract between the page and the code
 
-The code (`app.js`) finds these elements by id. Keep every one, exactly once, with the same kind of element:
+The playground code (`app.js` and `trace.js`) finds these elements by id. Keep every one, exactly once, with the same kind of element:
 
 | id | what it is |
 |---|---|
 | `connect` | button: connect wallet (the code turns it into "Disconnect wallet" after connecting) |
 | `switch-wallet` | button, keeps the `hidden` attribute (shown after connecting) |
 | `theme-toggle` | button with one `<span>` inside (the code writes the sun or moon symbol into it) |
+| `activity`, `run-status` | ordered list of observed steps and current run status |
 | `wallet-status` | any element: shows the wallet result |
 | `free-form` | `<form>` with one submit button inside |
 | `asteroid-id` | `<input>` inside `free-form` |

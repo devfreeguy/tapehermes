@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { devSettings, mount } from '../app.js'
 
 const SIGNER = '0x' + 'ab'.repeat(20)
-const html = readFileSync(join(process.cwd(), 'index.html'), 'utf8')
+const html = readFileSync(join(process.cwd(), 'playground.html'), 'utf8')
 const flush = () => new Promise((r) => setTimeout(r, 0))
 const click = (id) => document.getElementById(id).click()
 const submit = (id) => { const f = document.getElementById(id); f.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })) }

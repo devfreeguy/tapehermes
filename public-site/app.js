@@ -20,10 +20,12 @@ const MARK = { pass: 'Pass', fail: 'Fail', warn: 'Check', info: 'Info' }
 const accountPermission = [{ eth_accounts: {} }]
 const unsupported = (error) => [-32601, 4200].includes(Number(error?.code))
 
-export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
+export function mount({ doc, hermes, ethereum, fetchImpl, directUrl, trace }) {
   const $ = (id) => doc.getElementById(id)
   let last = null // { result, verdict } of the latest good call
   let walletAccount = null
+  let running = false
+  const requestWallet = (input) => (trace?.wallet ?? ethereum).request(input)
   const walletButton = $('connect')
   const switchWalletButton = $('switch-wallet')
   const walletStatus = $('wallet-status')
@@ -62,18 +64,36 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
 
   function fail(out, e) { set($(out), el(doc, 'p', explainFailure(e), 'bad')) }
 
-  async function run(out, button, method, params, draw) {
-    const usesWallet = method !== 'asteroid'
-    if (usesWallet) setWalletBusy(true)
-    button.disabled = true
+  async function run(out, method, params, draw) {
+    if (running || walletButton.disabled) return
+    running = true
+    setWalletBusy(true)
+    const controls = [...doc.querySelectorAll('form button'), $('tamper'), $('direct')]
+    for (const control of controls) control.disabled = true
+    last = null
+    $('proof').hidden = true
+    set($('side-out'))
+    set($('checks'), el(doc, 'li', 'Waiting for the reply.', 'empty'))
     set($(out), el(doc, 'p', 'Working...', 'muted'))
     try {
+      await setup
+      trace?.begin(`Running ${method}`)
+      if (manifestReady) trace?.note('Load API list', 'Using the manifest already loaded by this page.')
       const result = await hermes.call(method, params)
       set($(out), draw(result.result))
-      await show(result)
-    } catch (e) { fail(out, e) } finally {
-      button.disabled = false
-      if (usesWallet) setWalletBusy(false)
+      const verdict = await show(result)
+      trace?.note('Verify response signature', verdict.ok ? 'Signature matches the published signer.' : 'Signature check failed.', verdict.ok ? 'ok' : 'error')
+      trace?.finish(verdict.ok ? 'Run complete' : 'Response could not be verified')
+    } catch (e) {
+      fail(out, e)
+      set($('checks'), el(doc, 'li', 'No result is available to verify.', 'empty'))
+      trace?.note('Action stopped', explainFailure(e), 'error')
+      trace?.finish('Run failed')
+    } finally {
+      running = false
+      for (const control of controls) control.disabled = false
+      $('tamper').disabled = $('direct').disabled = !last
+      setWalletBusy(false)
     }
   }
 
@@ -93,7 +113,7 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
     try {
       let method = 'eth_accounts'
       try {
-        await ethereum.request({ method: 'wallet_requestPermissions', params: accountPermission })
+        await requestWallet({ method: 'wallet_requestPermissions', params: accountPermission })
       } catch (error) {
         if (!unsupported(error)) throw error
         if (switching) {
@@ -102,7 +122,7 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
         }
         method = 'eth_requestAccounts'
       }
-      const [account] = await ethereum.request({ method })
+      const [account] = await requestWallet({ method })
       if (!account) throw new Error('No account was returned')
       setWallet(account)
     } catch (error) {
@@ -121,7 +141,7 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
     setWalletBusy(true)
     setWallet(null)
     try {
-      await ethereum.request({ method: 'wallet_revokePermissions', params: accountPermission })
+      await requestWallet({ method: 'wallet_revokePermissions', params: accountPermission })
     } catch {
       walletStatus.textContent = 'Disconnected here. You can also remove this site’s access in your wallet.'
     } finally { setWalletBusy(false) }
@@ -135,7 +155,7 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
     ev.preventDefault()
     const id = $('asteroid-id').value.trim()
     if (!/^\d{1,10}$/.test(id)) { set($('free-out'), el(doc, 'p', 'Enter the asteroid number, digits only.', 'bad')); return }
-    run('free-out', ev.submitter ?? $('free-form').querySelector('button'), 'asteroid', { id }, (r) => {
+    run('free-out', 'asteroid', { id }, (r) => {
       const box = el(doc, 'div', undefined, 'answer')
       box.append(el(doc, 'div', `${r.name}`), el(doc, 'div', `Potentially hazardous: ${r.hazardous ? 'yes' : 'no'}`), el(doc, 'div', `Largest size: about ${Math.round(r.diameterMaxMeters)} m`), el(doc, 'div', `First recorded approach: ${r.firstApproach}`))
       return box
@@ -143,7 +163,7 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
   })
 
   // --- paid routes: the food lookup, and the short AI answer (its section only appears when the manifest offers it)
-  function bindPaid({ method, form, input, count, price, out, button, empty, draw }) {
+  function bindPaid({ method, form, input, count, price, out, empty, draw }) {
     const box = $(input)
     const refresh = () => { $(count).textContent = `${box.value.length} of ${box.maxLength}` }
     box.addEventListener('input', refresh); refresh()
@@ -153,40 +173,50 @@ export function mount({ doc, hermes, ethereum, fetchImpl, directUrl }) {
       if (!text) { set($(out), el(doc, 'p', empty, 'bad')); return }
       if (!walletAccount) { set($(out), el(doc, 'p', 'Connect your wallet before paying.', 'muted')); return }
       if (walletButton.disabled) { set($(out), el(doc, 'p', 'Wait for the current wallet request to finish.', 'muted')); return }
-      run(out, ev.submitter ?? $(form).querySelector(button), method, { [method === 'ask' ? 'input' : 'query']: text }, draw)
+      run(out, method, { [method === 'ask' ? 'input' : 'query']: text }, draw)
     })
     return (m) => { const p = m.tapehermes && m.tapehermes.price && m.tapehermes.price[method]; $(price).textContent = p ? `$${p} per request` : 'not set' }
   }
   const showFood = bindPaid({
-    method: 'food', form: 'paid-form', input: 'food-input', count: 'food-count', price: 'food-price', out: 'paid-out', button: 'button', empty: 'Write a food first.',
+    method: 'food', form: 'paid-form', input: 'food-input', count: 'food-count', price: 'food-price', out: 'paid-out', empty: 'Write a food first.',
     draw: (r) => set(el(doc, 'div', undefined, 'answer'), el(doc, 'div', r.description), el(doc, 'div', `${r.dataType}${r.brand ? `, ${r.brand}` : ''}`), el(doc, 'div', `${r.matches} matches in the database`)),
   })
   const showAi = bindPaid({
-    method: 'ask', form: 'ai-form', input: 'ai-input', count: 'ai-count', price: 'ai-price', out: 'ai-out', button: 'button', empty: 'Write a question first.',
+    method: 'ask', form: 'ai-form', input: 'ai-input', count: 'ai-count', price: 'ai-price', out: 'ai-out', empty: 'Write a question first.',
     draw: (r) => set(el(doc, 'div', undefined, 'answer'), el(doc, 'span', r.text)),
   })
-  hermes.manifest().then(({ manifest: m }) => {
+  let manifestReady = false
+  trace?.finish('Loading API list')
+  const setup = hermes.manifest().then(({ manifest: m }) => {
+    manifestReady = true
+    trace?.finish('Ready for an action')
     showFood(m)
     if ((m.methods || []).some((x) => x.name === 'ask')) { $('ai-section').hidden = false; showAi(m) }
-  }).catch((e) => { $('food-price').textContent = 'unavailable'; set($('paid-out'), el(doc, 'p', explainFailure(e), 'bad')) })
+  }).catch((e) => { trace?.finish('API list unavailable'); $('food-price').textContent = 'unavailable'; set($('paid-out'), el(doc, 'p', explainFailure(e), 'bad')) })
 
   // --- see for yourself
   $('tamper').addEventListener('click', async () => {
-    if (!last) return
+    if (!last || running) return
+    const current = last
     const t = tamper(last.result.proof)
     const verdict = await hermes.verify(t.proof)
-    const rows = buildChecks(last.result, verdict)
+    if (last !== current) return
+    const rows = buildChecks(current.result, verdict)
     renderChecks(rows)
+    trace?.note('Verify a changed response', verdict.ok ? 'The change was accepted.' : 'The signature no longer matches.', verdict.ok ? 'error' : 'ok')
     set($('side-out'), el(doc, 'p', allGood(rows) ? 'The change was NOT noticed. This should never happen.' : `One character of "${t.changed}" was changed. The signature check now fails, so a page using this helper would refuse the answer.`, allGood(rows) ? 'bad' : 'muted'))
   })
 
   $('direct').addEventListener('click', async () => {
+    if (running) return
+    running = true
+    $('direct').disabled = true
     set($('side-out'), el(doc, 'p', 'Asking the outside service directly, with no key...', 'muted'))
     try {
       const res = await fetchImpl(`${directUrl}${encodeURIComponent($('asteroid-id').value.trim() || '3542519')}`)
       const body = await res.json().catch(() => ({}))
       set($('side-out'), el(doc, 'p', `The service answered ${res.status}${body && body.error && body.error.code ? ` (${body.error.code})` : ''}. It does not answer without a key, and this page does not have one.`, 'muted'))
-    } catch { set($('side-out'), el(doc, 'p', 'The service could not be reached from this page.', 'bad')) }
+    } catch { set($('side-out'), el(doc, 'p', 'The service could not be reached from this page.', 'bad')) } finally { running = false; $('direct').disabled = false }
   })
 
   return { get last() { return last } }

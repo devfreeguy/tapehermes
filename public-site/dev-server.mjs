@@ -9,13 +9,13 @@ import { fileURLToPath } from 'node:url'
 const DIR = fileURLToPath(new URL('.', import.meta.url))
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' }
 /** Exactly the files that get published. Nothing else in this folder is ever served. */
-export const SITE_FILES = ['index.html', 'styles.css', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
+export const SITE_FILES = ['index.html', 'playground.html', 'styles.css', 'playground.css', 'trace.js', 'app.js', 'main.js', 'checks.js', 'tapehermes.min.js']
 export const DEFAULT_API = 'https://api.tapehermes.xyz/sites/26.2.2.tape'
 
 export function startDevServer({ port = 3200, api = DEFAULT_API } = {}) {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
-    if (url.pathname === '/' && !url.search) { res.writeHead(302, { location: `/?dev=${encodeURIComponent(api)}` }).end(); return }
+    if ((url.pathname === '/' || url.pathname === '/playground.html') && !url.search) { res.writeHead(302, { location: `${url.pathname}?dev=${encodeURIComponent(api)}` }).end(); return }
     const name = url.pathname === '/' ? 'index.html' : url.pathname.slice(1)
     if (!SITE_FILES.includes(name)) { res.writeHead(404, { 'content-type': 'text/plain' }).end('not found'); return }
     res.writeHead(200, { 'content-type': TYPES[extname(name)], 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }).end(await readFile(join(DIR, name)))
