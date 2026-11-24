@@ -32,6 +32,7 @@
     "helper:size": "node helper/size.mjs",
     "phase2:testnet": "pnpm helper:build && pnpm build && node dist/proofs/11-phase2-testnet.js",
     "site:build": "pnpm helper:build && node public-site/build.mjs",
+    "site:dev": "pnpm --dir public-site dev",
     "demo:dev": "pnpm site:build && pnpm build && node dist/proofs/12-demo-dev.js"
   },
   "dependencies": {
