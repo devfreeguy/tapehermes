@@ -14,6 +14,8 @@ import { SiteProvidersService } from './harness/site-providers.service.js'
 export async function createApp(overrides: Partial<AppConfig> = {}, opts: { port?: number; host?: string; trustProxyHops?: number } = {}) {
   const app = await NestFactory.create<NestExpressApplication>(AppModule.register(overrides), { bodyParser: false, logger: ['error', 'warn'] })
   app.use('/api', apiCors(app.get<AppConfig>(APP_CONFIG).corsOrigins))
+  // A site bundle (base64 files, up to 400 KB of content) is the one larger body; it is parsed first, only on its own route.
+  app.use(/^\/api\/sites\/[^/]+\/files\/plan$/, express.json({ limit: '640kb' }))
   app.use('/api', express.json({ limit: '64kb' }))
   const hops = opts.trustProxyHops ?? overrides.trustProxyHops ?? 0
   if (hops > 0) app.set('trust proxy', hops)

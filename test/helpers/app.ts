@@ -21,6 +21,13 @@ export class FakeChain {
     const sha256 = this.manifests.get(container.toLowerCase())
     return { published: !!sha256, size: sha256 ? 500 : 0, sha256: sha256 ?? '0x' + '0'.repeat(64), updatedAt: 1_800_000_000 }
   }
+  /** container (lowercase) + "|" + path -> sha256 of the site file the fake chain holds there */
+  files = new Map<string, string>()
+  async fileOnChain(container: string, path: string) {
+    if (this.down) throw new ChainUnavailableError('down')
+    const sha256 = this.files.get(`${container.toLowerCase()}|${path}`)
+    return { published: !!sha256, size: sha256 ? 500 : 0, sha256: sha256 ?? '0x' + '0'.repeat(64), updatedAt: 1_800_000_000 }
+  }
   /** Fee per month in wei that the fake chain reports, and the end of the paid period (unix seconds). */
   feeWei = 0n
   paidUntil = 1_900_000_000
@@ -50,6 +57,7 @@ export async function startTestApp(overrides: Partial<AppConfig> = {}) {
   chainService.readSite = ((name: string) => chain.readSite(name)) as never
   chainService.activationFacts = (() => chain.activationFacts()) as never
   chainService.manifestOnChain = ((c: string) => chain.manifestOnChain(c)) as never
+  chainService.fileOnChain = ((c: string, p: string) => chain.fileOnChain(c, p)) as never
   const cache = started.app.get(ProviderCache)
   const prisma = started.app.get(PrismaService)
   const redis = started.app.get(RedisService)
